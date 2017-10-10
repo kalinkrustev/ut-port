@@ -1,0 +1,127 @@
+var merge = require('lodash.merge');
+var Port = require('./port');
+
+module.exports = ({bus, logFactory, assert}) => {
+    let servicePorts = new Map();
+
+    let createOne = (portConfig, envConfig) => {
+        let Constructor;
+        if (portConfig instanceof Function) {
+            portConfig = portConfig(envConfig);
+        };
+        if (!portConfig.id) {
+            throw new Error('Missing port id property');
+        } else if (envConfig[portConfig.id] === false) { // port is disabled
+            return false;
+        }
+        merge(portConfig, envConfig[portConfig.id]);
+        if (portConfig.createPort instanceof Function) {
+            Constructor = portConfig.createPort;
+        } else {
+            if (portConfig.type) {
+                throw new Error('Use createPort:require(\'ut-port-' + portConfig.type + '\') instead of type:\'' + portConfig.type + '\'');
+            } else {
+                throw new Error('Missing createPort property');
+            }
+        }
+        if (Constructor.length) { // inherit from Port if constructor has parameters
+            if (Constructor.name === 'Console') { // deprecate old console, that has incompatible call signature
+                throw new Error('Please upgrade ut-port-console');
+            }
+            Constructor = Constructor(Port);
+        }
+        let port = new Constructor({bus, logFactory, config: portConfig});
+        // todo add deprecation warning
+        if (!Constructor.length) { // set properties if constructor does not have parameters
+            port.bus = bus;
+            port.logFactory = logFactory;
+            merge(port.config, portConfig);
+        }
+        return Promise.resolve(port.init()).then(function() {
+            servicePorts.set(portConfig.id, port);
+            return port;
+        });
+    };
+
+    let createMany = (ports, envConfig) => {
+        return Promise.all(
+            ports.reduce(function(all, port) {
+                port = port && createOne(port, envConfig);
+                port && all.push(port);
+                return all;
+            }, [])
+        );
+    };
+
+    let create = (ports, envConfig) =>
+        Array.isArray(ports) ? createMany(ports, envConfig, assert) : createOne(ports, envConfig, assert);
+
+    let fetch = ports => Array.from(servicePorts.values());
+
+    let startOne = ({port}) => {
+        port = servicePorts.get(port);
+        return port && Promise.resolve()
+            .then(() => port.start())
+            .then(() => port.ready())
+            .then(() => port);
+    };
+
+    let startMany = ports => {
+        var portsStarted = [];
+        return fetch(ports).reduce(function(prev, port) {
+            portsStarted.push(port); // collect ports that are started
+            return prev
+                .then(() => port.start())
+                .then(result => {
+                    assert && assert.ok(true, 'started port ' + port.config.id);
+                    return result;
+                });
+        }, Promise.resolve())
+        .then(function() {
+            return portsStarted
+                .reduce(function(promise, port) {
+                    if (typeof port.ready === 'function') {
+                        promise = promise.then(() => port.ready());
+                    }
+                    return promise;
+                }, Promise.resolve())
+                .then(() => portsStarted);
+        })
+        .catch(function(err) {
+            return portsStarted.reverse().reduce(function(prev, context, idx) {
+                return prev
+                    .then(() => context.stop())
+                    .catch(() => true); // continue on error
+            }, Promise.resolve())
+            .then(() => Promise.reject(err)); // reject with the original error
+        });
+    };
+
+    let start = params =>
+        Array.isArray(params || []) ? startMany(params) : startOne(params);
+
+    var port = {
+        get: ({port}) => servicePorts.get(port),
+        fetch,
+        create,
+        start,
+        stop: ({port}) => {
+            port = servicePorts.get(port);
+            return port && Promise.resolve()
+                .then(() => port.stop())
+                .then(() => port);
+        },
+        move: ({port, x, y}) => {
+            port = servicePorts.get(port);
+            if (port) {
+                port.config.x = x;
+                port.config.y = y;
+            }
+            return port;
+        }
+    };
+
+    bus.registerLocal({port}, 'ut');
+
+    return port;
+};
