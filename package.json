@@ -37,7 +37,7 @@
     },
     "repository": {
       "type": "git",
-      "url": "git@github.com:softwaregroup-bg/ut-port-httpserver.git"
+      "url": "git@github.com:softwaregroup-bg/ut-port.git"
     },
     "license": "Apache-2.0"
   }
