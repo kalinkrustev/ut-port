@@ -3,11 +3,14 @@
     "version": "6.0.0",
     "dependencies": {
         "browser-process-hrtime": "0.1.2",
-        "lodash.assign": "4.2.0",
         "lodash.merge": "4.6.0",
-        "readable-stream": "2.2.2",
-        "through2": "2.0.3",
-        "ut-error": "^5.4.9"
+        "pull-cat": "1.1.11",
+        "pull-paramap": "1.2.2",
+        "pull-pushable": "2.1.1",
+        "pull-stream": "3.6.1",
+        "stream-to-pull-stream": "1.7.2",
+        "ut-error": "^5.4.9",
+        "ut-queue": "^6.0.0"
     },
     "devDependencies": {
         "ut-tools": "^5.23.2"
