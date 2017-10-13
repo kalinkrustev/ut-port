@@ -13,7 +13,6 @@ const portErrorDispatch = (port, $meta) => err => {
     $meta.mtid = 'error';
     $meta.errorCode = err && err.code;
     $meta.errorMessage = err && err.message;
-    // $meta.callback && $meta.callback(err, $meta);
     return portDispatch(port)([err, $meta]).then(() => [DISCARD, $meta]);
 };
 
@@ -45,7 +44,7 @@ const calcTime = what => pull(
     pull.filter(packet => {
         let $meta = (packet.length && packet[packet.length - 1]);
         $meta && $meta.timer && $meta.timer(what);
-        return packet !== DISCARD;
+        return (packet && packet[0] !== DISCARD);
     }),
     pull.map(packet => {
         if (packet && packet[0] instanceof errors.disconnect) {
@@ -60,6 +59,15 @@ const reportTimes = (port, $meta) => {
     if ($meta && $meta.timer && port.methodLatency) {
         let times = $meta.timer();
         port.methodLatency(times.method, {m: times.method}, [
+            times.queue,
+            times.receive,
+            times.encode,
+            times.exec,
+            times.decode,
+            times.send,
+            times.dispatch
+        ], 1);
+        port.methodLatency('*', {m: '*'}, [
             times.queue,
             times.receive,
             times.encode,
@@ -98,12 +106,14 @@ const portSend = (port, context) => packet => {
     let $meta = packet.length && packet[packet.length - 1];
     let {fn, name} = port.getConversion($meta, 'send');
     if (fn) {
-        return Promise.resolve(fn.apply(port, Array.prototype.concat(packet, context)))
+        return Promise.resolve()
+            .then(() => fn.apply(port, Array.prototype.concat(packet, context)))
             .then(function encodeConvertResolve(result) {
                 port.log.debug && port.log.debug({message: result, $meta: {method: name, mtid: 'convert'}});
                 packet[0] = result;
                 return packet;
-            });
+            })
+            .catch(portErrorDispatch(port, $meta));
     } else {
         return Promise.resolve(packet);
     }
@@ -143,30 +153,19 @@ const portEncode = (port, context) => packet => {
 
 const portExec = (port, fn) => packet => {
     let $meta = packet.length > 1 && packet[packet.length - 1];
-    let methodName = '';
     if ($meta && $meta.mtid === 'request') {
         $meta.mtid = 'response';
-        methodName = $meta.method;
     }
-    let startTime = hrtime();
     return Promise.resolve()
         .then(function pipeExecThrough() {
             return fn.apply(port, packet);
         })
-        .then(function pipeExecThroughResolved(result) {
-            let diff = hrtime(startTime);
-            diff = diff[0] * 1000 + diff[1] / 1000000;
-            methodName && port.execLatencySuccess && port.execLatencySuccess(methodName, {m: methodName}, diff, 1);
-            return [result, $meta];
-        })
+        .then(result => [result, $meta])
         .catch(function pipeExecThroughRejected(error) {
-            let diff = hrtime(startTime);
-            diff = diff[0] * 1000 + diff[1] / 1000000;
             port.error(error);
             if ($meta) {
                 $meta.mtid = 'error';
             }
-            methodName && port.execLatencyError && port.execLatencyError(methodName, {m: methodName}, diff, 1);
             return [error, $meta];
         });
 };
@@ -251,7 +250,7 @@ const portDispatch = port => packet => {
         return Promise.resolve($meta.dispatch.apply(port, packet));
     }
     if (!packet || !packet[0] || packet[0] === DISCARD) {
-        return Promise.resolve(DISCARD);
+        return Promise.resolve([DISCARD]);
     }
     let mtid = $meta.mtid;
     let opcode = $meta.opcode;
@@ -263,7 +262,7 @@ const portDispatch = port => packet => {
             isError && port.error(result);
             return [result, $meta];
         } else {
-            return DISCARD;
+            return [DISCARD];
         }
     };
 
@@ -321,7 +320,7 @@ const portPull = (port, what, context) => {
         result = {
             push: packet => {
                 let $meta = (packet.length && packet[packet.length - 1]);
-                $meta.timer = packetTimer($meta.method);
+                $meta.timer = packetTimer(port.methodPath($meta.method) || $meta.method);
                 receiveQueue.push(packet);
             }
         };
@@ -397,9 +396,9 @@ const portPush = (port, promise, args) => {
             } else {
                 reject(msg);
             }
-            return DISCARD;
+            return [DISCARD];
         };
-        $meta.timer = packetTimer($meta.method);
+        $meta.timer = packetTimer(port.methodPath($meta.method) || $meta.method);
         queue.push(args);
     });
 };
