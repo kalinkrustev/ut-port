@@ -3,7 +3,6 @@ const Buffer = require('buffer').Buffer;
 const bufferCreate = Buffer;
 const pull = require('pull-stream');
 const pullStream = require('stream-to-pull-stream');
-const pullCat = require('pull-cat');
 const errors = require('./errors');
 const paramap = require('pull-paramap');
 const DISCARD = Symbol('discard packet');
@@ -40,10 +39,10 @@ function packetTimer(method) {
     };
 }
 
-const calcTime = what => pull(
+const calcTime = stage => pull(
     pull.filter(packet => {
         let $meta = (packet.length && packet[packet.length - 1]);
-        $meta && $meta.timer && $meta.timer(what);
+        $meta && $meta.timer && $meta.timer(stage);
         return (packet && packet[0] !== DISCARD);
     }),
     pull.map(packet => {
@@ -242,14 +241,22 @@ const portReceive = (port, context) => packet => {
 
 const portQueueEventCreate = (port, context, name) => {
     context && port.log.info && port.log.info({$meta: {mtid: 'event', opcode: 'port.' + name}, connection: context});
-    return [false, {mtid: 'event', opcode: name, conId: context && context.conId}];
+    return [false, {
+        mtid: 'event',
+        opcode: name,
+        conId: context && context.conId,
+        timer: packetTimer('event.' + name)
+    }];
 };
 
-const portDisconnected = (port, context) => () => pull(
-    pull.once(portQueueEventCreate(port, context, 'disconnected')),
-    paraPromise(port, portReceive(port, context)),
-    paraPromise(port, portDispatch(port)),
-    pull.drain()
+const portEventDispatch = (port, context, event, cb) => pull(
+    pull.once(portQueueEventCreate(port, context, event)),
+    paraPromise(port, portReceive(port, context), port.activeReceiveCount), calcTime('receive'),
+    paraPromise(port, portDispatch(port), port.activeDispatchCount), calcTime('dispatch'),
+    pull.drain(null, error => {
+        error && port.error(error);
+        cb && cb(error);
+    })
 );
 
 const portDispatch = port => packet => {
@@ -322,7 +329,7 @@ const portPull = (port, what, context) => {
                 if ($meta && $meta.reply) {
                     $meta.reply.apply(null, packet);
                 }
-            }, portDisconnected(port, context)),
+            }, () => portEventDispatch(port, context, 'disconnected')),
             source: receiveQueue.source
         };
         result = {
@@ -338,7 +345,7 @@ const portPull = (port, what, context) => {
             calcTime('exec')
         );
     } else if (what.readable && what.writable) {
-        what.on('close', portDisconnected(port, context));
+        what.on('close', () => portEventDispatch(port, context, 'disconnected'));
         what.on('error', error => {
             port.error(errors.stream({context, error}));
         });
@@ -357,22 +364,16 @@ const portPull = (port, what, context) => {
     let dispatch = paraPromise(port, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
     let sink = portSink(sendQueue);
     pull(
-        pullCat([
-            pull(
-                pull.once(portQueueEventCreate(port, context, 'connected')), calcTime('connect')
-            ),
-            pull(
-                sendQueue, calcTime('queue'),
-                send, calcTime('send'),
-                encode, calcTime('encode'),
-                unpack,
-                stream,
-                decode, calcTime('decode'))
-        ]),
+        sendQueue, calcTime('queue'),
+        send, calcTime('send'),
+        encode, calcTime('encode'),
+        unpack,
+        stream,
+        decode, calcTime('decode'),
         receive, calcTime('receive'),
         dispatch, calcTime('dispatch'),
-        sink
-    );
+        sink);
+    portEventDispatch(port, context, 'connected', error => error && sink.abort(error));
     return result;
 };
 

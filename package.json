@@ -4,7 +4,6 @@
     "dependencies": {
         "browser-process-hrtime": "0.1.2",
         "lodash.merge": "4.6.0",
-        "pull-cat": "1.1.11",
         "pull-paramap": "1.2.2",
         "pull-pushable": "2.1.1",
         "pull-stream": "3.6.1",
