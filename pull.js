@@ -108,7 +108,7 @@ const portSend = (port, context) => packet => {
     if (fn) {
         return Promise.resolve()
             .then(() => fn.apply(port, Array.prototype.concat(packet, context)))
-            .then(function encodeConvertResolve(result) {
+            .then(result => {
                 port.log.debug && port.log.debug({message: result, $meta: {method: name, mtid: 'convert'}});
                 packet[0] = result;
                 return packet;
@@ -157,11 +157,9 @@ const portExec = (port, fn) => packet => {
         $meta.mtid = 'response';
     }
     return Promise.resolve()
-        .then(function pipeExecThrough() {
-            return fn.apply(port, packet);
-        })
+        .then(() => fn.apply(port, packet))
         .then(result => [result, $meta])
-        .catch(function pipeExecThroughRejected(error) {
+        .catch(error => {
             port.error(error);
             if ($meta) {
                 $meta.mtid = 'error';
@@ -199,8 +197,17 @@ const portDecode = (port, context, buffer) => packet => {
     port.msgReceived && port.msgReceived(1);
     if (port.codec) {
         let $meta = {conId: context && context.conId};
-        return Promise.resolve(port.codec.decode(packet, $meta, context))
-            .then(result => [result, traceMeta($meta, context)]);
+        return Promise.resolve()
+            .then(() => port.codec.decode(packet, $meta, context))
+            .then(decoded => [decoded, traceMeta($meta, context)])
+            .catch(error => {
+                $meta.mtid = 'error';
+                if (!error || !error.keepConnection) {
+                    return [errors.disconnect(error), $meta];
+                } else {
+                    return [error, $meta];
+                }
+            });
     } else if (packet && packet.constructor && packet.constructor.name === 'Buffer') {
         return Promise.resolve([{payload: packet}, {mtid: 'notification', opcode: 'payload', conId: context && context.conId}]);
     } else {
@@ -217,17 +224,18 @@ const portReceive = (port, context) => packet => {
     if (!fn) {
         return Promise.resolve(packet);
     } else {
-        return Promise.resolve(fn.apply(port, Array.prototype.concat(packet, context)))
-            .then(function receivePromiseResolved(result) {
-                port.log.debug && port.log.debug({message: result, $meta: {method: name, mtid: 'convert'}});
-                return [result, $meta];
+        return Promise.resolve()
+            .then(() => fn.apply(port, Array.prototype.concat(packet, context)))
+            .then(received => {
+                port.log.debug && port.log.debug({message: received, $meta: {method: name, mtid: 'convert'}});
+                return [received, $meta];
             })
-            .catch(function receivePromiseRejected(err) {
-                port.error(err);
+            .catch(error => {
+                port.error(error);
                 $meta.mtid = 'error';
-                $meta.errorCode = err && err.code;
-                $meta.errorMessage = err && err.message;
-                return [err, $meta];
+                $meta.errorCode = error && error.code;
+                $meta.errorMessage = error && error.message;
+                return [error, $meta];
             });
     }
 };
