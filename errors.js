@@ -9,5 +9,6 @@ module.exports = {
     disconnect: create('disconnect', Port, 'Port disconnected'),
     stream: create('stream', Port, 'Port stream error'),
     echoTimeout: create('echoTimeout', Port, 'Echo retries limit exceeded'),
+    unhandled: create('undandled', Port, 'Unhandled port error'),
     receiveTimeout: create('receiveTimeout', Port, 'Receive timeout')
 };
