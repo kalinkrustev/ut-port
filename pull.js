@@ -15,13 +15,14 @@ const portErrorDispatch = (port, $meta) => err => {
     return portDispatch(port)([err, $meta]).then(() => [DISCARD, $meta]);
 };
 
-function packetTimer(method) {
+const packetTimer = (method, aggregate = '*') => {
     if (!method) {
         return;
     }
     let time = hrtime();
     let result = {
         method,
+        aggregate,
         queue: null,
         receive: null,
         encode: null,
@@ -37,7 +38,7 @@ function packetTimer(method) {
         time = newtime;
         return result;
     };
-}
+};
 
 const calcTime = stage => pull(
     pull.filter(packet => {
@@ -66,7 +67,7 @@ const reportTimes = (port, $meta) => {
             times.send,
             times.dispatch
         ], 1);
-        port.methodLatency('*', {m: '*'}, [
+        times.aggregate && port.methodLatency(times.aggregate, {m: times.aggregate}, [
             times.queue,
             times.receive,
             times.encode,
@@ -79,7 +80,7 @@ const reportTimes = (port, $meta) => {
     }
 };
 
-function traceMeta($meta, context) {
+const traceMeta = ($meta, context) => {
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
             let expireTimeout = 60000;
@@ -108,7 +109,7 @@ const portSend = (port, context) => packet => {
         return Promise.resolve()
             .then(() => fn.apply(port, Array.prototype.concat(packet, context)))
             .then(result => {
-                port.log.debug && port.log.debug({message: result, $meta: {method: name, mtid: 'convert'}});
+                port.log.trace && port.log.trace({message: result, $meta: {method: name, mtid: 'convert'}});
                 packet[0] = result;
                 return packet;
             })
@@ -167,7 +168,7 @@ const portExec = (port, fn) => packet => {
         });
 };
 
-function getFrame(port, buffer) {
+const getFrame = (port, buffer) => {
     if (port.framePatternSize) {
         let tmp = port.framePatternSize(buffer);
         if (tmp) {
@@ -178,12 +179,13 @@ function getFrame(port, buffer) {
     } else {
         return port.framePattern(buffer);
     }
-}
+};
 
 const portDecode = (port, context, buffer) => packet => {
     port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: packet});
     if (port.framePattern) {
         port.bytesReceived && port.bytesReceived(packet.length);
+        // todo check buffer size
         buffer = Buffer.concat([buffer, packet]);
         let frame = getFrame(port, buffer);
         if (frame) {
@@ -226,7 +228,7 @@ const portReceive = (port, context) => packet => {
         return Promise.resolve()
             .then(() => fn.apply(port, Array.prototype.concat(packet, context)))
             .then(received => {
-                port.log.debug && port.log.debug({message: received, $meta: {method: name, mtid: 'convert'}});
+                port.log.trace && port.log.trace({message: received, $meta: {method: name, mtid: 'convert'}});
                 return [received, $meta];
             })
             .catch(error => {
@@ -239,30 +241,28 @@ const portReceive = (port, context) => packet => {
     }
 };
 
-const portQueueEventCreate = (port, context, name) => {
-    context && port.log.info && port.log.info({$meta: {mtid: 'event', opcode: 'port.' + name}, connection: context});
+const portQueueEventCreate = (port, context, name, logger) => {
+    context && (typeof logger === 'function') && logger({$meta: {mtid: 'event', opcode: 'port.' + name}, connection: context});
     return [false, {
         mtid: 'event',
         opcode: name,
         conId: context && context.conId,
-        timer: packetTimer('event.' + name)
+        timer: packetTimer('event.' + name, false)
     }];
 };
 
-const portEventDispatch = (port, context, event, cb) => pull(
-    pull.once(portQueueEventCreate(port, context, event)),
+const portEventDispatch = (port, context, event, logger, queue, cb) => pull(
+    pull.once(portQueueEventCreate(port, context, event, logger)),
     paraPromise(port, portReceive(port, context), port.activeReceiveCount), calcTime('receive'),
     paraPromise(port, portDispatch(port), port.activeDispatchCount), calcTime('dispatch'),
-    pull.drain(null, error => {
-        error && port.error(error);
-        cb && cb(error);
-    })
+    portSink(port, queue, cb)
 );
 
 const portDispatch = port => packet => {
     let $meta = (packet.length && packet[packet.length - 1]) || {};
     if ($meta && $meta.dispatch) {
-        return Promise.resolve($meta.dispatch.apply(port, packet));
+        reportTimes(port, $meta);
+        return Promise.resolve().then(() => $meta.dispatch.apply(port, packet));
     }
     if (!packet || !packet[0] || packet[0] === DISCARD) {
         return Promise.resolve([DISCARD]);
@@ -286,10 +286,11 @@ const portDispatch = port => packet => {
         .then(portDispatchResult(false), portDispatchResult(true));
 };
 
-const portSink = queue => pull.drain(msg => {
-    queue.push(msg);
-}, end => {
-
+const portSink = (port, queue, cb) => pull.drain(msg => {
+    queue && queue.push(msg);
+}, error => {
+    error && port.error(error);
+    cb && cb(error);
 });
 
 const paraPromise = (port, fn, counter, concurrency = 1) => {
@@ -316,10 +317,68 @@ const paraPromise = (port, fn, counter, concurrency = 1) => {
     }, concurrency, false);
 };
 
+const portDuplex = (port, context, stream, queue) => {
+    let receiveQueue = require('pull-pushable')(true);
+    let idleSendTimer;
+    let cleanup = () => {
+        idleSendTimer && clearTimeout(idleSendTimer);
+        idleSendTimer = null;
+        stream.removeListener('data', streamData);
+        stream.removeListener('close', streamClose);
+        stream.removeListener('error', streamError);
+    };
+    let streamData = data => {
+        receiveQueue.push(data);
+    };
+    let streamClose = () => {
+        cleanup();
+        try {
+            portEventDispatch(port, context, 'disconnected', port.log.info);
+        } finally {
+            receiveQueue.end();
+        }
+    };
+    let streamError = error => {
+        cleanup();
+        try {
+            port.error(errors.stream({context, error}));
+        } finally {
+            receiveQueue.end(error);
+        }
+    };
+    stream.on('error', streamError);
+    stream.on('close', streamClose);
+    stream.on('data', streamData);
+    port.socketTimeOut && stream.setTimeout(port.socketTimeOut, () => {
+        stream.end();
+    });
+    let sink = pullStream.sink(stream);
+    if (port.config.idleSend) {
+        let idleSendReset = () => {
+            idleSendTimer && clearTimeout(idleSendTimer);
+            idleSendTimer = setTimeout(() => {
+                portEventDispatch(port, context, 'idleSend', port.log.trace, queue, error => error && streamError(error));
+                idleSendReset();
+            }, port.config.idleSend);
+        };
+        let idle = pull.map(packet => {
+            idleSendReset();
+            return packet;
+        });
+        idleSendReset();
+        sink = pull(idle, sink);
+    }
+    return {
+        sink: sink,
+        source: receiveQueue.source
+    };
+};
+
 const portPull = (port, what, context) => {
     let stream;
     let result;
     context && (context.requests = new Map());
+    let sendQueue = port.portQueues.create({context});
     if (!what) {
         let receiveQueue = require('pull-pushable')(true);
         stream = {
@@ -329,7 +388,7 @@ const portPull = (port, what, context) => {
                 if ($meta && $meta.reply) {
                     $meta.reply.apply(null, packet);
                 }
-            }, () => portEventDispatch(port, context, 'disconnected')),
+            }, () => portEventDispatch(port, context, 'disconnected', port.log.info)),
             source: receiveQueue.source
         };
         result = {
@@ -345,24 +404,15 @@ const portPull = (port, what, context) => {
             calcTime('exec')
         );
     } else if (what.readable && what.writable) {
-        what.on('close', () => portEventDispatch(port, context, 'disconnected'));
-        what.on('error', error => {
-            port.error(errors.stream({context, error}));
-        });
-        port.socketTimeOut && what.setTimeout(port.socketTimeOut, () => {
-            what.end();
-        });
-        stream = pullStream.duplex(what);
+        stream = portDuplex(port, context, what, sendQueue);
     }
-    let buffer = bufferCreate(0);
-    let sendQueue = port.portQueues.create({context});
     let send = paraPromise(port, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
     let encode = paraPromise(port, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
     let unpack = pull.map(packet => port.frameBuilder ? packet[0] : packet);
-    let decode = paraPromise(port, portDecode(port, context, buffer), port.activeDecodeCount, port.config.concurrency || 10);
+    let decode = paraPromise(port, portDecode(port, context, bufferCreate(0)), port.activeDecodeCount, port.config.concurrency || 10);
     let receive = paraPromise(port, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
     let dispatch = paraPromise(port, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
-    let sink = portSink(sendQueue);
+    let sink = portSink(port, sendQueue);
     pull(
         sendQueue, calcTime('queue'),
         send, calcTime('send'),
@@ -373,7 +423,7 @@ const portPull = (port, what, context) => {
         receive, calcTime('receive'),
         dispatch, calcTime('dispatch'),
         sink);
-    portEventDispatch(port, context, 'connected', error => error && sink.abort(error));
+    portEventDispatch(port, context, 'connected', port.log.info, sendQueue, error => error && sink.abort(error));
     return result;
 };
 
@@ -397,13 +447,12 @@ const portPush = (port, promise, args) => {
         queue.push(args);
         return true;
     }
-    return new Promise(function requestPromise(resolve, reject) {
-        $meta.dispatch = function requestPromiseCb(msg) {
-            reportTimes(port, $meta);
+    return new Promise((resolve, reject) => {
+        $meta.dispatch = (...params) => {
             if ($meta.mtid !== 'error') {
-                resolve(Array.prototype.slice.call(arguments));
+                resolve(params);
             } else {
-                reject(msg);
+                reject(params[0]);
             }
             return [DISCARD];
         };
