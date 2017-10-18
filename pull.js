@@ -155,6 +155,29 @@ const portEncode = (port, context) => packet => {
         .catch(portErrorDispatch(port, $meta));
 };
 
+const portUnpack = port => pull.map(packet => port.frameBuilder ? packet[0] : packet);
+
+const portIdleSend = (port, context, queue) => {
+    let timer;
+    if (port.config.idleSend) {
+        let idleSendReset = () => {
+            timer && clearTimeout(timer);
+            timer = setTimeout(() => {
+                portEventDispatch(port, context, DISCARD, 'idleSend', port.log.trace, queue, error => error && queue.end(error));
+                idleSendReset();
+            }, port.config.idleSend);
+        };
+        idleSendReset();
+        return pull.through(packet => {
+            idleSendReset();
+            return packet;
+        }, () => {
+            timer && clearTimeout(timer);
+            timer = null;
+        });
+    }
+};
+
 const portExec = (port, fn) => packet => {
     let $meta = packet.length > 1 && packet[packet.length - 1];
     if ($meta && $meta.mtid === 'request') {
@@ -224,6 +247,27 @@ const portDecode = (port, context, buffer) => packet => {
         $meta && context && context.conId && ($meta.conId = context.conId);
         (packet.length > 1) && (packet[packet.length - 1] = traceMeta($meta, context));
         return Promise.resolve(packet);
+    }
+};
+
+const portIdleReceive = (port, context, queue) => {
+    let timer;
+    if (port.config.idleReceive) {
+        let idleReceiveReset = () => {
+            timer && clearTimeout(timer);
+            timer = setTimeout(() => {
+                portEventDispatch(port, context, errors.receiveTimeout(), 'idleReceive', port.log.trace, queue, error => error && queue.end(error));
+                idleReceiveReset();
+            }, port.config.idleReceive);
+        };
+        idleReceiveReset();
+        return pull.through(packet => {
+            idleReceiveReset();
+            return packet;
+        }, () => {
+            timer && clearTimeout(timer);
+            timer = null;
+        });
     }
 };
 
@@ -331,14 +375,8 @@ const paraPromise = (port, fn, counter, concurrency = 1) => {
     }, concurrency, false);
 };
 
-const portDuplex = (port, context, stream, queue) => {
-    let idleSendTimer;
-    let idleReceiveTimer;
+const portDuplex = (port, context, stream) => {
     let cleanup = () => {
-        idleSendTimer && clearTimeout(idleSendTimer);
-        idleReceiveTimer && clearTimeout(idleReceiveTimer);
-        idleSendTimer = null;
-        idleReceiveTimer = null;
         stream.removeListener('data', streamData);
         stream.removeListener('close', streamClose);
         stream.removeListener('error', streamError);
@@ -362,9 +400,6 @@ const portDuplex = (port, context, stream, queue) => {
     let streamError = error => {
         port.error(errors.stream({context, error}));
     };
-    let eventError = error => {
-        error && stream.end();
-    };
     stream.on('error', streamError);
     stream.on('close', streamClose);
     stream.on('data', streamData);
@@ -373,36 +408,6 @@ const portDuplex = (port, context, stream, queue) => {
     });
     let sink = pullStream.sink(stream);
     let source = receiveQueue.source;
-    if (port.config.idleSend) {
-        let idleSendReset = () => {
-            idleSendTimer && clearTimeout(idleSendTimer);
-            idleSendTimer = setTimeout(() => {
-                portEventDispatch(port, context, DISCARD, 'idleSend', port.log.trace, queue, eventError);
-                idleSendReset();
-            }, port.config.idleSend);
-        };
-        let idle = pull.map(packet => {
-            idleSendReset();
-            return packet;
-        });
-        idleSendReset();
-        sink = pull(idle, sink);
-    }
-    if (port.config.idleReceive) {
-        let idleReceiveReset = () => {
-            idleReceiveTimer && clearTimeout(idleReceiveTimer);
-            idleReceiveTimer = setTimeout(() => {
-                portEventDispatch(port, context, errors.receiveTimeout(), 'idleReceive', port.log.trace, queue, eventError);
-                idleReceiveReset();
-            }, port.config.idleReceive);
-        };
-        let idle = pull.map(packet => {
-            idleReceiveReset();
-            return packet;
-        });
-        idleReceiveReset();
-        source = pull(source, idle);
-    }
     return {
         sink,
         source
@@ -439,12 +444,14 @@ const portPull = (port, what, context) => {
             calcTime('exec')
         );
     } else if (what.readable && what.writable) {
-        stream = portDuplex(port, context, what, sendQueue);
+        stream = portDuplex(port, context, what);
     }
     let send = paraPromise(port, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
     let encode = paraPromise(port, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
-    let unpack = pull.map(packet => port.frameBuilder ? packet[0] : packet);
+    let unpack = portUnpack(port);
+    let idleSend = portIdleSend(port, context, sendQueue);
     let decode = paraPromise(port, portDecode(port, context, bufferCreate(0)), port.activeDecodeCount, port.config.concurrency || 10);
+    let idleReceive = portIdleReceive(port, context, sendQueue);
     let receive = paraPromise(port, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
     let dispatch = paraPromise(port, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
     let sink = portSink(port, sendQueue);
@@ -453,8 +460,10 @@ const portPull = (port, what, context) => {
         send, calcTime('send'),
         encode, calcTime('encode'),
         unpack,
+        idleSend,
         stream,
         decode, calcTime('decode'),
+        idleReceive,
         receive, calcTime('receive'),
         dispatch, calcTime('dispatch'),
         sink);
