@@ -7,12 +7,12 @@ const errors = require('./errors');
 const paramap = require('pull-paramap');
 const DISCARD = Symbol('discard packet');
 
-const portErrorDispatch = (port, $meta) => err => {
-    port.error(err);
+const portErrorDispatch = (port, $meta) => dispatchError => {
+    port.error(dispatchError);
     $meta.mtid = 'error';
-    $meta.errorCode = err && err.code;
-    $meta.errorMessage = err && err.message;
-    return portDispatch(port)([err, $meta]).then(() => [DISCARD, $meta]);
+    $meta.errorCode = dispatchError && dispatchError.code;
+    $meta.errorMessage = dispatchError && dispatchError.message;
+    return portDispatch(port)([dispatchError, $meta]).then(() => [DISCARD, $meta]);
 };
 
 const packetTimer = (method, aggregate = '*') => {
@@ -41,16 +41,16 @@ const packetTimer = (method, aggregate = '*') => {
 };
 
 const calcTime = stage => pull(
-    pull.filter(packet => {
-        let $meta = (packet.length && packet[packet.length - 1]);
+    pull.filter(packetFilter => {
+        let $meta = packetFilter && packetFilter.length && packetFilter[packetFilter.length - 1];
         $meta && $meta.timer && $meta.timer(stage);
-        return (packet && packet[0] !== DISCARD);
+        return (packetFilter && packetFilter[0] !== DISCARD);
     }),
-    pull.map(packet => {
-        if (packet && (packet[0] instanceof errors.disconnect || packet[0] instanceof errors.receiveTimeout)) {
-            throw packet[0];
+    pull.map(packetThrow => {
+        if (packetThrow && (packetThrow[0] instanceof errors.disconnect || packetThrow[0] instanceof errors.receiveTimeout)) {
+            throw packetThrow[0];
         } else {
-            return packet;
+            return packetThrow;
         }
     })
 );
@@ -102,33 +102,33 @@ const traceMeta = ($meta, context) => {
     }
 };
 
-const portSend = (port, context) => packet => {
-    let $meta = packet.length && packet[packet.length - 1];
+const portSend = (port, context) => sendPacket => {
+    let $meta = sendPacket.length && sendPacket[sendPacket.length - 1];
     let {fn, name} = port.getConversion($meta, 'send');
     if (fn) {
         return Promise.resolve()
             .then(function sendCall() {
-                return fn.apply(port, Array.prototype.concat(packet, context));
+                return fn.apply(port, Array.prototype.concat(sendPacket, context));
             })
             .then(result => {
                 port.log.trace && port.log.trace({message: result, $meta: {method: name, mtid: 'convert'}});
-                packet[0] = result;
-                return packet;
+                sendPacket[0] = result;
+                return sendPacket;
             })
             .catch(portErrorDispatch(port, $meta));
     } else {
-        return Promise.resolve(packet);
+        return Promise.resolve(sendPacket);
     }
 };
 
-const portEncode = (port, context) => packet => {
-    let $meta = packet.length && packet[packet.length - 1];
-    port.log.debug && port.log.debug({message: packet[0], $meta});
+const portEncode = (port, context) => encodePacket => {
+    let $meta = encodePacket.length && encodePacket[encodePacket.length - 1];
+    port.log.debug && port.log.debug({message: encodePacket[0], $meta});
     return Promise.resolve()
         .then(function encodeCall() {
-            return port.codec ? port.codec.encode(packet[0], $meta, context) : packet;
+            return port.codec ? port.codec.encode(encodePacket[0], $meta, context) : encodePacket;
         })
-        .then(buffer => {
+        .then(encodeBuffer => {
             let size;
             let sizeAdjust = 0;
             traceMeta($meta, context);
@@ -136,26 +136,26 @@ const portEncode = (port, context) => packet => {
                 if (port.framePatternSize) {
                     sizeAdjust = port.config.format.sizeAdjust;
                 }
-                size = buffer && buffer.length + sizeAdjust;
+                size = encodeBuffer && encodeBuffer.length + sizeAdjust;
             } else {
-                size = buffer && buffer.length;
+                size = encodeBuffer && encodeBuffer.length;
             }
             if (port.frameBuilder) {
-                buffer = port.frameBuilder({size: size, data: buffer});
-                buffer = buffer.slice(0, buffer.length - sizeAdjust);
-                port.bytesSent && port.bytesSent(buffer.length);
+                encodeBuffer = port.frameBuilder({size: size, data: encodeBuffer});
+                encodeBuffer = encodeBuffer.slice(0, encodeBuffer.length - sizeAdjust);
+                port.bytesSent && port.bytesSent(encodeBuffer.length);
             }
-            if (buffer) {
+            if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
-                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: buffer});
-                return port.frameBuilder ? [buffer, $meta] : buffer;
+                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer});
+                return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
             return [DISCARD, $meta];
         })
         .catch(portErrorDispatch(port, $meta));
 };
 
-const portUnpack = port => pull.map(packet => port.frameBuilder ? packet[0] : packet);
+const portUnpack = port => pull.map(unpackPacket => port.frameBuilder ? unpackPacket[0] : unpackPacket);
 
 const portIdleSend = (port, context, queue) => {
     let timer;
@@ -163,7 +163,7 @@ const portIdleSend = (port, context, queue) => {
         let idleSendReset = () => {
             timer && clearTimeout(timer);
             timer = setTimeout(() => {
-                portEventDispatch(port, context, DISCARD, 'idleSend', port.log.trace, queue, error => error && queue.end(error));
+                portEventDispatch(port, context, DISCARD, 'idleSend', port.log.trace, queue);
                 idleSendReset();
             }, port.config.idleSend);
         };
@@ -178,48 +178,60 @@ const portIdleSend = (port, context, queue) => {
     }
 };
 
-const portExec = (port, fn) => packet => {
-    let $meta = packet.length > 1 && packet[packet.length - 1];
+const portExec = (port, fn) => execPacket => {
+    let $meta = execPacket.length > 1 && execPacket[execPacket.length - 1];
     if ($meta && $meta.mtid === 'request') {
         $meta.mtid = 'response';
     }
     return Promise.resolve()
         .then(function execCall() {
-            return fn.apply(port, packet);
+            return fn.apply(port, execPacket);
         })
-        .then(result => [result, $meta])
-        .catch(error => {
-            port.error(error);
+        .then(execResult => [execResult, $meta])
+        .catch(execError => {
+            port.error(execError);
             if ($meta) {
                 $meta.mtid = 'error';
             }
-            return [error, $meta];
+            return [execError, $meta];
         });
 };
 
 const getFrame = (port, buffer) => {
+    let result;
+    let size;
     if (port.framePatternSize) {
         let tmp = port.framePatternSize(buffer);
         if (tmp) {
-            return port.framePattern(tmp.data, {size: tmp.size - port.config.format.sizeAdjust});
+            size = tmp.size;
+            result = port.framePattern(tmp.data, {size: tmp.size - port.config.format.sizeAdjust});
         } else {
-            return false;
+            result = false;
         }
     } else {
-        return port.framePattern(buffer);
+        result = port.framePattern(buffer);
     }
+    if (port.config.maxReceiveBuffer) {
+        if (!result && buffer.length > port.config.maxReceiveBuffer) {
+            throw errors.bufferOverflow({params: {max: port.config.maxReceiveBuffer, size: buffer.length}});
+        }
+        if (!result && size > port.config.maxReceiveBuffer) { // fail early
+            throw errors.bufferOverflow({params: {max: port.config.maxReceiveBuffer, size: size}});
+        }
+    }
+    return result;
 };
 
-const portDecode = (port, context, buffer) => packet => {
-    port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: packet});
+const portDecode = (port, context, buffer) => decodePacket => {
+    port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: decodePacket});
     if (port.framePattern) {
-        port.bytesReceived && port.bytesReceived(packet.length);
+        port.bytesReceived && port.bytesReceived(decodePacket.length);
         // todo check buffer size
-        buffer = Buffer.concat([buffer, packet]);
+        buffer = Buffer.concat([buffer, decodePacket]);
         let frame = getFrame(port, buffer);
         if (frame) {
             buffer = frame.rest;
-            packet = frame.data;
+            decodePacket = frame.data;
         } else {
             return Promise.resolve([DISCARD]);
         }
@@ -229,24 +241,24 @@ const portDecode = (port, context, buffer) => packet => {
         let $meta = {conId: context && context.conId};
         return Promise.resolve()
             .then(function decodeCall() {
-                return port.codec.decode(packet, $meta, context);
+                return port.codec.decode(decodePacket, $meta, context);
             })
-            .then(decoded => [decoded, traceMeta($meta, context)])
-            .catch(error => {
+            .then(decodedPacket => [decodedPacket, traceMeta($meta, context)])
+            .catch(decodeError => {
                 $meta.mtid = 'error';
-                if (!error || !error.keepConnection) {
-                    return [errors.disconnect(error), $meta];
+                if (!decodeError || !decodeError.keepConnection) {
+                    return [errors.disconnect(decodeError), $meta];
                 } else {
-                    return [error, $meta];
+                    return [decodeError, $meta];
                 }
             });
-    } else if (packet && packet.constructor && packet.constructor.name === 'Buffer') {
-        return Promise.resolve([{payload: packet}, {mtid: 'notification', opcode: 'payload', conId: context && context.conId}]);
+    } else if (decodePacket && decodePacket.constructor && decodePacket.constructor.name === 'Buffer') {
+        return Promise.resolve([{payload: decodePacket}, {mtid: 'notification', opcode: 'payload', conId: context && context.conId}]);
     } else {
-        let $meta = (packet.length > 1) && packet[packet.length - 1];
+        let $meta = (decodePacket.length > 1) && decodePacket[decodePacket.length - 1];
         $meta && context && context.conId && ($meta.conId = context.conId);
-        (packet.length > 1) && (packet[packet.length - 1] = traceMeta($meta, context));
-        return Promise.resolve(packet);
+        (decodePacket.length > 1) && (decodePacket[decodePacket.length - 1] = traceMeta($meta, context));
+        return Promise.resolve(decodePacket);
     }
 };
 
@@ -256,7 +268,14 @@ const portIdleReceive = (port, context, queue) => {
         let idleReceiveReset = () => {
             timer && clearTimeout(timer);
             timer = setTimeout(() => {
-                portEventDispatch(port, context, errors.receiveTimeout(), 'idleReceive', port.log.trace, queue, error => error && queue.end(error));
+                portEventDispatch(
+                    port,
+                    context,
+                    errors.receiveTimeout({params: {timeout: port.config.idleReceive}}),
+                    'idleReceive',
+                    port.log.trace,
+                    queue
+                );
                 idleReceiveReset();
             }, port.config.idleReceive);
         };
@@ -271,26 +290,26 @@ const portIdleReceive = (port, context, queue) => {
     }
 };
 
-const portReceive = (port, context) => packet => {
-    let $meta = packet.length && packet[packet.length - 1];
+const portReceive = (port, context) => receivePacket => {
+    let $meta = receivePacket.length && receivePacket[receivePacket.length - 1];
     let {fn, name} = port.getConversion($meta, 'receive');
     if (!fn) {
-        return Promise.resolve(packet);
+        return Promise.resolve(receivePacket);
     } else {
         return Promise.resolve()
             .then(function receiveCall() {
-                return fn.apply(port, Array.prototype.concat(packet, context));
+                return fn.apply(port, Array.prototype.concat(receivePacket, context));
             })
-            .then(received => {
-                port.log.trace && port.log.trace({message: received, $meta: {method: name, mtid: 'convert'}});
-                return [received, $meta];
+            .then(receivedPacket => {
+                port.log.trace && port.log.trace({message: receivedPacket, $meta: {method: name, mtid: 'convert'}});
+                return [receivedPacket, $meta];
             })
-            .catch(error => {
-                port.error(error);
+            .catch(receiveError => {
+                port.error(receiveError);
                 $meta.mtid = 'error';
-                $meta.errorCode = error && error.code;
-                $meta.errorMessage = error && error.message;
-                return [error, $meta];
+                $meta.errorCode = receiveError && receiveError.code;
+                $meta.errorMessage = receiveError && receiveError.message;
+                return [receiveError, $meta];
             });
     }
 };
@@ -305,50 +324,53 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
     }];
 };
 
-const portEventDispatch = (port, context, message, event, logger, queue, cb) => pull(
+const portEventDispatch = (port, context, message, event, logger, queue) => pull(
     pull.once(portQueueEventCreate(port, context, message, event, logger)),
     paraPromise(port, portReceive(port, context), port.activeReceiveCount), calcTime('receive'),
     paraPromise(port, portDispatch(port), port.activeDispatchCount), calcTime('dispatch'),
-    portSink(port, queue, cb)
+    portSink(port, queue)
 );
 
-const portDispatch = port => packet => {
-    let $meta = (packet.length && packet[packet.length - 1]) || {};
+const portDispatch = port => dispatchPacket => {
+    let $meta = (dispatchPacket.length && dispatchPacket[dispatchPacket.length - 1]) || {};
     if ($meta && $meta.dispatch) {
         reportTimes(port, $meta);
-        return Promise.resolve().then(() => $meta.dispatch.apply(port, packet));
+        return Promise.resolve().then(() => $meta.dispatch.apply(port, dispatchPacket));
     }
-    if (!packet || !packet[0] || packet[0] === DISCARD) {
+    if (!dispatchPacket || !dispatchPacket[0] || dispatchPacket[0] === DISCARD) {
         return Promise.resolve([DISCARD]);
     }
     let mtid = $meta.mtid;
     let opcode = $meta.opcode;
 
-    let portDispatchResult = isError => result => {
+    let portDispatchResult = isError => dispatchResult => {
         if (mtid === 'request' && $meta.mtid !== 'discard') {
             !$meta.mtid && ($meta.mtid = isError ? 'error' : 'response');
             !$meta.opcode && ($meta.opcode = opcode);
-            isError && port.error(result);
-            return [result, $meta];
+            isError && port.error(dispatchResult);
+            return [dispatchResult, $meta];
         } else {
             return [DISCARD];
         }
     };
 
     if (mtid === 'error') {
-        return Promise.reject(errors.unhandled(packet[0]));
+        return Promise.reject(errors.unhandled(dispatchPacket[0]));
     }
 
     return Promise.resolve()
-        .then(() => port.messageDispatch.apply(port, packet))
+        .then(() => port.messageDispatch.apply(port, dispatchPacket))
         .then(portDispatchResult(false), portDispatchResult(true));
 };
 
-const portSink = (port, queue, cb) => pull.drain(msg => {
-    queue && queue.push(msg);
-}, error => {
-    error && port.error(error);
-    cb && cb(error);
+const portSink = (port, queue) => pull.drain(sinkPacket => {
+    queue && queue.push(sinkPacket);
+}, sinkError => {
+    try {
+        sinkError && port.error(sinkError);
+    } finally {
+        sinkError && queue && queue.end(sinkError);
+    }
 });
 
 const paraPromise = (port, fn, counter, concurrency = 1) => {
@@ -357,20 +379,21 @@ const paraPromise = (port, fn, counter, concurrency = 1) => {
     return paramap((data, cb) => {
         active++;
         counter && counter(active);
-        fn(data)
-            .then(result => {
+        Promise.resolve(data)
+            .then(fn)
+            .then(promiseResult => {
                 active--;
                 counter && counter(active);
-                cb(null, result);
+                cb(null, promiseResult);
                 return true;
-            }, error => {
+            }, promiseError => {
                 active--;
                 counter && counter(active);
-                cb(error);
+                cb(promiseError);
             })
-            .catch(error => {
-                port.error(error);
-                cb(error);
+            .catch(cbError => {
+                port.error(cbError);
+                cb(cbError);
             });
     }, concurrency, false);
 };
@@ -404,7 +427,7 @@ const portDuplex = (port, context, stream) => {
     stream.on('close', streamClose);
     stream.on('data', streamData);
     port.config.socketTimeOut && stream.setTimeout(port.config.socketTimeOut, () => {
-        stream.destroy(errors.receiveTimeout());
+        stream.destroy(errors.socketTimeout({params: {timeout: port.config.socketTimeOut}}));
     });
     let sink = pullStream.sink(stream);
     let source = receiveQueue.source;
@@ -422,20 +445,22 @@ const portPull = (port, what, context) => {
     if (!what) {
         let receiveQueue = require('pull-pushable')(true);
         stream = {
-            sink: pull.drain(packet => {
-                let $meta = packet.length > 1 && packet[packet.length - 1];
+            sink: pull.drain(replyPacket => {
+                let $meta = replyPacket.length > 1 && replyPacket[replyPacket.length - 1];
                 reportTimes(port, $meta);
                 if ($meta && $meta.reply) {
-                    $meta.reply.apply(null, packet);
+                    let fn = $meta.reply;
+                    delete $meta.reply;
+                    fn.apply(null, replyPacket);
                 }
             }, () => portEventDispatch(port, context, DISCARD, 'disconnected', port.log.info)),
             source: receiveQueue.source
         };
         result = {
-            push: packet => {
-                let $meta = (packet.length && packet[packet.length - 1]);
+            push: pushPacket => {
+                let $meta = (pushPacket.length && pushPacket[pushPacket.length - 1]);
                 $meta.timer = packetTimer(port.methodPath($meta.method) || $meta.method);
-                receiveQueue.push(packet);
+                receiveQueue.push(pushPacket);
             }
         };
     } else if (typeof what === 'function') {
@@ -467,7 +492,7 @@ const portPull = (port, what, context) => {
         receive, calcTime('receive'),
         dispatch, calcTime('dispatch'),
         sink);
-    portEventDispatch(port, context, DISCARD, 'connected', port.log.info, sendQueue, error => error && sink.abort());
+    portEventDispatch(port, context, DISCARD, 'connected', port.log.info, sendQueue);
     return result;
 };
 
@@ -485,9 +510,10 @@ const portPush = (port, promise, args) => {
     let queue = portFindRoute(port, $meta, args);
     if (!queue) {
         port.log.error && port.log.error('Queue not found', {arguments: args});
-        return promise ? Promise.reject(errors.notConnected(port.config.id)) : false;
+        return promise ? Promise.reject(errors.notConnected()) : false;
     }
     if (!promise) {
+        $meta.dispatch = () => {}; // caller does not care for result;
         queue.push(args);
         return true;
     }

@@ -1,6 +1,5 @@
-var create = require('ut-error').define;
-
-var Port = create('port');
+const create = require('ut-error').define;
+const Port = create('port');
 
 module.exports = {
     missingParams: create('missingParameters', Port, 'Missing parameters'),
@@ -10,5 +9,7 @@ module.exports = {
     stream: create('stream', Port, 'Port stream error'),
     echoTimeout: create('echoTimeout', Port, 'Echo retries limit exceeded'),
     unhandled: create('undandled', Port, 'Unhandled port error'),
+    bufferOverflow: create('bufferOverflow', Port, 'Message size of {size} exceeds the maximum of {max}'),
+    socketTimeout: create('socketTimeout', Port, 'Socket timeout'),
     receiveTimeout: create('receiveTimeout', Port, 'Receive timeout')
 };
