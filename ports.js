@@ -15,28 +15,15 @@ module.exports = ({bus, logFactory, assert}) => {
             return false;
         }
         merge(portConfig, envConfig[portConfig.id]);
-        if (portConfig.createPort instanceof Function) {
-            Constructor = portConfig.createPort;
-        } else {
+        if (!(portConfig.createPort instanceof Function)) {
             if (portConfig.type) {
                 throw new Error('Use createPort:require(\'ut-port-' + portConfig.type + '\') instead of type:\'' + portConfig.type + '\'');
             } else {
                 throw new Error('Missing createPort property');
             }
         }
-        if (Constructor.length) { // inherit from Port if constructor has parameters
-            if (Constructor.name === 'Console') { // deprecate old console, that has incompatible call signature
-                throw new Error('Please upgrade ut-port-console');
-            }
-            Constructor = Constructor(Port);
-        }
+        Constructor = portConfig.createPort({parent: Port});
         let port = new Constructor({bus, logFactory, config: portConfig});
-        // todo add deprecation warning
-        if (!Constructor.length) { // set properties if constructor does not have parameters
-            port.bus = bus;
-            port.logFactory = logFactory;
-            merge(port.config, portConfig);
-        }
         return Promise.resolve(port.init()).then(function() {
             servicePorts.set(portConfig.id, port);
             return port;
