@@ -20,36 +20,70 @@ This exports 2 APIs:
 
 ## Port public API
 
-### Port({bus, logFactory, config})
+### ```Port({bus, logFactory, config})``` - create and return a port with the API below
 
-### Port.prototype.init()
+- ```bus``` - bus to be used by the port, saved in ```this.bus```
+- ```logFactory``` - factory for creating loggers
+- ```config``` - port configuration to be merged with the port default in this.config
 
-### Port.prototype.start()
+### ```Port.prototype.init()``` - initializes internal variables of the port
 
-### Port.prototype.ready()
+### ```Port.prototype.start()``` - starts the port, so that it can process messages. Usually here ports start to listen or initiate network / filesystem I/O
 
-### Port.prototype.stop()
+- ```result``` - return promise so that ```start``` method of the next ports can be called after the returned promise resolves
 
-### Port.prototype.disconnect(reason)
+### ```Port.prototype.ready()``` - this is called after all ports are started
 
-### Port.prototype.pipe(stream, context)
+- ```result``` - return promise so that ```ready``` method of the next ports can be called after the returned promise resolves.
+  Usually if promise is returned, it will be resolved when the I/O operation initiated by the start method has finished.
 
-### Port.prototype.pipeReverse(stream, context)
+### ```Port.prototype.stop()``` - stops further processing of messages, closes connections / stops listening
 
-### Port.prototype.pipeExec(exec)
+### ```Port.prototype.disconnect(reason)``` - throws disconnect error
 
-## ports public API
+- ```reason``` - the reason for the disconnect error. This reason is logged in the error log and set as cause in the thrown error.
 
-### ports({bus, logFactory})
+### ```Port.prototype.pull(what, context)``` - creates pull streams for the port
 
-### ports.get()
+- ```what``` - can be one of the following:
+  - falsy - the method will return an object with method ```push``` that can be used to add messages received from outside
+  - net stream - use the stream to send and receive messages from outside
+  - promise returning method - will execute the method. The method can communicate with external systems or just execute locally
 
-### ports.fetch()
+- ```context``` - context with which the pull streams are associated
 
-### ports.create()
+## Ports public API
 
-### ports.start()
+### ```ports({bus, logFactory})``` - create and return a ports object with the below API. The API is accessible through the bus in namespace ```ports```
 
-### ports.stop()
+- ```bus``` - bus to use when creating ports
+- ```logFactory``` - logger factory to use when creating ports
 
-### ports.move()
+### ```ports.get({port})``` - get port by id
+
+- ```port``` - id of the port
+
+### ```ports.fetch()``` - returns array with all the created ports
+
+### ```ports.create(portsConfig, envConfig)``` - create a new port
+
+- ```portsConfig``` - port configururation coming from the implementation. Can be array or single value of the following:
+  - function - will call the function with envConfig as parameter, the function should return object to be used as configuration
+  - object - will be used as configuration
+
+  When portConfig is array, multiple ports are created, with configurations taken from the array.
+
+- ```envConfig``` - port configuration coming from the environment.
+  If envConfig contains a property matching the port id, then the value of this property will be merged to the port configuration.
+
+### ```ports.start()``` - start all ports
+
+### ```ports.stop({port})``` - stop port
+
+- ```port``` - id of the port to stop
+
+### ```ports.move({port, x, y})``` - set UI coordinates and returns the port
+
+- ```port``` - id of the port to set coordinates
+
+- ```x, y``` - coordinates to set
