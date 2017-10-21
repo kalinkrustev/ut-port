@@ -405,8 +405,11 @@ const portDuplex = (port, context, stream) => {
         stream.removeListener('error', streamError);
     };
     let closed = false;
-    let receiveQueue = require('pull-pushable')(true, () => {
-        !closed && stream.end();
+    let receiveQueue = port.receiveQueues.create({
+        context,
+        callback: () => {
+            !closed && stream.end();
+        }
     });
     let streamData = data => {
         receiveQueue.push(data);
@@ -441,9 +444,9 @@ const portPull = (port, what, context) => {
     let stream;
     let result;
     context && (context.requests = new Map());
-    let sendQueue = port.portQueues.create({context});
+    let sendQueue = port.sendQueues.create({context});
     if (!what) {
-        let receiveQueue = require('pull-pushable')(true);
+        let receiveQueue = port.receiveQueues.create({context});
         stream = {
             sink: pull.drain(replyPacket => {
                 let $meta = replyPacket.length > 1 && replyPacket[replyPacket.length - 1];
@@ -496,9 +499,9 @@ const portPull = (port, what, context) => {
     return result;
 };
 
-const portFindRoute = (port, $meta, args) => port.portQueues.get() ||
-    port.portQueues.get($meta) ||
-    (typeof port.connRouter === 'function' && port.portQueues.get({conId: port.connRouter(port.portQueues, args)}));
+const portFindRoute = (port, $meta, args) => port.sendQueues.get() ||
+    port.sendQueues.get($meta) ||
+    (typeof port.connRouter === 'function' && port.sendQueues.get({conId: port.connRouter(port.sendQueues, args)}));
 
 const portPush = (port, promise, args) => {
     if (!args.length) {

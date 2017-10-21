@@ -9,7 +9,8 @@ function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
-    this.portQueues = utqueue.pushables();
+    this.sendQueues = utqueue.queues();
+    this.receiveQueues = utqueue.queues();
     this.counter = null;
     this.streams = [];
     // performance metrics
@@ -194,14 +195,6 @@ Port.prototype.includesConfig = function includesConfig(name, values, defaultVal
         values = [values];
     }
     return includes(configValue, values);
-};
-
-Port.prototype.pipe = function pipe(stream, context) {
-    return this.pull(stream, context);
-};
-
-Port.prototype.pipeExec = function pipeExec(fn) {
-    return this.pull(fn);
 };
 
 Port.prototype.pull = function pull(what, context) {
