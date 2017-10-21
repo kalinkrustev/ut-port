@@ -1,44 +1,44 @@
 {
-    "name": "ut-port",
-    "version": "6.0.0",
-    "dependencies": {
-        "browser-process-hrtime": "0.1.2",
-        "lodash.merge": "4.6.0",
-        "pull-paramap": "1.2.2",
-        "pull-stream": "3.6.1",
-        "stream-to-pull-stream": "1.7.2",
-        "ut-error": "^5.4.9",
-        "ut-queue": "^6.0.1"
-    },
-    "devDependencies": {
-        "ut-tools": "^5.23.2"
-    },
-    "peerDependencies": {
-      "ut-bus": "^5.17.0"
-    },
-    "description": "UT port base",
-    "scripts": {
-      "lint": "ut-lint .",
-      "release": "ut-release",
-      "changelog": "ut-changelog",
-      "check": "ut-check",
-      "cover": "ut-cover",
-      "lint-js": "ut-lint-js .",
-      "postpublish": "ut-postpublish",
-      "postversion": "ut-postversion",
-      "precommit": "ut-precommit",
-      "prepublish": "ut-prepublish",
-      "prepush": "ut-prepush",
-      "pretest": "ut-pretest",
-      "preversion": "ut-preversion",
-      "test": "ut-test",
-      "version": "ut-version",
-      "jenkins": "ut-jenkins",
-      "gitlab": "ut-gitlab"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git@github.com:softwaregroup-bg/ut-port.git"
-    },
-    "license": "Apache-2.0"
-  }
+  "name": "ut-port",
+  "version": "6.0.1",
+  "dependencies": {
+    "browser-process-hrtime": "0.1.2",
+    "lodash.merge": "4.6.0",
+    "pull-paramap": "1.2.2",
+    "pull-stream": "3.6.1",
+    "stream-to-pull-stream": "1.7.2",
+    "ut-error": "^5.4.9",
+    "ut-queue": "^6.0.1"
+  },
+  "devDependencies": {
+    "ut-tools": "^5.23.2"
+  },
+  "peerDependencies": {
+    "ut-bus": "^5.17.0"
+  },
+  "description": "UT port base",
+  "scripts": {
+    "lint": "ut-lint .",
+    "release": "ut-release",
+    "changelog": "ut-changelog",
+    "check": "ut-check",
+    "cover": "ut-cover",
+    "lint-js": "ut-lint-js .",
+    "postpublish": "ut-postpublish",
+    "postversion": "ut-postversion",
+    "precommit": "ut-precommit",
+    "prepublish": "ut-prepublish",
+    "prepush": "ut-prepush",
+    "pretest": "ut-pretest",
+    "preversion": "ut-preversion",
+    "test": "ut-test",
+    "version": "ut-version",
+    "jenkins": "ut-jenkins",
+    "gitlab": "ut-gitlab"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:softwaregroup-bg/ut-port.git"
+  },
+  "license": "Apache-2.0"
+}
