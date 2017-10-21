@@ -1,3 +1,8 @@
+<a name="6.0.2"></a>
+## [6.0.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.1...v6.0.2) (2017-10-21)
+
+
+
 <a name="6.0.1"></a>
 ## 6.0.1 (2017-10-21)
 
