@@ -516,12 +516,15 @@ const portPush = (port, promise, args) => {
         return promise ? Promise.reject(errors.notConnected()) : false;
     }
     if (!promise) {
-        $meta.dispatch = () => {}; // caller does not care for result;
+        $meta.dispatch = () => {
+            delete $meta.dispatch;
+        }; // caller does not care for result;
         queue.push(args);
         return true;
     }
     return new Promise((resolve, reject) => {
         $meta.dispatch = (...params) => {
+            delete $meta.dispatch;
             if ($meta.mtid !== 'error') {
                 resolve(params);
             } else {
