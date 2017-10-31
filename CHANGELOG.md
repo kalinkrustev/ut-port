@@ -1,3 +1,13 @@
+<a name="6.0.4"></a>
+## [6.0.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.3...v6.0.4) (2017-10-31)
+
+
+### Bug Fixes
+
+* upgrade dependencies ([f644e5b](https://github.com/softwaregroup-bg/ut-port/commit/f644e5b))
+
+
+
 <a name="6.0.3"></a>
 ## [6.0.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.2...v6.0.3) (2017-10-24)
 
