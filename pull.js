@@ -462,7 +462,8 @@ const portPull = (port, what, context) => {
         result = {
             push: pushPacket => {
                 let $meta = (pushPacket.length && pushPacket[pushPacket.length - 1]);
-                $meta.timer = packetTimer(port.methodPath($meta.method) || $meta.method);
+                $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
+                $meta.timer = packetTimer($meta.method);
                 receiveQueue.push(pushPacket);
             }
         };
@@ -532,7 +533,8 @@ const portPush = (port, promise, args) => {
             }
             return [DISCARD];
         };
-        $meta.timer = packetTimer(port.methodPath($meta.method) || $meta.method);
+        $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
+        $meta.timer = packetTimer($meta.method);
         queue.push(args);
     });
 };
