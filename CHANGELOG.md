@@ -1,3 +1,13 @@
+<a name="6.0.5"></a>
+## [6.0.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.4...v6.0.5) (2017-11-06)
+
+
+### Bug Fixes
+
+* remove path from $meta.method ([7c9ca3b](https://github.com/softwaregroup-bg/ut-port/commit/7c9ca3b))
+
+
+
 <a name="6.0.4"></a>
 ## [6.0.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.3...v6.0.4) (2017-10-31)
 
