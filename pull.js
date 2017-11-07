@@ -321,7 +321,7 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
         var request = requests.next();
         while (request && !request.done) {
             request.value.$meta.mtid = 'error';
-            request.value.$meta.dispatch(new Error('disconnected'), request.value.$meta);
+            request.value.$meta.dispatch(errors.disconnect(), request.value.$meta);
             request = requests.next();
         }
         context.requests.clear();
