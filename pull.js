@@ -15,7 +15,19 @@ const portErrorDispatch = (port, $meta) => dispatchError => {
     return portDispatch(port)([dispatchError, $meta]).then(() => [DISCARD, $meta]);
 };
 
-const packetTimer = (method, aggregate = '*') => {
+const portTimeoutDispatch = (port, sendQueue) => $meta => {
+    if (sendQueue && !$meta.dispatch && $meta.mtid === 'request') {
+        $meta.dispatch = packet => {
+            sendQueue.push(packet);
+            return [DISCARD];
+        };
+    }
+    return portErrorDispatch(port, $meta)(errors.timeout()).catch(error => {
+        port.error(error);
+    });
+};
+
+const packetTimer = (method, aggregate = '*', timeout) => {
     if (!method) {
         return;
     }
@@ -36,14 +48,20 @@ const packetTimer = (method, aggregate = '*') => {
         let newtime = hrtime();
         what && (result[what] = (newtime[0] - time[0]) * 1000 + (newtime[1] - time[1]) / 1000000);
         time = newtime;
+        if (what) {
+            return Array.isArray(timeout) && ((newtime[0] - timeout[0]) * 1000 + (newtime[1] - timeout[1]) / 1000000 > 0);
+        }
         return result;
     };
 };
 
-const calcTime = stage => pull(
+const calcTime = (stage, onTimeout) => pull(
     pull.filter(packetFilter => {
         let $meta = packetFilter && packetFilter.length && packetFilter[packetFilter.length - 1];
-        $meta && $meta.timer && $meta.timer(stage);
+        if ($meta && $meta.timer && $meta.timer(stage)) {
+            onTimeout && onTimeout($meta);
+            return false;
+        };
         return (packetFilter && packetFilter[0] !== DISCARD);
     }),
     pull.map(packetThrow => {
@@ -473,7 +491,7 @@ const portPull = (port, what, context) => {
             push: pushPacket => {
                 let $meta = (pushPacket.length && pushPacket[pushPacket.length - 1]);
                 $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
-                $meta.timer = packetTimer($meta.method);
+                $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
                 receiveQueue.push(pushPacket);
             }
         };
@@ -495,15 +513,15 @@ const portPull = (port, what, context) => {
     let dispatch = paraPromise(port, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
     let sink = portSink(port, sendQueue);
     pull(
-        sendQueue, calcTime('queue'),
-        send, calcTime('send'),
-        encode, calcTime('encode'),
+        sendQueue, calcTime('queue', portTimeoutDispatch(port)),
+        send, calcTime('send', portTimeoutDispatch(port)),
+        encode, calcTime('encode', portTimeoutDispatch(port)),
         unpack,
         idleSend,
         stream,
-        decode, calcTime('decode'),
+        decode, calcTime('decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
-        receive, calcTime('receive'),
+        receive, calcTime('receive', portTimeoutDispatch(port, sendQueue)),
         dispatch, calcTime('dispatch'),
         sink);
     portEventDispatch(port, context, DISCARD, 'connected', port.log.info, sendQueue);
@@ -544,7 +562,7 @@ const portPush = (port, promise, args) => {
             return [DISCARD];
         };
         $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
-        $meta.timer = packetTimer($meta.method);
+        $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
         queue.push(args);
     });
 };

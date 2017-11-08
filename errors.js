@@ -11,6 +11,7 @@ module.exports = {
     echoTimeout: create('echoTimeout', Port, 'Echo retries limit exceeded'),
     unhandled: create('unhandled', Port, 'Unhandled port error'),
     bufferOverflow: create('bufferOverflow', Port, 'Message size of {size} exceeds the maximum of {max}'),
+    timeout: create('timeout', Port, 'Timeot'),
     socketTimeout: create('socketTimeout', Port, 'Socket timeout'),
     receiveTimeout: create('receiveTimeout', Port, 'Receive timeout')
 };
