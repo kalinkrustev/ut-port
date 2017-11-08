@@ -1,3 +1,13 @@
+<a name="6.0.6"></a>
+## [6.0.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.5...v6.0.6) (2017-11-08)
+
+
+### Bug Fixes
+
+* reject requests on client disconnect ([#1](https://github.com/softwaregroup-bg/ut-port/issues/1)) ([e2c582f](https://github.com/softwaregroup-bg/ut-port/commit/e2c582f))
+
+
+
 <a name="6.0.5"></a>
 ## [6.0.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.4...v6.0.5) (2017-11-06)
 
