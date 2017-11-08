@@ -6,6 +6,7 @@ module.exports = {
     missingMeta: create('missingMeta', Port, 'Missing metadata'),
     notConnected: create('notConnected', Port, 'No connection'),
     disconnect: create('disconnect', Port, 'Port disconnected'),
+    disconnectBeforeResponse: create('disconnectBeforeResponse', Port, 'Disconnect before response received'),
     stream: create('stream', Port, 'Port stream error'),
     echoTimeout: create('echoTimeout', Port, 'Echo retries limit exceeded'),
     unhandled: create('unhandled', Port, 'Unhandled port error'),
