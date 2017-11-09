@@ -1,3 +1,23 @@
+<a name="6.0.8"></a>
+## [6.0.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.7...v6.0.8) (2017-11-08)
+
+
+### Bug Fixes
+
+* pass log param ([#3](https://github.com/softwaregroup-bg/ut-port/issues/3)) ([9642b78](https://github.com/softwaregroup-bg/ut-port/commit/9642b78))
+
+
+
+<a name="6.0.7"></a>
+## [6.0.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.6...v6.0.7) (2017-11-08)
+
+
+### Bug Fixes
+
+* disconnect notify with different error ([#2](https://github.com/softwaregroup-bg/ut-port/issues/2)) ([4d52e09](https://github.com/softwaregroup-bg/ut-port/commit/4d52e09))
+
+
+
 <a name="6.0.6"></a>
 ## [6.0.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.5...v6.0.6) (2017-11-08)
 

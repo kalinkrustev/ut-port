@@ -134,7 +134,7 @@ const portSend = (port, context) => sendPacket => {
                 return fn.apply(port, Array.prototype.concat(sendPacket, context));
             })
             .then(result => {
-                port.log.trace && port.log.trace({message: result, $meta: {method: name, mtid: 'convert'}});
+                port.log.trace && port.log.trace({message: result, $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
                 sendPacket[0] = result;
                 return sendPacket;
             })
@@ -146,7 +146,7 @@ const portSend = (port, context) => sendPacket => {
 
 const portEncode = (port, context) => encodePacket => {
     let $meta = encodePacket.length && encodePacket[encodePacket.length - 1];
-    port.log.debug && port.log.debug({message: encodePacket[0], $meta});
+    port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
             return port.codec ? port.codec.encode(encodePacket[0], $meta, context) : encodePacket;
@@ -170,7 +170,7 @@ const portEncode = (port, context) => encodePacket => {
             }
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
-                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer});
+                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
                 return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
             return [DISCARD, $meta];
@@ -246,7 +246,7 @@ const getFrame = (port, buffer) => {
 };
 
 const portDecode = (port, context, buffer) => decodePacket => {
-    port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: decodePacket});
+    port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: decodePacket, log: context && context.session && context.session.log});
     if (port.framePattern) {
         port.bytesReceived && port.bytesReceived(decodePacket.length);
         // todo check buffer size
@@ -324,7 +324,7 @@ const portReceive = (port, context) => receivePacket => {
                 return fn.apply(port, Array.prototype.concat(receivePacket, context));
             })
             .then(receivedPacket => {
-                port.log.trace && port.log.trace({message: receivedPacket, $meta: {method: name, mtid: 'convert'}});
+                port.log.trace && port.log.trace({message: receivedPacket, $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
                 return [receivedPacket, $meta];
             })
             .catch(receiveError => {
@@ -338,7 +338,7 @@ const portReceive = (port, context) => receivePacket => {
 };
 
 const portQueueEventCreate = (port, context, message, event, logger) => {
-    context && (typeof logger === 'function') && logger({$meta: {mtid: 'event', opcode: 'port.' + event}, connection: context});
+    context && (typeof logger === 'function') && logger({$meta: {mtid: 'event', opcode: 'port.' + event}, connection: context, log: context && context.session && context.session.log});
     if (event === 'disconnected' && context.requests.size) {
         let requests = context.requests.values();
         var request = requests.next();
