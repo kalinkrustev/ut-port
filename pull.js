@@ -17,7 +17,8 @@ const portErrorDispatch = (port, $meta) => dispatchError => {
 
 const portTimeoutDispatch = (port, sendQueue) => $meta => {
     if (sendQueue && !$meta.dispatch && $meta.mtid === 'request') {
-        $meta.dispatch = packet => {
+        $meta.dispatch = (...packet) => {
+            delete $meta.dispatch;
             sendQueue.push(packet);
             return [DISCARD];
         };
@@ -32,7 +33,7 @@ const packetTimer = (method, aggregate = '*', timeout) => {
         return;
     }
     let time = hrtime();
-    let result = {
+    let times = {
         method,
         aggregate,
         queue: null,
@@ -46,12 +47,16 @@ const packetTimer = (method, aggregate = '*', timeout) => {
 
     return what => {
         let newtime = hrtime();
-        what && (result[what] = (newtime[0] - time[0]) * 1000 + (newtime[1] - time[1]) / 1000000);
+        what && (times[what] = (newtime[0] - time[0]) * 1000 + (newtime[1] - time[1]) / 1000000);
         time = newtime;
         if (what) {
-            return Array.isArray(timeout) && ((newtime[0] - timeout[0]) * 1000 + (newtime[1] - timeout[1]) / 1000000 > 0);
+            let isTimeout = Array.isArray(timeout) && ((newtime[0] - timeout[0]) * 1000 + (newtime[1] - timeout[1]) / 1000000 > 0);
+            if (isTimeout) {
+                timeout = false;
+            }
+            return isTimeout;
         }
-        return result;
+        return times;
     };
 };
 
