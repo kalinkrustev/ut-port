@@ -104,6 +104,9 @@ const reportTimes = (port, $meta) => {
 };
 
 const traceMeta = ($meta, context) => {
+    if ($meta && !$meta.timer) {
+        $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
+    }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
             let expireTimeout = 60000;
@@ -344,7 +347,7 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
         var request = requests.next();
         while (request && !request.done) {
             request.value.$meta.mtid = 'error';
-            request.value.$meta.dispatch(errors.disconnectBeforeResponse(), request.value.$meta);
+            request.value.$meta.dispatch && request.value.$meta.dispatch(errors.disconnectBeforeResponse(), request.value.$meta);
             request = requests.next();
         }
         context.requests.clear();
