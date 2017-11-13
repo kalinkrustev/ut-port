@@ -1,3 +1,19 @@
+<a name="6.1.0"></a>
+# [6.1.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.12...v6.1.0) (2017-11-13)
+
+
+### Bug Fixes
+
+* timeout ([395976a](https://github.com/softwaregroup-bg/ut-port/commit/395976a))
+* timeout ([64f1f97](https://github.com/softwaregroup-bg/ut-port/commit/64f1f97))
+
+
+### Features
+
+* handle timeouts ([4aaadc7](https://github.com/softwaregroup-bg/ut-port/commit/4aaadc7))
+
+
+
 <a name="6.0.12"></a>
 ## [6.0.12](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.11...v6.0.12) (2017-11-13)
 
