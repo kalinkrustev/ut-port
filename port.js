@@ -9,6 +9,7 @@ function Port(params) {
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
     let defineError = this.defineError = (this.bus && this.bus.defineError) || params.defineError;
+    this.getError = (this.bus && this.bus.getError) || params.getError;
     let PortError = defineError('port');
     this.errors = {
         missingParams: defineError('missingParameters', PortError, 'Missing parameters'),
