@@ -1,3 +1,13 @@
+<a name="6.0.9"></a>
+## [6.0.9](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.8...v6.0.9) (2017-11-13)
+
+
+### Bug Fixes
+
+* switch to bus.defineError ([6d80f7d](https://github.com/softwaregroup-bg/ut-port/commit/6d80f7d))
+
+
+
 <a name="6.0.8"></a>
 ## [6.0.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.7...v6.0.8) (2017-11-08)
 
