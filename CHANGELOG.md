@@ -1,3 +1,13 @@
+<a name="6.0.10"></a>
+## [6.0.10](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.9...v6.0.10) (2017-11-13)
+
+
+### Bug Fixes
+
+* initialize this.defineError ([144d7bf](https://github.com/softwaregroup-bg/ut-port/commit/144d7bf))
+
+
+
 <a name="6.0.9"></a>
 ## [6.0.9](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.8...v6.0.9) (2017-11-13)
 
