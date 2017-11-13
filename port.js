@@ -1,6 +1,5 @@
 'use strict';
 const os = require('os');
-const errors = require('./errors');
 const includes = require('./includes');
 const utqueue = require('ut-queue');
 const portStreams = require('./pull');
@@ -9,6 +8,21 @@ function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
+    let defineError = (this.bus && this.bus.defineError) || params.defineError;
+    let PortError = defineError('port');
+    this.errors = {
+        missingParams: defineError('missingParameters', PortError, 'Missing parameters'),
+        missingMeta: defineError('missingMeta', PortError, 'Missing metadata'),
+        notConnected: defineError('notConnected', PortError, 'No connection'),
+        disconnect: defineError('disconnect', PortError, 'Port disconnected'),
+        disconnectBeforeResponse: defineError('disconnectBeforeResponse', PortError, 'Disconnect before response received'),
+        stream: defineError('stream', PortError, 'Port stream error'),
+        echoTimeout: defineError('echoTimeout', PortError, 'Echo retries limit exceeded'),
+        unhandled: defineError('unhandled', PortError, 'Unhandled port error'),
+        bufferOverflow: defineError('bufferOverflow', PortError, 'Message size of {size} exceeds the maximum of {max}'),
+        socketTimeout: defineError('socketTimeout', PortError, 'Socket timeout'),
+        receiveTimeout: defineError('receiveTimeout', PortError, 'Receive timeout')
+    };
     this.sendQueues = utqueue.queues();
     this.receiveQueues = utqueue.queues();
     this.counter = null;
@@ -179,7 +193,7 @@ Port.prototype.getConversion = function getConversion($meta, type) {
 
 Port.prototype.disconnect = function(reason) {
     this.error(reason);
-    throw errors.disconnect(reason);
+    throw this.errors.disconnect(reason);
 };
 
 Port.prototype.isDebug = function isDebug() {
