@@ -1,3 +1,13 @@
+<a name="6.0.11"></a>
+## [6.0.11](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.10...v6.0.11) (2017-11-13)
+
+
+### Bug Fixes
+
+* initialize port.getError ([8a4853b](https://github.com/softwaregroup-bg/ut-port/commit/8a4853b))
+
+
+
 <a name="6.0.10"></a>
 ## [6.0.10](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.9...v6.0.10) (2017-11-13)
 
