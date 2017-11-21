@@ -1,3 +1,13 @@
+<a name="6.1.1"></a>
+## [6.1.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.0...v6.1.1) (2017-11-21)
+
+
+### Bug Fixes
+
+* use bus.errors ([2a003f5](https://github.com/softwaregroup-bg/ut-port/commit/2a003f5))
+
+
+
 <a name="6.1.0"></a>
 # [6.1.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.0.12...v6.1.0) (2017-11-13)
 
