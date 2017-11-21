@@ -10,10 +10,10 @@
     "ut-queue": "^6.0.2"
   },
   "devDependencies": {
-    "ut-tools": "^5.24.0"
+    "ut-tools": "^5.29.14"
   },
   "peerDependencies": {
-    "ut-bus": "^6.0.0-ut6.7"
+    "ut-bus": "^6.0.0-ut6.11"
   },
   "description": "UT port base",
   "scripts": {
