@@ -1,3 +1,13 @@
+<a name="6.1.2"></a>
+## [6.1.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.1...v6.1.2) (2017-11-24)
+
+
+### Bug Fixes
+
+* exceptions safeguard for $meta.reply ([3e61a6d](https://github.com/softwaregroup-bg/ut-port/commit/3e61a6d))
+
+
+
 <a name="6.1.1"></a>
 ## [6.1.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.0...v6.1.1) (2017-11-21)
 
