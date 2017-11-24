@@ -489,7 +489,11 @@ const portPull = (port, what, context) => {
                 if ($meta && $meta.reply) {
                     let fn = $meta.reply;
                     delete $meta.reply;
-                    fn.apply(null, replyPacket);
+                    try {
+                        fn.apply(null, replyPacket);
+                    } catch (error) {
+                        port.error(error);
+                    }
                 }
             }, () => portEventDispatch(port, context, DISCARD, 'disconnected', port.log.info)),
             source: receiveQueue.source
