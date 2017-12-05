@@ -1,3 +1,13 @@
+<a name="6.1.3"></a>
+## [6.1.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.2...v6.1.3) (2017-12-05)
+
+
+### Bug Fixes
+
+* return meta ([01d47aa](https://github.com/softwaregroup-bg/ut-port/commit/01d47aa))
+
+
+
 <a name="6.1.2"></a>
 ## [6.1.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.1...v6.1.2) (2017-11-24)
 
