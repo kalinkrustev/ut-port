@@ -1,3 +1,13 @@
+<a name="6.1.4"></a>
+## [6.1.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.3...v6.1.4) (2017-12-06)
+
+
+### Bug Fixes
+
+* handle dispatch error ([a06b7fb](https://github.com/softwaregroup-bg/ut-port/commit/a06b7fb))
+
+
+
 <a name="6.1.3"></a>
 ## [6.1.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.2...v6.1.3) (2017-12-05)
 
