@@ -13,7 +13,7 @@
     "ut-tools": "^5.29.14"
   },
   "peerDependencies": {
-    "ut-bus": "^6.0.0-ut6.12"
+    "ut-bus": "^6.0.0"
   },
   "description": "UT port base",
   "scripts": {
