@@ -27,6 +27,8 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
     });
 };
 
+const timeDiff = (time, newtime) => (newtime[0] - time[0]) * 1000 + (newtime[1] - time[1]) / 1000000;
+
 const packetTimer = (method, aggregate = '*', timeout) => {
     if (!method) {
         return;
@@ -44,12 +46,11 @@ const packetTimer = (method, aggregate = '*', timeout) => {
         dispatch: null
     };
 
-    return what => {
-        let newtime = hrtime();
-        what && (times[what] = (newtime[0] - time[0]) * 1000 + (newtime[1] - time[1]) / 1000000);
+    return (what, newtime = hrtime()) => {
+        what && (times[what] = timeDiff(time, newtime));
         time = newtime;
         if (what) {
-            let isTimeout = Array.isArray(timeout) && ((newtime[0] - timeout[0]) * 1000 + (newtime[1] - timeout[1]) / 1000000 > 0);
+            let isTimeout = Array.isArray(timeout) && (timeDiff(newtime, timeout) > 0);
             if (isTimeout) {
                 timeout = false;
             }
@@ -78,7 +79,7 @@ const calcTime = (port, stage, onTimeout) => pull(
 );
 
 const reportTimes = (port, $meta) => {
-    if ($meta && $meta.timer && port.methodLatency) {
+    if ($meta && $meta.timer && port.methodLatency && $meta.mtid !== 'request') {
         let times = $meta.timer();
         port.methodLatency(times.method, {m: times.method}, [
             times.queue,
@@ -102,22 +103,23 @@ const reportTimes = (port, $meta) => {
     }
 };
 
-const traceMeta = ($meta, context) => {
-    if ($meta && !$meta.timer) {
+const traceMeta = ($meta, context, set, get, time) => {
+    if ($meta && !$meta.timer && $meta.mtid === 'request') {
         $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
     }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
             let expireTimeout = 60000;
-            context.requests.set($meta.trace, {
+            context.requests.set(set + $meta.trace, {
                 $meta: $meta, expire: Date.now() + expireTimeout, startTime: hrtime()
             });
             return $meta;
         } else if ($meta.mtid === 'response' || $meta.mtid === 'error') {
-            let x = context.requests.get($meta.trace);
-            if (x) {
-                context.requests.delete($meta.trace);
-                return Object.assign(x.$meta, $meta);
+            let request = context.requests.get(get + $meta.trace);
+            if (request) {
+                context.requests.delete(get + $meta.trace);
+                request.$meta && request.$meta.timer && time && request.$meta.timer('exec', time);
+                return Object.assign(request.$meta, $meta);
             } else {
                 return $meta;
             }
@@ -156,7 +158,7 @@ const portEncode = (port, context) => encodePacket => {
         .then(encodeBuffer => {
             let size;
             let sizeAdjust = 0;
-            traceMeta($meta, context);
+            traceMeta($meta, context, 'out/', 'in/');
             if (port.codec) {
                 if (port.framePatternSize) {
                     sizeAdjust = port.config.format.sizeAdjust;
@@ -247,28 +249,35 @@ const getFrame = (port, buffer) => {
     return result;
 };
 
-const portDecode = (port, context, buffer) => decodePacket => {
-    port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: decodePacket, log: context && context.session && context.session.log});
-    if (port.framePattern) {
-        port.bytesReceived && port.bytesReceived(decodePacket.length);
-        // todo check buffer size
-        buffer = Buffer.concat([buffer, decodePacket]);
-        let frame = getFrame(port, buffer);
-        if (frame) {
-            buffer = frame.rest;
-            decodePacket = frame.data;
-        } else {
-            return Promise.resolve([DISCARD]);
-        }
-    }
+const portUnframe = (port, context, buffer) => {
+    return port.framePattern && pull(
+        pull.map(datagram => {
+            let result = [];
+            port.bytesReceived && port.bytesReceived(datagram.length);
+            port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: datagram, log: context && context.session && context.session.log});
+            // todo check buffer size
+            buffer = Buffer.concat([buffer, datagram]);
+            let dataPacket;
+            while ((dataPacket = getFrame(port, buffer))) {
+                buffer = dataPacket.rest;
+                result.push(dataPacket.data);
+            }
+            return result;
+        }),
+        pull.flatten()
+    );
+};
+
+const portDecode = (port, context) => dataPacket => {
+    let time = hrtime();
     port.msgReceived && port.msgReceived(1);
     if (port.codec) {
         let $meta = {conId: context && context.conId};
         return Promise.resolve()
             .then(function decodeCall() {
-                return port.codec.decode(decodePacket, $meta, context);
+                return port.codec.decode(dataPacket, $meta, context);
             })
-            .then(decodedPacket => [decodedPacket, traceMeta($meta, context)])
+            .then(decodeResult => [decodeResult, traceMeta($meta, context, 'in/', 'out/', time)])
             .catch(decodeError => {
                 $meta.mtid = 'error';
                 if (!decodeError || !decodeError.keepConnection) {
@@ -277,13 +286,13 @@ const portDecode = (port, context, buffer) => decodePacket => {
                     return [decodeError, $meta];
                 }
             });
-    } else if (decodePacket && decodePacket.constructor && decodePacket.constructor.name === 'Buffer') {
-        return Promise.resolve([{payload: decodePacket}, {mtid: 'notification', opcode: 'payload', conId: context && context.conId}]);
+    } else if (dataPacket && dataPacket.constructor && dataPacket.constructor.name === 'Buffer') {
+        return Promise.resolve([{payload: dataPacket}, {mtid: 'notification', opcode: 'payload', conId: context && context.conId}]);
     } else {
-        let $meta = (decodePacket.length > 1) && decodePacket[decodePacket.length - 1];
+        let $meta = (dataPacket.length > 1) && dataPacket[dataPacket.length - 1];
         $meta && context && context.conId && ($meta.conId = context.conId);
-        (decodePacket.length > 1) && (decodePacket[decodePacket.length - 1] = traceMeta($meta, context));
-        return Promise.resolve(decodePacket);
+        (dataPacket.length > 1) && (dataPacket[dataPacket.length - 1] = traceMeta($meta, context, 'in/', 'out/', time));
+        return Promise.resolve(dataPacket);
     }
 };
 
@@ -527,7 +536,8 @@ const portPull = (port, what, context) => {
     let encode = paraPromise(port, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
     let unpack = portUnpack(port);
     let idleSend = portIdleSend(port, context, sendQueue);
-    let decode = paraPromise(port, portDecode(port, context, bufferCreate(0)), port.activeDecodeCount, port.config.concurrency || 10);
+    let unframe = portUnframe(port, context, bufferCreate(0));
+    let decode = paraPromise(port, portDecode(port, context), port.activeDecodeCount, port.config.concurrency || 10);
     let idleReceive = portIdleReceive(port, context, sendQueue);
     let receive = paraPromise(port, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
     let dispatch = paraPromise(port, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
@@ -539,6 +549,7 @@ const portPull = (port, what, context) => {
         unpack,
         idleSend,
         stream,
+        unframe,
         decode, calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
         receive, calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
