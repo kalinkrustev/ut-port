@@ -1,3 +1,13 @@
+<a name="6.1.6"></a>
+## [6.1.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.5...v6.1.6) (2017-12-08)
+
+
+### Bug Fixes
+
+* timers, unframe, trace ([ff68185](https://github.com/softwaregroup-bg/ut-port/commit/ff68185))
+
+
+
 <a name="6.1.5"></a>
 ## [6.1.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.4...v6.1.5) (2017-12-06)
 
