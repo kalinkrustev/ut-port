@@ -3,6 +3,7 @@ var Port = require('./port');
 
 module.exports = ({bus, logFactory, assert}) => {
     let servicePorts = new Map();
+    let index = 0;
 
     let createOne = (portConfig, envConfig) => {
         let Constructor;
@@ -23,6 +24,8 @@ module.exports = ({bus, logFactory, assert}) => {
             }
         }
         Constructor = portConfig.createPort({parent: Port});
+        portConfig.order = portConfig.order || index;
+        index++;
         let port = new Constructor({bus, logFactory, config: portConfig});
         return Promise.resolve(port.init()).then(function() {
             servicePorts.set(portConfig.id, port);
@@ -43,7 +46,7 @@ module.exports = ({bus, logFactory, assert}) => {
     let create = (ports, envConfig) =>
         Array.isArray(ports) ? createMany(ports, envConfig, assert) : createOne(ports, envConfig, assert);
 
-    let fetch = ports => Array.from(servicePorts.values());
+    let fetch = ports => Array.from(servicePorts.values()).sort((a, b) => a.config.order > b.config.order ? 1 : -1);
 
     let startOne = ({port}) => {
         port = servicePorts.get(port);
