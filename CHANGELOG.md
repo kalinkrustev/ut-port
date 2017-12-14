@@ -1,3 +1,13 @@
+<a name="6.1.7"></a>
+## [6.1.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.6...v6.1.7) (2017-12-14)
+
+
+### Bug Fixes
+
+* start ports in order ([eba83a8](https://github.com/softwaregroup-bg/ut-port/commit/eba83a8))
+
+
+
 <a name="6.1.6"></a>
 ## [6.1.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.5...v6.1.6) (2017-12-08)
 
