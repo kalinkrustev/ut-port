@@ -1,3 +1,13 @@
+<a name="6.2.0"></a>
+# [6.2.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.7...v6.2.0) (2017-12-15)
+
+
+### Features
+
+* added drainSend event, improved timeout handling ([9d7846b](https://github.com/softwaregroup-bg/ut-port/commit/9d7846b))
+
+
+
 <a name="6.1.7"></a>
 ## [6.1.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.6...v6.1.7) (2017-12-14)
 

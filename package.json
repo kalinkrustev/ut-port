@@ -1,6 +1,6 @@
 {
   "name": "ut-port",
-  "version": "6.1.7",
+  "version": "6.2.0",
   "dependencies": {
     "browser-process-hrtime": "0.1.2",
     "lodash.merge": "4.6.0",
