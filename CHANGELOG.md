@@ -1,3 +1,13 @@
+<a name="6.3.0"></a>
+# [6.3.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.2.0...v6.3.0) (2017-12-18)
+
+
+### Features
+
+* timing API ([8692650](https://github.com/softwaregroup-bg/ut-port/commit/8692650))
+
+
+
 <a name="6.2.0"></a>
 # [6.2.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.1.7...v6.2.0) (2017-12-15)
 
