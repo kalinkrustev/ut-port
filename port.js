@@ -3,6 +3,7 @@ const os = require('os');
 const includes = require('./includes');
 const utqueue = require('ut-queue');
 const portStreams = require('./pull');
+const timing = require('./timing');
 
 function Port(params) {
     this.log = {};
@@ -47,6 +48,8 @@ function Port(params) {
     this.isReady = false;
     this.state = 'stopped';
 }
+
+Port.prototype.timing = timing;
 
 Port.prototype.init = function init() {
     this.logFactory && (this.log = this.logFactory.createLog(this.config.logLevel, {name: this.config.id, context: this.config.type + ' port'}, this.config.log));
@@ -163,6 +166,10 @@ Port.prototype.publish = function publish(...args) {
 
 Port.prototype.error = function portError(error) {
     this.log.error && this.log.error(error);
+};
+
+Port.prototype.fatal = function portError(error) {
+    this.log.fatal && this.log.fatal(error);
 };
 
 Port.prototype.methodPath = function methodPath(methodName) {

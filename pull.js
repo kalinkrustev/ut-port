@@ -1,4 +1,4 @@
-const hrtime = require('browser-process-hrtime');
+const timing = require('./timing');
 const Buffer = require('buffer').Buffer;
 const bufferCreate = Buffer;
 const pull = require('pull-stream');
@@ -28,14 +28,11 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
     });
 };
 
-const timeDiff = (time, newtime) => (newtime[0] - time[0]) * 1000 + (newtime[1] - time[1]) / 1000000;
-const isLater = (time, timeout) => (time[0] > timeout[0]) || (time[0] === timeout[0] && time[1] > timeout[1]);
-
 const packetTimer = (method, aggregate = '*', timeout) => {
     if (!method) {
         return;
     }
-    let time = hrtime();
+    let time = timing.now();
     let times = {
         method,
         aggregate,
@@ -48,15 +45,16 @@ const packetTimer = (method, aggregate = '*', timeout) => {
         dispatch: null
     };
 
-    return (what, newtime = hrtime()) => {
-        what && (times[what] = timeDiff(time, newtime));
+    return (what, newtime = timing.now()) => {
+        what && (times[what] = timing.diff(time, newtime));
         time = newtime;
         if (what) {
-            let isTimeout = Array.isArray(timeout) && isLater(newtime, timeout);
-            if (isTimeout) {
+            if (timing.isAfter(newtime, timeout)) {
                 timeout = false;
+                return true;
+            } else {
+                return false;
             }
-            return isTimeout;
         }
         return times;
     };
@@ -111,12 +109,7 @@ const traceMeta = ($meta, context, set, get, time) => {
     }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
-            let expireTimeout = 60000;
-            context.requests.set(set + $meta.trace, {
-                $meta: $meta,
-                expire: Date.now() + expireTimeout,
-                startTime: hrtime()
-            });
+            context.requests.set(set + $meta.trace, {$meta});
             return $meta;
         } else if ($meta.mtid === 'response' || $meta.mtid === 'error') {
             let request = context.requests.get(get + $meta.trace);
@@ -273,7 +266,7 @@ const portUnframe = (port, context, buffer) => {
 };
 
 const portDecode = (port, context) => dataPacket => {
-    let time = hrtime();
+    let time = timing.now();
     port.msgReceived && port.msgReceived(1);
     if (port.codec) {
         let $meta = {conId: context && context.conId};
@@ -447,7 +440,7 @@ function PromiseTimeout() {
 }
 
 PromiseTimeout.prototype.clean = function promiseClean() {
-    let now = hrtime();
+    let now = timing.now();
     Array.from(this.calls).forEach(end => end.checkTimeout(now));
 };
 
@@ -457,7 +450,7 @@ PromiseTimeout.prototype.startWait = function promiseStartWait(onTimeout, timeou
         this.endWait(end, set);
         error && onTimeout(error);
     };
-    end.checkTimeout = time => isLater(time, timeout) && end(createTimeoutError());
+    end.checkTimeout = time => timing.isAfter(time, timeout) && end(createTimeoutError());
     this.calls.add(end);
     set && set.add(end);
     return end;
