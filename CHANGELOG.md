@@ -1,3 +1,13 @@
+<a name="6.4.0"></a>
+# [6.4.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.3.0...v6.4.0) (2017-12-19)
+
+
+### Features
+
+* enable time tracking of nested calls ([d392fcf](https://github.com/softwaregroup-bg/ut-port/commit/d392fcf))
+
+
+
 <a name="6.3.0"></a>
 # [6.3.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.2.0...v6.3.0) (2017-12-18)
 
