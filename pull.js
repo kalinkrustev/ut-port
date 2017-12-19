@@ -28,24 +28,31 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
     });
 };
 
-const packetTimer = (method, aggregate = '*', timeout) => {
+const packetTimer = (method, aggregate = '*', id, timeout) => {
     if (!method) {
         return;
     }
     let time = timing.now();
     let times = {
+        port: id,
         method,
         aggregate,
-        queue: null,
-        receive: null,
-        encode: null,
-        exec: null,
-        decode: null,
-        send: null,
-        dispatch: null
+        queue: undefined,
+        receive: undefined,
+        encode: undefined,
+        exec: undefined,
+        decode: undefined,
+        send: undefined,
+        dispatch: undefined,
+        calls: undefined
     };
 
     return (what, newtime = timing.now()) => {
+        if (typeof what === 'object') {
+            times.calls = times.calls || [];
+            times.calls.push(what);
+            return;
+        }
         what && (times[what] = timing.diff(time, newtime));
         time = newtime;
         if (what) {
@@ -99,13 +106,15 @@ const reportTimes = (port, $meta) => {
             times.send,
             times.dispatch
         ], 1);
+        delete times.aggregate;
+        $meta.calls = times;
         delete $meta.timer;
     }
 };
 
-const traceMeta = ($meta, context, set, get, time) => {
+const traceMeta = ($meta, context, id, set, get, time) => {
     if ($meta && !$meta.timer && $meta.mtid === 'request') {
-        $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
+        $meta.timer = packetTimer($meta.method, '*', id, $meta.timeout);
     }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
@@ -155,7 +164,7 @@ const portEncode = (port, context) => encodePacket => {
         .then(encodeBuffer => {
             let size;
             let sizeAdjust = 0;
-            traceMeta($meta, context, 'out/', 'in/');
+            traceMeta($meta, context, port.config.id, 'out/', 'in/');
             if (port.codec) {
                 if (port.framePatternSize) {
                     sizeAdjust = port.config.format.sizeAdjust;
@@ -274,7 +283,7 @@ const portDecode = (port, context) => dataPacket => {
             .then(function decodeCall() {
                 return port.codec.decode(dataPacket, $meta, context);
             })
-            .then(decodeResult => [decodeResult, traceMeta($meta, context, 'in/', 'out/', time)])
+            .then(decodeResult => [decodeResult, traceMeta($meta, context, port.config.id, 'in/', 'out/', time)])
             .catch(decodeError => {
                 $meta.mtid = 'error';
                 if (!decodeError || !decodeError.keepConnection) {
@@ -365,7 +374,7 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
         mtid: 'event',
         method: event,
         conId: context && context.conId,
-        timer: packetTimer('event.' + event, false)
+        timer: packetTimer('event.' + event, false, port.config.id)
     }];
 };
 
@@ -601,7 +610,7 @@ const portPull = (port, what, context) => {
             push: pushPacket => {
                 let $meta = (pushPacket.length > 1 && pushPacket[pushPacket.length - 1]);
                 $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
-                $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
+                $meta.timer = $meta.timer || packetTimer($meta.method, '*', port.config.id, $meta.timeout);
                 receiveQueue.push(pushPacket);
             }
         };
@@ -657,7 +666,7 @@ const portPush = (port, promise, args) => {
         return promise ? Promise.reject(port.errors.notConnected()) : false;
     }
     $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
-    $meta.timer = packetTimer($meta.method, '*', $meta.timeout);
+    $meta.timer = packetTimer($meta.method, '*', port.config.id, $meta.timeout);
     if (!promise) {
         $meta.dispatch = () => {
             delete $meta.dispatch;
@@ -681,5 +690,6 @@ const portPush = (port, promise, args) => {
 
 module.exports = {
     portPull,
-    portPush
+    portPush,
+    packetTimer
 };

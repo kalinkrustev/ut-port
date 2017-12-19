@@ -224,4 +224,8 @@ Port.prototype.pull = function pull(what, context) {
     return portStreams.portPull(this, what, context);
 };
 
+Port.prototype.setTimer = function setTimer($meta) {
+    $meta.timer = portStreams.packetTimer($meta.method, '*', this.config.id, $meta.timeout);
+};
+
 module.exports = Port;
