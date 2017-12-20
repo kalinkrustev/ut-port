@@ -1,3 +1,14 @@
+<a name="6.4.1"></a>
+## [6.4.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.0...v6.4.1) (2017-12-20)
+
+
+### Bug Fixes
+
+* handle outgoing request timeouts ([afcd8dd](https://github.com/softwaregroup-bg/ut-port/commit/afcd8dd))
+* use proper integer logic ([54b4ac1](https://github.com/softwaregroup-bg/ut-port/commit/54b4ac1))
+
+
+
 <a name="6.4.0"></a>
 # [6.4.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.3.0...v6.4.0) (2017-12-19)
 
