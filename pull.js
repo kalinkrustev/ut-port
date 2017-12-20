@@ -6,6 +6,7 @@ const pullStream = require('stream-to-pull-stream');
 const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
+const timeoutManager = require('./timeout');
 
 const portErrorDispatch = (port, $meta) => dispatchError => {
     port.error(dispatchError);
@@ -112,18 +113,26 @@ const reportTimes = (port, $meta) => {
     }
 };
 
-const traceMeta = ($meta, context, id, set, get, time) => {
+const traceMeta = (port, context, $meta, set, get, time) => {
     if ($meta && !$meta.timer && $meta.mtid === 'request') {
-        $meta.timer = packetTimer($meta.method, '*', id, $meta.timeout);
+        $meta.timer = packetTimer($meta.method, '*', port.config.id, $meta.timeout);
     }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
-            context.requests.set(set + $meta.trace, {$meta});
+            context.requests.set(set + $meta.trace, {
+                $meta,
+                end: !time && timeoutManager.startRequest($meta, port.errors.timeout, error => {
+                    context.requests.delete(set + $meta.trace);
+                    $meta.mtid = 'error';
+                    $meta.dispatch && $meta.dispatch(error, $meta);
+                })
+            });
             return $meta;
         } else if ($meta.mtid === 'response' || $meta.mtid === 'error') {
             let request = context.requests.get(get + $meta.trace);
             if (request) {
                 context.requests.delete(get + $meta.trace);
+                request.end && request.end();
                 request.$meta && request.$meta.timer && time && request.$meta.timer('exec', time);
                 return Object.assign(request.$meta, $meta);
             } else {
@@ -164,7 +173,7 @@ const portEncode = (port, context) => encodePacket => {
         .then(encodeBuffer => {
             let size;
             let sizeAdjust = 0;
-            traceMeta($meta, context, port.config.id, 'out/', 'in/');
+            traceMeta(port, context, $meta, 'out/', 'in/');
             if (port.codec) {
                 if (port.framePatternSize) {
                     sizeAdjust = port.config.format.sizeAdjust;
@@ -283,7 +292,7 @@ const portDecode = (port, context) => dataPacket => {
             .then(function decodeCall() {
                 return port.codec.decode(dataPacket, $meta, context);
             })
-            .then(decodeResult => [decodeResult, traceMeta($meta, context, port.config.id, 'in/', 'out/', time)])
+            .then(decodeResult => [decodeResult, traceMeta(port, context, $meta, 'in/', 'out/', time)])
             .catch(decodeError => {
                 $meta.mtid = 'error';
                 if (!decodeError || !decodeError.keepConnection) {
@@ -297,7 +306,7 @@ const portDecode = (port, context) => dataPacket => {
     } else {
         let $meta = (dataPacket.length > 1) && dataPacket[dataPacket.length - 1];
         $meta && context && context.conId && ($meta.conId = context.conId);
-        (dataPacket.length > 1) && (dataPacket[dataPacket.length - 1] = traceMeta($meta, context, 'in/', 'out/', time));
+        (dataPacket.length > 1) && (dataPacket[dataPacket.length - 1] = traceMeta(port, context, $meta, 'in/', 'out/', time));
         return Promise.resolve(dataPacket);
     }
 };
@@ -443,67 +452,6 @@ const portSink = (port, queue) => pull.drain(sinkPacket => {
     }
 });
 
-function PromiseTimeout() {
-    this.calls = new Set();
-    this.interval = false;
-}
-
-PromiseTimeout.prototype.clean = function promiseClean() {
-    let now = timing.now();
-    Array.from(this.calls).forEach(end => end.checkTimeout(now));
-};
-
-PromiseTimeout.prototype.startWait = function promiseStartWait(onTimeout, timeout, createTimeoutError, set) {
-    this.interval = this.interval || setInterval(this.clean.bind(this), 500);
-    let end = error => {
-        this.endWait(end, set);
-        error && onTimeout(error);
-    };
-    end.checkTimeout = time => timing.isAfter(time, timeout) && end(createTimeoutError());
-    this.calls.add(end);
-    set && set.add(end);
-    return end;
-};
-
-PromiseTimeout.prototype.endWait = function promiseEndWait(end, set) {
-    this.calls.delete(end);
-    set && set.delete(end);
-    if (this.calls.size <= 0 && this.interval) {
-        clearInterval(this.interval);
-        this.interval = false;
-    }
-};
-
-PromiseTimeout.prototype.start = function promiseStart(params, fn, $meta, error, set) {
-    if (Array.isArray($meta && $meta.timeout)) {
-        return new Promise((resolve, reject) => {
-            let endWait = this.startWait(error => {
-                $meta.mtid = 'error';
-                if ($meta.dispatch) {
-                    $meta.dispatch(error, $meta);
-                    resolve([DISCARD]);
-                } else {
-                    resolve([error, $meta]);
-                }
-            }, $meta.timeout, error, set);
-            Promise.resolve(params).then(fn)
-            .then(result => {
-                endWait();
-                resolve(result);
-                return result;
-            })
-            .catch(error => {
-                endWait();
-                reject(error);
-            });
-        });
-    } else {
-        return Promise.resolve(params).then(fn);
-    }
-};
-
-const promiseTimeout = new PromiseTimeout();
-
 const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
     counter && counter(active);
@@ -511,7 +459,7 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         let $meta = params.length > 1 && params[params.length - 1];
-        promiseTimeout.start(params, fn, $meta, port.errors.timeout, context && context.waiting)
+        timeoutManager.startPromise(params, fn, $meta, port.errors.timeout, context && context.waiting)
             .then(promiseResult => {
                 active--;
                 counter && counter(active);
@@ -691,5 +639,6 @@ const portPush = (port, promise, args) => {
 module.exports = {
     portPull,
     portPush,
-    packetTimer
+    packetTimer,
+    timeoutManager
 };
