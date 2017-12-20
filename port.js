@@ -46,6 +46,9 @@ function Port(params) {
     this.bytesReceived = null;
     // state properties
     this.isReady = false;
+    this.isConnected = new Promise(resolve => {
+        this.resolveConnected = resolve;
+    });
     this.state = 'stopped';
 }
 
@@ -221,7 +224,9 @@ Port.prototype.includesConfig = function includesConfig(name, values, defaultVal
 };
 
 Port.prototype.pull = function pull(what, context) {
-    return portStreams.portPull(this, what, context);
+    let result = portStreams.portPull(this, what, context);
+    this.resolveConnected(true);
+    return result;
 };
 
 Port.prototype.setTimer = function setTimer($meta) {
