@@ -61,7 +61,8 @@ Port.prototype.init = function init() {
         let measurementName = this.config.metrics || this.config.id;
         let tags = {
             host: os.hostname(),
-            impl: this.bus.performance.config.id || this.bus.config.implementation
+            impl: this.bus.performance.config.id || this.bus.config.implementation,
+            pid: process.pid
         };
         this.counter = function initCounters(fieldType, fieldCode, fieldName, interval) {
             return this.bus.performance.register(measurementName, fieldType, fieldCode, fieldName, 'standard', tags, interval);
