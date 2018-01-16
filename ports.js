@@ -12,7 +12,7 @@ module.exports = ({bus, logFactory, assert}) => {
         };
         if (!portConfig.id) {
             throw new Error('Missing port id property');
-        } else if (envConfig[portConfig.id] === false) { // port is disabled
+        } else if (envConfig[portConfig.id] === false || envConfig[portConfig.id] === 'false') { // port is disabled
             return false;
         }
         merge(portConfig, envConfig[portConfig.id]);
