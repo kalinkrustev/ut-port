@@ -1,3 +1,13 @@
+<a name="6.4.4"></a>
+## [6.4.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.3...v6.4.4) (2018-01-16)
+
+
+### Bug Fixes
+
+* add process.pid as a tag in performance metrics ([#6](https://github.com/softwaregroup-bg/ut-port/issues/6)) ([c9b5932](https://github.com/softwaregroup-bg/ut-port/commit/c9b5932))
+
+
+
 <a name="6.4.3"></a>
 ## [6.4.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.2...v6.4.3) (2018-01-16)
 
