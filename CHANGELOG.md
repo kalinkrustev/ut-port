@@ -1,3 +1,13 @@
+<a name="6.4.3"></a>
+## [6.4.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.2...v6.4.3) (2018-01-16)
+
+
+### Bug Fixes
+
+* ability to disable port with runtime configuration ([#5](https://github.com/softwaregroup-bg/ut-port/issues/5)) ([a39aac8](https://github.com/softwaregroup-bg/ut-port/commit/a39aac8))
+
+
+
 <a name="6.4.2"></a>
 ## [6.4.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.1...v6.4.2) (2017-12-20)
 
