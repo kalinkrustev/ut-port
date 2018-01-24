@@ -1,3 +1,13 @@
+<a name="6.4.5"></a>
+## [6.4.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.4...v6.4.5) (2018-01-24)
+
+
+### Bug Fixes
+
+* includes to treat 'false' and 'true' as booleans in order to be able to pass booleans ([a060f8d](https://github.com/softwaregroup-bg/ut-port/commit/a060f8d))
+
+
+
 <a name="6.4.4"></a>
 ## [6.4.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.3...v6.4.4) (2018-01-16)
 
