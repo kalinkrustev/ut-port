@@ -1,3 +1,13 @@
+<a name="6.4.6"></a>
+## [6.4.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.5...v6.4.6) (2018-02-07)
+
+
+### Bug Fixes
+
+* do not pass global config to port ([b389a64](https://github.com/softwaregroup-bg/ut-port/commit/b389a64))
+
+
+
 <a name="6.4.5"></a>
 ## [6.4.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.4...v6.4.5) (2018-01-24)
 
