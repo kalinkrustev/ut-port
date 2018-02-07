@@ -8,9 +8,23 @@ module.exports = ({bus, logFactory, assert}) => {
     let createOne = (portConfig, envConfig) => {
         let Constructor;
         if (portConfig instanceof Function) {
-            portConfig = portConfig(envConfig);
+            let id = portConfig.name;
+            if (id) {
+                let cfg = envConfig[id];
+                portConfig = cfg !== false && cfg !== 'false' && portConfig(cfg);
+                if (portConfig && portConfig.id && portConfig.id !== id) {
+                    throw new Error(`Port id ${portConfig.id} does not match function name ${id}`);
+                }
+                if (portConfig && !portConfig.id) {
+                    portConfig.id = id;
+                }
+            } else {
+                portConfig = portConfig();
+            }
         };
-        if (!portConfig.id) {
+        if (!portConfig) {
+            return false;
+        } else if (!portConfig.id) {
             throw new Error('Missing port id property');
         } else if (envConfig[portConfig.id] === false || envConfig[portConfig.id] === 'false') { // port is disabled
             return false;
