@@ -1,3 +1,13 @@
+<a name="6.4.7"></a>
+## [6.4.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.6...v6.4.7) (2018-02-21)
+
+
+### Bug Fixes
+
+* do not throw strings ([bd34ad6](https://github.com/softwaregroup-bg/ut-port/commit/bd34ad6))
+
+
+
 <a name="6.4.6"></a>
 ## [6.4.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.5...v6.4.6) (2018-02-07)
 
