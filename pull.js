@@ -574,7 +574,7 @@ const portPull = (port, what, context) => {
     let encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
     let unpack = portUnpack(port);
     let idleSend = portIdleSend(port, context, sendQueue);
-    let unframe = portUnframe(port, context, bufferCreate(0));
+    let unframe = portUnframe(port, context, bufferCreate.alloc(0));
     let decode = paraPromise(port, context, portDecode(port, context), port.activeDecodeCount, port.config.concurrency || 10);
     let idleReceive = portIdleReceive(port, context, sendQueue);
     let receive = paraPromise(port, context, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);

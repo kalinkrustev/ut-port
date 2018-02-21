@@ -44,15 +44,15 @@ Timeout.prototype.startPromise = function timeoutStartPromise(params, fn, $meta,
                 }
             }, $meta.timeout, error, set);
             Promise.resolve(params).then(fn)
-            .then(result => {
-                endWait();
-                resolve(result);
-                return result;
-            })
-            .catch(error => {
-                endWait();
-                reject(error);
-            });
+                .then(result => {
+                    endWait();
+                    resolve(result);
+                    return result;
+                })
+                .catch(error => {
+                    endWait();
+                    reject(error);
+                });
         });
     } else {
         return Promise.resolve(params).then(fn);
