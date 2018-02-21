@@ -610,7 +610,7 @@ const portPush = (port, promise, args) => {
     let $meta = args[args.length - 1] = Object.assign({}, args[args.length - 1]);
     let queue = portFindRoute(port, $meta, args);
     if (!queue) {
-        this.log.error && this.log.error(this.errors.queueNotFound({args}));
+        port.log.error && port.log.error(port.errors.queueNotFound({args}));
         return promise ? Promise.reject(port.errors.notConnected()) : false;
     }
     $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
