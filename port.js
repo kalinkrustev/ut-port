@@ -24,8 +24,11 @@ function Port(params) {
         unhandled: defineError('unhandled', PortError, 'Unhandled port error'),
         bufferOverflow: defineError('bufferOverflow', PortError, 'Message size of {size} exceeds the maximum of {max}'),
         socketTimeout: defineError('socketTimeout', PortError, 'Socket timeout'),
-        receiveTimeout: defineError('receiveTimeout', PortError, 'Receive timeout')
+        receiveTimeout: defineError('receiveTimeout', PortError, 'Receive timeout'),
+        dispatchFailure: defineError('dispatchFailure', PortError, 'Cannot dispatch message to bus'),
+        queueNotFound: defineError('queueNotFound', PortError, 'Queue not found')
     };
+
     this.sendQueues = utqueue.queues();
     this.receiveQueues = utqueue.queues();
     this.counter = null;
@@ -101,9 +104,10 @@ Port.prototype.init = function init() {
 };
 
 Port.prototype.messageDispatch = function messageDispatch() {
-    let result = this.bus && this.bus.dispatch.apply(this.bus, Array.prototype.slice.call(arguments));
+    let args = Array.prototype.slice.call(arguments);
+    let result = this.bus && this.bus.dispatch.apply(this.bus, args);
     if (!result) {
-        this.log.error && this.log.error('Cannot dispatch message to bus', {message: Array.prototype.slice.call(arguments)});
+        this.log.error && this.log.error(this.errors.dispatchFailure({args}));
     }
     return result;
 };
