@@ -1,3 +1,14 @@
+<a name="6.4.8"></a>
+## [6.4.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.7...v6.4.8) (2018-02-22)
+
+
+### Bug Fixes
+
+* lint ([8cc475b](https://github.com/softwaregroup-bg/ut-port/commit/8cc475b))
+* lint ([847fe6e](https://github.com/softwaregroup-bg/ut-port/commit/847fe6e))
+
+
+
 <a name="6.4.7"></a>
 ## [6.4.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.6...v6.4.7) (2018-02-21)
 
