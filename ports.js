@@ -81,24 +81,24 @@ module.exports = ({bus, logFactory, assert}) => {
                     return result;
                 });
         }, Promise.resolve())
-        .then(function() {
-            return portsStarted
-                .reduce(function(promise, port) {
-                    if (typeof port.ready === 'function') {
-                        promise = promise.then(() => port.ready());
-                    }
-                    return promise;
+            .then(function() {
+                return portsStarted
+                    .reduce(function(promise, port) {
+                        if (typeof port.ready === 'function') {
+                            promise = promise.then(() => port.ready());
+                        }
+                        return promise;
+                    }, Promise.resolve())
+                    .then(() => portsStarted);
+            })
+            .catch(function(err) {
+                return portsStarted.reverse().reduce(function(prev, context, idx) {
+                    return prev
+                        .then(() => context.stop())
+                        .catch(() => true); // continue on error
                 }, Promise.resolve())
-                .then(() => portsStarted);
-        })
-        .catch(function(err) {
-            return portsStarted.reverse().reduce(function(prev, context, idx) {
-                return prev
-                    .then(() => context.stop())
-                    .catch(() => true); // continue on error
-            }, Promise.resolve())
-            .then(() => Promise.reject(err)); // reject with the original error
-        });
+                    .then(() => Promise.reject(err)); // reject with the original error
+            });
     };
 
     let start = params =>
