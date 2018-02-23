@@ -7,6 +7,7 @@ const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const timeoutManager = require('./timeout');
+const encodeFlow = [['beforeEncode'], ['codec', 'encode'], ['afterEncode']];
 
 const portErrorDispatch = (port, $meta) => dispatchError => {
     port.error(dispatchError);
@@ -164,11 +165,28 @@ const portSend = (port, context) => sendPacket => {
 };
 
 const portEncode = (port, context) => encodePacket => {
-    let $meta = encodePacket.length > 1 && encodePacket[encodePacket.length - 1];
+    var encodedPacketLen = encodePacket.length;
+    let $meta = Object.assign(
+        {},
+        (encodedPacketLen > 1 && encodePacket[encodedPacketLen - 1]) || {},
+        {request: encodedPacketLen > 1 && encodePacket[0]}
+    );
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
-            return port.codec ? port.codec.encode(encodePacket[0], $meta, context) : encodePacket;
+            let r = encodeFlow.reduce((a, f) => { // search for methods in port, get the method and correct context, then exec the method within context
+                let callCtx = port; // default method
+                let callMethod = port[f[0]]; // default method ctx
+
+                if (f.length > 1 && port[f[0]] && port[f[0]][f[1]]) { // if there is method called from codec like this port.codec.encode, ctx should be codec not port
+                    callCtx = port[f[0]];
+                    callMethod = port[f[0]][f[1]];
+                }
+
+                let r = ((callMethod && callMethod.call(callCtx, (encodePacket === a ? a[0] : a), $meta, context)) || a); // actually call method within ctx
+                return r;
+            }, encodePacket);
+            return r;
         })
         .then(encodeBuffer => {
             let size;
@@ -190,7 +208,8 @@ const portEncode = (port, context) => encodePacket => {
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
                 port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
-                return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
+                let r = port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
+                return r;
             }
             return [DISCARD, $meta];
         })
