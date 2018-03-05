@@ -5,9 +5,16 @@ const utqueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
 
-const encodeFlow = [['beforeEncode'], ['codec', 'encode'], ['afterEncode']];
-const getEncodeFlow = function(port) {
-    var ef = encodeFlow.reduce((accum, f) => { // search for methods in port, get the method and correct context, then exec the method within context
+const codecFlow = {
+    encode: [['beforeEncode'], ['codec', 'encode'], ['afterEncode']],
+    decode: [['beforeDecode'], ['codec', 'decode'], ['afterDecode']]
+};
+
+const getCodecFlow = function(port, type) {
+    if (!codecFlow[type]) {
+        throw port.errors.codecFlowNotFound({type});
+    }
+    var ef = codecFlow[type].reduce((accum, f) => { // search for methods in port, get the method and correct context, then exec the method within context
         let callCtx = port; // default method
         let callMethod = port[f[0]]; // default method ctx
 
@@ -27,7 +34,7 @@ const getEncodeFlow = function(port) {
         }
         return ef.reduce((p, f) => {
             return p.then((p) => (f(p, $meta, context)));
-        }, Promise.resolve(encodePacket));
+        }, Promise.resolve(encodePacket[0]));
     };
 };
 
@@ -52,7 +59,8 @@ function Port(params) {
         socketTimeout: defineError('socketTimeout', PortError, 'Socket timeout'),
         receiveTimeout: defineError('receiveTimeout', PortError, 'Receive timeout'),
         dispatchFailure: defineError('dispatchFailure', PortError, 'Cannot dispatch message to bus'),
-        queueNotFound: defineError('queueNotFound', PortError, 'Queue not found')
+        queueNotFound: defineError('queueNotFound', PortError, 'Queue not found'),
+        codecFlowNotFound: defineError('codecFlowNotFound', PortError, 'incorrect codec flow type')
     };
 
     this.sendQueues = utqueue.queues();
@@ -140,7 +148,7 @@ Port.prototype.messageDispatch = function messageDispatch() {
 
 Port.prototype.start = function start() {
     this.state = 'starting';
-    this.encodeFlow = getEncodeFlow(this);
+    this.encodeFlow = getCodecFlow(this, 'encode');
     return this.fireEvent('start', {config: this.config});
 };
 

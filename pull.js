@@ -173,7 +173,7 @@ const portEncode = (port, context) => encodePacket => {
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
-            return this.encodeFlow(encodePacket, $meta, context);
+            return port.encodeFlow(encodePacket, $meta, context);
         })
         .then(encodeBuffer => {
             let size;
