@@ -7,7 +7,6 @@ const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const timeoutManager = require('./timeout');
-const encodeFlow = [['beforeEncode'], ['codec', 'encode'], ['afterEncode']];
 
 const portErrorDispatch = (port, $meta) => dispatchError => {
     port.error(dispatchError);
@@ -174,22 +173,7 @@ const portEncode = (port, context) => encodePacket => {
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
-            let r = encodeFlow.reduce((accum, f) => { // search for methods in port, get the method and correct context, then exec the method within context
-                return accum
-                    .then((a) => {
-                        let callCtx = port; // default method
-                        let callMethod = port[f[0]]; // default method ctx
-
-                        if (f.length > 1 && port[f[0]] && port[f[0]][f[1]]) { // if there is method called from codec like this port.codec.encode, ctx should be codec not port
-                            callCtx = port[f[0]];
-                            callMethod = port[f[0]][f[1]];
-                        }
-
-                        let r = ((callMethod && callMethod.call(callCtx, (encodePacket === a ? a[0] : a), $meta, context)) || a); // call the method within ctx
-                        return r;
-                    });
-            }, Promise.resolve(encodePacket));
-            return r;
+            return this.encodeFlow(encodePacket, $meta, context);
         })
         .then(encodeBuffer => {
             let size;

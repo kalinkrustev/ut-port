@@ -5,6 +5,32 @@ const utqueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
 
+const encodeFlow = [['beforeEncode'], ['codec', 'encode'], ['afterEncode']];
+const getEncodeFlow = function(port) {
+    var ef = encodeFlow.reduce((accum, f) => { // search for methods in port, get the method and correct context, then exec the method within context
+        let callCtx = port; // default method
+        let callMethod = port[f[0]]; // default method ctx
+
+        if (f.length > 1 && port[f[0]] && port[f[0]][f[1]]) { // if there is method called from codec like this port.codec.encode, ctx should be codec not port
+            callCtx = port[f[0]];
+            callMethod = port[f[0]][f[1]];
+        }
+        callMethod && accum.push((encodePacket, $meta, context) => {
+            return Promise.resolve(callMethod.call(callCtx, encodePacket, $meta, context)); // call the method within ctx
+        });
+        return accum;
+    }, []);
+    var efLen = ef.length;
+    return (encodePacket, $meta, context) => {
+        if (!efLen) {
+            return encodePacket;
+        }
+        return ef.reduce((p, f) => {
+            return p.then((p) => (f(p, $meta, context)));
+        }, Promise.resolve(encodePacket));
+    };
+};
+
 function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
@@ -114,6 +140,7 @@ Port.prototype.messageDispatch = function messageDispatch() {
 
 Port.prototype.start = function start() {
     this.state = 'starting';
+    this.encodeFlow = getEncodeFlow(this);
     return this.fireEvent('start', {config: this.config});
 };
 
