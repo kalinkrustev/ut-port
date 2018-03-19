@@ -165,11 +165,14 @@ const portSend = (port, context) => sendPacket => {
 
 const portEncode = (port, context) => encodePacket => {
     var encodedPacketLen = encodePacket.length;
-    let $meta = Object.assign(
-        {},
-        (encodedPacketLen > 1 && encodePacket[encodedPacketLen - 1]) || {},
-        {request: encodedPacketLen > 1 && encodePacket[0]}
-    );
+    var $meta;
+    if (encodedPacketLen > 1) {
+        $meta = Object.assign(
+            (encodedPacketLen > 1 && encodePacket[encodedPacketLen - 1]),
+            {request: encodedPacketLen > 1 && encodePacket[0]}
+        );
+    }
+
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
