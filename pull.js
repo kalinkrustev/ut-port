@@ -167,10 +167,8 @@ const portEncode = (port, context) => encodePacket => {
     var encodedPacketLen = encodePacket.length;
     var $meta;
     if (encodedPacketLen > 1) {
-        $meta = Object.assign(
-            (encodedPacketLen > 1 && encodePacket[encodedPacketLen - 1]),
-            {request: encodedPacketLen > 1 && encodePacket[0]}
-        );
+        $meta = encodePacket[encodedPacketLen - 1];
+        $meta.request = encodePacket[0];
     }
 
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
