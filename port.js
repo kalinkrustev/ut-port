@@ -33,7 +33,7 @@ const getCodecFlow = function(port, type) {
             return encodePacket;
         }
         return ef.reduce((p, f) => {
-            return p.then((p) => (f(p, $meta, context)));
+            return p.then(p => f(p, $meta, context));
         }, Promise.resolve(encodePacket[0]));
     };
 };
