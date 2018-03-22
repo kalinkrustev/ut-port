@@ -1,5 +1,5 @@
-var merge = require('lodash.merge');
-var Port = require('./port');
+const merge = require('./merge');
+const Port = require('./port');
 
 module.exports = ({bus, logFactory, assert}) => {
     let servicePorts = new Map();
