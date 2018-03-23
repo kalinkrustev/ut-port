@@ -1,3 +1,13 @@
+<a name="6.5.0"></a>
+# [6.5.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.8...v6.5.0) (2018-03-23)
+
+
+### Features
+
+* add merge utility function to Port.prototype ([#10](https://github.com/softwaregroup-bg/ut-port/issues/10)) ([334e037](https://github.com/softwaregroup-bg/ut-port/commit/334e037))
+
+
+
 <a name="6.4.8"></a>
 ## [6.4.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.4.7...v6.4.8) (2018-02-22)
 
