@@ -3,7 +3,7 @@
   "version": "6.4.8",
   "dependencies": {
     "browser-process-hrtime": "0.1.2",
-    "lodash.merge": "4.6.0",
+    "lodash.mergewith": "4.6.1",
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.1",
     "stream-to-pull-stream": "1.7.2",

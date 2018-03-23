@@ -4,6 +4,7 @@ const includes = require('./includes');
 const utqueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
+const merge = require('./merge');
 
 function Port(params) {
     this.log = {};
@@ -56,6 +57,7 @@ function Port(params) {
 }
 
 Port.prototype.timing = timing;
+Port.prototype.merge = merge;
 
 Port.prototype.init = function init() {
     this.logFactory && (this.log = this.logFactory.createLog(this.config.logLevel, {name: this.config.id, context: this.config.type + ' port'}, this.config.log));
