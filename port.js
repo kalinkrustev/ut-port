@@ -20,7 +20,7 @@ function Port(params) {
         disconnect: defineError('disconnect', PortError, 'Port disconnected'),
         disconnectBeforeResponse: defineError('disconnectBeforeResponse', PortError, 'Disconnect before response received'),
         stream: defineError('stream', PortError, 'Port stream error'),
-        timeout: defineError('timeout', PortError, 'Timeot'),
+        timeout: defineError('timeout', PortError, 'Timeout'),
         echoTimeout: defineError('echoTimeout', PortError, 'Echo retries limit exceeded'),
         unhandled: defineError('unhandled', PortError, 'Unhandled port error'),
         bufferOverflow: defineError('bufferOverflow', PortError, 'Message size of {size} exceeds the maximum of {max}'),
