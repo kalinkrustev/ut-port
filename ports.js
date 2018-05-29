@@ -29,7 +29,7 @@ module.exports = ({bus, logFactory, assert}) => {
         } else if (envConfig[portConfig.id] === false || envConfig[portConfig.id] === 'false') { // port is disabled
             return false;
         }
-        merge(portConfig, envConfig[portConfig.id]);
+        merge(portConfig, envConfig.port, envConfig[portConfig.id]);
         if (!(portConfig.createPort instanceof Function)) {
             if (portConfig.type) {
                 throw new Error('Use createPort:require(\'ut-port-' + portConfig.type + '\') instead of type:\'' + portConfig.type + '\'');
