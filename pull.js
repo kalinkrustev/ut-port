@@ -189,7 +189,7 @@ const portEncode = (port, context) => encodePacket => {
             }
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
-                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: 'encodeBuffer', log: context && context.session && context.session.log});
+                !port.codec && port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
                 return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
             return [DISCARD, $meta];
@@ -269,7 +269,7 @@ const portUnframe = (port, context, buffer) => {
         pull.map(datagram => {
             let result = [];
             port.bytesReceived && port.bytesReceived(datagram.length);
-            port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: 'datagram', log: context && context.session && context.session.log});
+            !port.codec && port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: datagram, log: context && context.session && context.session.log});
             // todo check buffer size
             buffer = Buffer.concat([buffer, datagram]);
             let dataPacket;
