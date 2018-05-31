@@ -168,7 +168,7 @@ const portEncode = (port, context) => encodePacket => {
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
-            return port.codec ? port.codec.encode(encodePacket[0], $meta, context) : encodePacket;
+            return port.codec ? port.codec.encode(encodePacket[0], $meta, context, port.log) : encodePacket;
         })
         .then(encodeBuffer => {
             let size;
@@ -189,7 +189,7 @@ const portEncode = (port, context) => encodePacket => {
             }
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
-                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
+                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: 'encodeBuffer', log: context && context.session && context.session.log});
                 return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
             return [DISCARD, $meta];
@@ -269,7 +269,7 @@ const portUnframe = (port, context, buffer) => {
         pull.map(datagram => {
             let result = [];
             port.bytesReceived && port.bytesReceived(datagram.length);
-            port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: datagram, log: context && context.session && context.session.log});
+            port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: 'datagram', log: context && context.session && context.session.log});
             // todo check buffer size
             buffer = Buffer.concat([buffer, datagram]);
             let dataPacket;
@@ -290,7 +290,7 @@ const portDecode = (port, context) => dataPacket => {
         let $meta = {conId: context && context.conId};
         return Promise.resolve()
             .then(function decodeCall() {
-                return port.codec.decode(dataPacket, $meta, context);
+                return port.codec.decode(dataPacket, $meta, context, port.log);
             })
             .then(decodeResult => [decodeResult, traceMeta(port, context, $meta, 'in/', 'out/', time)])
             .catch(decodeError => {
