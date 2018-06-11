@@ -6,6 +6,39 @@ const portStreams = require('./pull');
 const timing = require('./timing');
 const merge = require('./merge');
 
+const codecFlow = {
+    encode: [['beforeEncode'], ['codec', 'encode'], ['afterEncode']],
+    decode: [['beforeDecode'], ['codec', 'decode'], ['afterDecode']]
+};
+
+const getCodecFlow = function(port, type) {
+    if (!codecFlow[type]) {
+        throw port.errors.codecFlowNotFound({type});
+    }
+    var ef = codecFlow[type].reduce((accum, f) => { // search for methods in port, get the method and correct context, then exec the method within context
+        let callCtx = port; // default method
+        let callMethod = port[f[0]]; // default method ctx
+
+        if (f.length > 1 && port[f[0]] && port[f[0]][f[1]]) { // if there is method called from codec like this port.codec.encode, ctx should be codec not port
+            callCtx = port[f[0]];
+            callMethod = port[f[0]][f[1]];
+        }
+        callMethod && accum.push((encodePacket, $meta, context) => {
+            return Promise.resolve(callMethod.call(callCtx, encodePacket, $meta, context)); // call the method within ctx
+        });
+        return accum;
+    }, []);
+    var efLen = ef.length;
+    return (encodePacket, $meta, context) => {
+        if (!efLen) {
+            return encodePacket;
+        }
+        return ef.reduce((p, f) => {
+            return p.then(p => f(p, $meta, context));
+        }, Promise.resolve(encodePacket[0]));
+    };
+};
+
 function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
@@ -27,7 +60,8 @@ function Port(params) {
         socketTimeout: defineError('socketTimeout', PortError, 'Socket timeout'),
         receiveTimeout: defineError('receiveTimeout', PortError, 'Receive timeout'),
         dispatchFailure: defineError('dispatchFailure', PortError, 'Cannot dispatch message to bus'),
-        queueNotFound: defineError('queueNotFound', PortError, 'Queue not found')
+        queueNotFound: defineError('queueNotFound', PortError, 'Queue not found'),
+        codecFlowNotFound: defineError('codecFlowNotFound', PortError, 'incorrect codec flow type')
     };
 
     this.sendQueues = utqueue.queues();
@@ -116,6 +150,7 @@ Port.prototype.messageDispatch = function messageDispatch() {
 
 Port.prototype.start = function start() {
     this.state = 'starting';
+    this.encodeFlow = getCodecFlow(this, 'encode');
     return this.fireEvent('start', {config: this.config});
 };
 

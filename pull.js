@@ -164,11 +164,17 @@ const portSend = (port, context) => sendPacket => {
 };
 
 const portEncode = (port, context) => encodePacket => {
-    let $meta = encodePacket.length > 1 && encodePacket[encodePacket.length - 1];
+    var encodedPacketLen = encodePacket.length;
+    var $meta;
+    if (encodedPacketLen > 1) {
+        $meta = encodePacket[encodedPacketLen - 1];
+        $meta.request = encodePacket[0];
+    }
+
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
-            return port.codec ? port.codec.encode(encodePacket[0], $meta, context) : encodePacket;
+            return port.encodeFlow(encodePacket, $meta, context);
         })
         .then(encodeBuffer => {
             let size;
@@ -190,7 +196,8 @@ const portEncode = (port, context) => encodePacket => {
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
                 port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
-                return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
+                let r = port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
+                return r;
             }
             return [DISCARD, $meta];
         })
