@@ -11,7 +11,7 @@ module.exports = ({bus, logFactory, assert}) => {
             let id = portConfig.name;
             if (id) {
                 let cfg = envConfig[id];
-                portConfig = cfg !== false && cfg !== 'false' && portConfig(cfg);
+                portConfig = cfg !== false && cfg !== 'false' && portConfig(merge(cfg, envConfig.port));
                 if (portConfig && portConfig.id && portConfig.id !== id) {
                     throw new Error(`Port id ${portConfig.id} does not match function name ${id}`);
                 }
