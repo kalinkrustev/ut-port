@@ -5,30 +5,17 @@ const utqueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
 const merge = require('./merge');
-
+const errorsFactory = require('./errors');
 function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
-    let defineError = this.defineError = (this.bus && this.bus.errors.defineError) || params.defineError;
-    this.getError = (this.bus && this.bus.errors.getError) || params.getError;
-    let PortError = defineError('port');
-    this.errors = {
-        missingParams: defineError('missingParameters', PortError, 'Missing parameters'),
-        missingMeta: defineError('missingMeta', PortError, 'Missing metadata'),
-        notConnected: defineError('notConnected', PortError, 'No connection'),
-        disconnect: defineError('disconnect', PortError, 'Port disconnected'),
-        disconnectBeforeResponse: defineError('disconnectBeforeResponse', PortError, 'Disconnect before response received'),
-        stream: defineError('stream', PortError, 'Port stream error'),
-        timeout: defineError('timeout', PortError, 'Timeout'),
-        echoTimeout: defineError('echoTimeout', PortError, 'Echo retries limit exceeded'),
-        unhandled: defineError('unhandled', PortError, 'Unhandled port error'),
-        bufferOverflow: defineError('bufferOverflow', PortError, 'Message size of {size} exceeds the maximum of {max}'),
-        socketTimeout: defineError('socketTimeout', PortError, 'Socket timeout'),
-        receiveTimeout: defineError('receiveTimeout', PortError, 'Receive timeout'),
-        dispatchFailure: defineError('dispatchFailure', PortError, 'Cannot dispatch message to bus'),
-        queueNotFound: defineError('queueNotFound', PortError, 'Queue not found')
-    };
+
+    const {defineError, getError, fetchErrors} = (this.bus && this.bus.errors) || params;
+    this.errors = errorsFactory({defineError, getError, fetchErrors});
+    this.defineError = defineError;
+    this.getError = getError;
+    this.fetchErrors = fetchErrors;
 
     this.sendQueues = utqueue.queues();
     this.receiveQueues = utqueue.queues();
@@ -109,7 +96,7 @@ Port.prototype.messageDispatch = function messageDispatch() {
     let args = Array.prototype.slice.call(arguments);
     let result = this.bus && this.bus.dispatch.apply(this.bus, args);
     if (!result) {
-        this.log.error && this.log.error(this.errors.dispatchFailure({args}));
+        this.log.error && this.log.error(this.errors['port.dispatchFailure']({args}));
     }
     return result;
 };
@@ -212,7 +199,7 @@ Port.prototype.getConversion = function getConversion($meta, type) {
 
 Port.prototype.disconnect = function(reason) {
     this.error(reason);
-    throw this.errors.disconnect(reason);
+    throw this.errors['port.disconnect'](reason);
 };
 
 Port.prototype.isDebug = function isDebug() {
