@@ -90,7 +90,7 @@ const calcTime = (port, stage, onTimeout) => {
                 return packetThrow;
             }
         })
-    )
+    );
 };
 
 const reportTimes = (port, $meta) => {
