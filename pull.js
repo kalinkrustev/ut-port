@@ -68,26 +68,30 @@ const packetTimer = (method, aggregate = '*', id, timeout) => {
     };
 };
 
-const calcTime = (port, stage, onTimeout) => pull(
-    pull.filter(packetFilter => {
-        let $meta = packetFilter && packetFilter.length > 1 && packetFilter[packetFilter.length - 1];
-        if ($meta && $meta.timer && $meta.timer(stage)) {
-            onTimeout && onTimeout($meta);
-            return false;
-        };
-        return (packetFilter && packetFilter[0] !== DISCARD);
-    }),
-    pull.map(packetThrow => {
-        if (packetThrow && (
-            packetThrow[0] instanceof port.errors['port.disconnect'] ||
-            packetThrow[0] instanceof port.errors['port.receiveTimeout']
-        )) {
-            throw packetThrow[0];
-        } else {
-            return packetThrow;
-        }
-    })
-);
+const calcTime = (port, stage, onTimeout) => {
+    const emit = Array.isArray(port.config.emit) && port.config.emit.indexOf(stage) !== -1;
+    return pull(
+        pull.filter(packetFilter => {
+            emit && port.emit(stage, ...packetFilter);
+            let $meta = packetFilter && packetFilter.length > 1 && packetFilter[packetFilter.length - 1];
+            if ($meta && $meta.timer && $meta.timer(stage)) {
+                onTimeout && onTimeout($meta);
+                return false;
+            };
+            return (packetFilter && packetFilter[0] !== DISCARD);
+        }),
+        pull.map(packetThrow => {
+            if (packetThrow && (
+                packetThrow[0] instanceof port.errors['port.disconnect'] ||
+                packetThrow[0] instanceof port.errors['port.receiveTimeout']
+            )) {
+                throw packetThrow[0];
+            } else {
+                return packetThrow;
+            }
+        })
+    );
+};
 
 const reportTimes = (port, $meta) => {
     if ($meta && $meta.timer && port.methodLatency && $meta.mtid !== 'request') {
