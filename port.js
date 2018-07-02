@@ -6,7 +6,11 @@ const portStreams = require('./pull');
 const timing = require('./timing');
 const merge = require('./merge');
 const errorsFactory = require('./errors');
+const util = require('util');
+const EventEmitter = require('events');
+
 function Port(params) {
+    EventEmitter.call(this);
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
@@ -42,6 +46,8 @@ function Port(params) {
     });
     this.state = 'stopped';
 }
+
+util.inherits(Port, EventEmitter);
 
 Port.prototype.timing = timing;
 Port.prototype.merge = merge;
@@ -145,6 +151,7 @@ Port.prototype.stop = function stop() {
     this.state = 'stopping';
     return this.fireEvent('stop')
         .then(() => {
+            this.removeAllListeners();
             this.streams.forEach(function streamEnd(stream) {
                 stream.end();
             });
