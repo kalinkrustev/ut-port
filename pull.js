@@ -68,30 +68,26 @@ const packetTimer = (method, aggregate = '*', id, timeout) => {
     };
 };
 
-const calcTime = (port, stage, onTimeout) => {
-    const emit = Array.isArray(port.config.emit) && port.config.emit.indexOf(stage) !== -1;
-    return pull(
-        pull.filter(packetFilter => {
-            emit && port.emit(stage, ...packetFilter);
-            let $meta = packetFilter && packetFilter.length > 1 && packetFilter[packetFilter.length - 1];
-            if ($meta && $meta.timer && $meta.timer(stage)) {
-                onTimeout && onTimeout($meta);
-                return false;
-            };
-            return (packetFilter && packetFilter[0] !== DISCARD);
-        }),
-        pull.map(packetThrow => {
-            if (packetThrow && (
-                packetThrow[0] instanceof port.errors['port.disconnect'] ||
-                packetThrow[0] instanceof port.errors['port.receiveTimeout']
-            )) {
-                throw packetThrow[0];
-            } else {
-                return packetThrow;
-            }
-        })
-    );
-};
+const calcTime = (port, stage, onTimeout) => pull(
+    pull.filter(packetFilter => {
+        let $meta = packetFilter && packetFilter.length > 1 && packetFilter[packetFilter.length - 1];
+        if ($meta && $meta.timer && $meta.timer(stage)) {
+            onTimeout && onTimeout($meta);
+            return false;
+        };
+        return (packetFilter && packetFilter[0] !== DISCARD);
+    }),
+    pull.map(packetThrow => {
+        if (packetThrow && (
+            packetThrow[0] instanceof port.errors['port.disconnect'] ||
+            packetThrow[0] instanceof port.errors['port.receiveTimeout']
+        )) {
+            throw packetThrow[0];
+        } else {
+            return packetThrow;
+        }
+    })
+);
 
 const reportTimes = (port, $meta) => {
     if ($meta && $meta.timer && port.methodLatency && $meta.mtid !== 'request') {
@@ -535,14 +531,6 @@ const portPull = (port, what, context) => {
     let result;
     context && (context.requests = new Map());
     context && (context.waiting = new Set());
-    let sendQueue = port.sendQueues.create({
-        min: port.config.minSend,
-        max: port.config.maxSend,
-        drainInterval: port.config.drainSend,
-        drain: (port.config.minSend >= 0 || port.config.drainSend) && drainSend(port, context),
-        skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
-        context
-    });
     if (!what) {
         let receiveQueue = port.receiveQueues.create({context});
         stream = {
@@ -576,30 +564,77 @@ const portPull = (port, what, context) => {
         );
     } else if (what.readable && what.writable) {
         stream = portDuplex(port, context, what);
+    } else {
+        throw port.errors['port.invalidPullStream']({params: {stream: what}});
     }
-    let send = paraPromise(port, context, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
-    let encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
-    let unpack = portUnpack(port);
-    let idleSend = portIdleSend(port, context, sendQueue);
-    let unframe = portUnframe(port, context, bufferCreate.alloc(0));
-    let decode = paraPromise(port, context, portDecode(port, context), port.activeDecodeCount, port.config.concurrency || 10);
-    let idleReceive = portIdleReceive(port, context, sendQueue);
-    let receive = paraPromise(port, context, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
-    let dispatch = paraPromise(port, context, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
-    let sink = portSink(port, sendQueue);
+    const sendQueue = port.sendQueues.create({
+        min: port.config.minSend,
+        max: port.config.maxSend,
+        drainInterval: port.config.drainSend,
+        drain: (port.config.minSend >= 0 || port.config.drainSend) && drainSend(port, context),
+        skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
+        context
+    });
+    const send = paraPromise(port, context, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
+    const encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
+    const unpack = portUnpack(port);
+    const idleSend = portIdleSend(port, context, sendQueue);
+    const unframe = portUnframe(port, context, bufferCreate.alloc(0));
+    const decode = paraPromise(port, context, portDecode(port, context), port.activeDecodeCount, port.config.concurrency || 10);
+    const idleReceive = portIdleReceive(port, context, sendQueue);
+    const receive = paraPromise(port, context, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
+    const dispatch = paraPromise(port, context, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
+    const sink = portSink(port, sendQueue);
+    const emit = stage => {
+        let shouldEmit;
+        switch (typeof port.config.emit) {
+            case 'string':
+                shouldEmit = port.config.emit === 'true';
+                break;
+            case 'boolean':
+                shouldEmit = port.config.emit === true;
+                break;
+            case 'object':
+                shouldEmit = Array.isArray(port.config.emit) && port.config.emit.indexOf(stage) !== -1;
+                break;
+            default:
+                shouldEmit = false;
+        };
+        // better to return false in order to skip piping instead of returning a dummy through stream
+        return shouldEmit && pull.through(
+            packet => {
+                port.emit(stage, ...packet);
+                return packet;
+            },
+            abort => {
+                // not implemented
+            }
+        );
+    };
     pull(
-        sendQueue, calcTime(port, 'queue', portTimeoutDispatch(port)),
-        send, calcTime(port, 'send', portTimeoutDispatch(port)),
-        encode, calcTime(port, 'encode', portTimeoutDispatch(port)),
+        sendQueue,
+        calcTime(port, 'queue', portTimeoutDispatch(port)),
+        send,
+        calcTime(port, 'send', portTimeoutDispatch(port)),
+        emit('send'),
+        encode,
+        calcTime(port, 'encode', portTimeoutDispatch(port)),
+        emit('encode'),
         unpack,
         idleSend,
         stream,
         unframe,
-        decode, calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
+        emit('decode'),
+        decode,
+        calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
-        receive, calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
-        dispatch, calcTime(port, 'dispatch'),
-        sink);
+        emit('receive'),
+        receive,
+        calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
+        dispatch,
+        calcTime(port, 'dispatch'),
+        sink
+    );
     portEventDispatch(port, context, CONNECTED, 'connected', port.log.info, sendQueue);
     return result;
 };

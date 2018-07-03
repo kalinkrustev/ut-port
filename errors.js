@@ -6,6 +6,7 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('notConnected', PortError, 'No connection', 'error');
         defineError('disconnect', PortError, 'Port disconnected', 'error');
         defineError('disconnectBeforeResponse', PortError, 'Disconnect before response received', 'error');
+        defineError('invalidPullStream', PortError, 'Invalid pull-stream', 'error');
         defineError('stream', PortError, 'Port stream error', 'error');
         defineError('timeout', PortError, 'Timeout', 'error');
         defineError('echoTimeout', PortError, 'Echo retries limit exceeded', 'error');
