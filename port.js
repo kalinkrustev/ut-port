@@ -92,8 +92,8 @@ Port.prototype.init = function init() {
     }.bind(this), methods);
 
     return this.bus && Promise.all([
-        this.bus.register(methods.req, 'ports'),
-        this.bus.subscribe(methods.pub, 'ports'),
+        this.bus.register(methods.req, 'ports', this.config.id),
+        this.bus.subscribe(methods.pub, 'ports', this.config.id),
         this.bus && typeof this.bus.portEvent === 'function' && this.bus.portEvent('init', this)
     ]);
 };
