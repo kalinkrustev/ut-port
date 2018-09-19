@@ -603,7 +603,7 @@ const portFindRoute = (port, $meta, args) => port.sendQueues.get() ||
 
 const portPush = (port, promise, args) => {
     if (!args.length) {
-        return Promise.reject(port.errors['port.missingParams']({}));
+        return Promise.reject(port.errors['port.missingParameters']({}));
     } else if (args.length === 1 || !args[args.length - 1]) {
         return Promise.reject(port.errors['port.missingMeta']({}));
     }
