@@ -78,7 +78,10 @@ const calcTime = (port, stage, onTimeout) => pull(
         return (packetFilter && packetFilter[0] !== DISCARD);
     }),
     pull.map(packetThrow => {
-        if (packetThrow && (packetThrow[0] instanceof port.errors['port.disconnect'] || packetThrow[0] instanceof port.errors['port.receiveTimeout'])) {
+        if (packetThrow && (
+            packetThrow[0] instanceof port.errors['port.disconnect'] ||
+            packetThrow[0] instanceof port.errors['port.receiveTimeout']
+        )) {
             throw packetThrow[0];
         } else {
             return packetThrow;
@@ -168,7 +171,7 @@ const portEncode = (port, context) => encodePacket => {
     port.log.debug && port.log.debug({message: encodePacket[0], $meta, log: context && context.session && context.session.log});
     return Promise.resolve()
         .then(function encodeCall() {
-            return port.codec ? port.codec.encode(encodePacket[0], $meta, context) : encodePacket;
+            return port.codec ? port.codec.encode(encodePacket[0], $meta, context, port.log) : encodePacket;
         })
         .then(encodeBuffer => {
             let size;
@@ -189,7 +192,7 @@ const portEncode = (port, context) => encodePacket => {
             }
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
-                port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
+                !port.codec && port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: encodeBuffer, log: context && context.session && context.session.log});
                 return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
             return [DISCARD, $meta];
@@ -269,7 +272,7 @@ const portUnframe = (port, context, buffer) => {
         pull.map(datagram => {
             let result = [];
             port.bytesReceived && port.bytesReceived(datagram.length);
-            port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: datagram, log: context && context.session && context.session.log});
+            !port.codec && port.log.trace && port.log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: datagram, log: context && context.session && context.session.log});
             // todo check buffer size
             buffer = Buffer.concat([buffer, datagram]);
             let dataPacket;
@@ -290,7 +293,7 @@ const portDecode = (port, context) => dataPacket => {
         let $meta = {conId: context && context.conId};
         return Promise.resolve()
             .then(function decodeCall() {
-                return port.codec.decode(dataPacket, $meta, context);
+                return port.codec.decode(dataPacket, $meta, context, port.log);
             })
             .then(decodeResult => [decodeResult, traceMeta(port, context, $meta, 'in/', 'out/', time)])
             .catch(decodeError => {
@@ -528,14 +531,6 @@ const portPull = (port, what, context) => {
     let result;
     context && (context.requests = new Map());
     context && (context.waiting = new Set());
-    let sendQueue = port.sendQueues.create({
-        min: port.config.minSend,
-        max: port.config.maxSend,
-        drainInterval: port.config.drainSend,
-        drain: (port.config.minSend >= 0 || port.config.drainSend) && drainSend(port, context),
-        skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
-        context
-    });
     if (!what) {
         let receiveQueue = port.receiveQueues.create({context});
         stream = {
@@ -569,30 +564,77 @@ const portPull = (port, what, context) => {
         );
     } else if (what.readable && what.writable) {
         stream = portDuplex(port, context, what);
+    } else {
+        throw port.errors['port.invalidPullStream']({params: {stream: what}});
     }
-    let send = paraPromise(port, context, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
-    let encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
-    let unpack = portUnpack(port);
-    let idleSend = portIdleSend(port, context, sendQueue);
-    let unframe = portUnframe(port, context, bufferCreate.alloc(0));
-    let decode = paraPromise(port, context, portDecode(port, context), port.activeDecodeCount, port.config.concurrency || 10);
-    let idleReceive = portIdleReceive(port, context, sendQueue);
-    let receive = paraPromise(port, context, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
-    let dispatch = paraPromise(port, context, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
-    let sink = portSink(port, sendQueue);
+    const sendQueue = port.sendQueues.create({
+        min: port.config.minSend,
+        max: port.config.maxSend,
+        drainInterval: port.config.drainSend,
+        drain: (port.config.minSend >= 0 || port.config.drainSend) && drainSend(port, context),
+        skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
+        context
+    });
+    const send = paraPromise(port, context, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
+    const encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
+    const unpack = portUnpack(port);
+    const idleSend = portIdleSend(port, context, sendQueue);
+    const unframe = portUnframe(port, context, bufferCreate.alloc(0));
+    const decode = paraPromise(port, context, portDecode(port, context), port.activeDecodeCount, port.config.concurrency || 10);
+    const idleReceive = portIdleReceive(port, context, sendQueue);
+    const receive = paraPromise(port, context, portReceive(port, context), port.activeReceiveCount, port.config.concurrency || 10);
+    const dispatch = paraPromise(port, context, portDispatch(port), port.activeDispatchCount, port.config.concurrency || 10);
+    const sink = portSink(port, sendQueue);
+    const emit = stage => {
+        let shouldEmit;
+        switch (typeof port.config.emit) {
+            case 'string':
+                shouldEmit = port.config.emit === 'true';
+                break;
+            case 'boolean':
+                shouldEmit = port.config.emit === true;
+                break;
+            case 'object':
+                shouldEmit = Array.isArray(port.config.emit) && port.config.emit.indexOf(stage) !== -1;
+                break;
+            default:
+                shouldEmit = false;
+        };
+        // better to return false in order to skip piping instead of returning a dummy through stream
+        return shouldEmit && pull.through(
+            packet => {
+                port.emit(stage, ...packet);
+                return packet;
+            },
+            abort => {
+                // not implemented
+            }
+        );
+    };
     pull(
-        sendQueue, calcTime(port, 'queue', portTimeoutDispatch(port)),
-        send, calcTime(port, 'send', portTimeoutDispatch(port)),
-        encode, calcTime(port, 'encode', portTimeoutDispatch(port)),
+        sendQueue,
+        calcTime(port, 'queue', portTimeoutDispatch(port)),
+        send,
+        calcTime(port, 'send', portTimeoutDispatch(port)),
+        emit('send'),
+        encode,
+        calcTime(port, 'encode', portTimeoutDispatch(port)),
+        emit('encode'),
         unpack,
         idleSend,
         stream,
         unframe,
-        decode, calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
+        emit('decode'),
+        decode,
+        calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
-        receive, calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
-        dispatch, calcTime(port, 'dispatch'),
-        sink);
+        emit('receive'),
+        receive,
+        calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
+        dispatch,
+        calcTime(port, 'dispatch'),
+        sink
+    );
     portEventDispatch(port, context, CONNECTED, 'connected', port.log.info, sendQueue);
     return result;
 };
