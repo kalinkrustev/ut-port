@@ -192,7 +192,14 @@ const portEncode = (port, context) => encodePacket => {
             }
             if (encodeBuffer) {
                 port.msgSent && port.msgSent(1);
-                !port.codec && port.log.trace && port.log.trace({$meta: {mtid: 'payload', method: 'port.encode'}, message: encodeBuffer, log: context && context.session && context.session.log});
+                !port.codec && port.log.trace && port.log.trace({
+                    $meta: {
+                        mtid: 'payload',
+                        method: $meta.method ? $meta.method + '.encode' : 'port.encode'
+                    },
+                    message: encodeBuffer,
+                    log: context && context.session && context.session.log
+                });
                 return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
             return [DISCARD, $meta];
