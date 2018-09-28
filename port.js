@@ -123,7 +123,7 @@ Port.prototype.fireEvent = function fireEvent(event, logData) {
     this.log.info && this.log.info(Object.assign({
         $meta: {
             mtid: 'event',
-            opcode: `port.${event}`
+            method: `port.${event}`
         }
     }, logData));
 
