@@ -24,7 +24,7 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
             return [DISCARD];
         };
     }
-    return portErrorDispatch(port, $meta)(port.errors['port.timeout']({})).catch(error => {
+    return portErrorDispatch(port, $meta)(port.errors['port.timeout']()).catch(error => {
         port.error(error);
     });
 };
@@ -369,13 +369,13 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
         if (context && context.requests && context.requests.size) {
             Array.from(context.requests.values()).forEach(request => {
                 request.$meta.mtid = 'error';
-                request.$meta.dispatch && request.$meta.dispatch(port.errors['port.disconnectBeforeResponse']({}), request.$meta);
+                request.$meta.dispatch && request.$meta.dispatch(port.errors['port.disconnectBeforeResponse'](), request.$meta);
             });
             context.requests.clear();
         }
         if (context && context.waiting && context.waiting.size) {
             Array.from(context.waiting.values()).forEach(end => {
-                end(port.errors['port.disconnectBeforeResponse']({}));
+                end(port.errors['port.disconnectBeforeResponse']());
             });
         }
     }
@@ -603,15 +603,15 @@ const portFindRoute = (port, $meta, args) => port.sendQueues.get() ||
 
 const portPush = (port, promise, args) => {
     if (!args.length) {
-        return Promise.reject(port.errors['port.missingParameters']({}));
+        return Promise.reject(port.errors['port.missingParameters']());
     } else if (args.length === 1 || !args[args.length - 1]) {
-        return Promise.reject(port.errors['port.missingMeta']({}));
+        return Promise.reject(port.errors['port.missingMeta']());
     }
     let $meta = args[args.length - 1] = Object.assign({}, args[args.length - 1]);
     let queue = portFindRoute(port, $meta, args);
     if (!queue) {
         port.log.error && port.log.error(port.errors['port.queueNotFound']({args}));
-        return promise ? Promise.reject(port.errors['port.notConnected']({})) : false;
+        return promise ? Promise.reject(port.errors['port.notConnected']()) : false;
     }
     $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
     $meta.timer = packetTimer($meta.method, '*', port.config.id, $meta.timeout);
