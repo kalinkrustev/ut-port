@@ -24,7 +24,7 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
             return [DISCARD];
         };
     }
-    return portErrorDispatch(port, $meta)(port.errors.timeout()).catch(error => {
+    return portErrorDispatch(port, $meta)(port.errors['port.timeout']()).catch(error => {
         port.error(error);
     });
 };
@@ -78,7 +78,7 @@ const calcTime = (port, stage, onTimeout) => pull(
         return (packetFilter && packetFilter[0] !== DISCARD);
     }),
     pull.map(packetThrow => {
-        if (packetThrow && (packetThrow[0] instanceof port.errors.disconnect || packetThrow[0] instanceof port.errors.receiveTimeout)) {
+        if (packetThrow && (packetThrow[0] instanceof port.errors['port.disconnect'] || packetThrow[0] instanceof port.errors['port.receiveTimeout'])) {
             throw packetThrow[0];
         } else {
             return packetThrow;
@@ -121,7 +121,7 @@ const traceMeta = (port, context, $meta, set, get, time) => {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
             context.requests.set(set + $meta.trace, {
                 $meta,
-                end: !time && timeoutManager.startRequest($meta, port.errors.timeout, error => {
+                end: !time && timeoutManager.startRequest($meta, port.errors['port.timeout'], error => {
                     context.requests.delete(set + $meta.trace);
                     $meta.mtid = 'error';
                     $meta.dispatch && $meta.dispatch(error, $meta);
@@ -255,10 +255,10 @@ const getFrame = (port, buffer) => {
     }
     if (port.config.maxReceiveBuffer) {
         if (!result && buffer.length > port.config.maxReceiveBuffer) {
-            throw port.errors.bufferOverflow({params: {max: port.config.maxReceiveBuffer, size: buffer.length}});
+            throw port.errors['port.bufferOverflow']({params: {max: port.config.maxReceiveBuffer, size: buffer.length}});
         }
         if (!result && size > port.config.maxReceiveBuffer) { // fail early
-            throw port.errors.bufferOverflow({params: {max: port.config.maxReceiveBuffer, size: size}});
+            throw port.errors['port.bufferOverflow']({params: {max: port.config.maxReceiveBuffer, size: size}});
         }
     }
     return result;
@@ -296,7 +296,7 @@ const portDecode = (port, context) => dataPacket => {
             .catch(decodeError => {
                 $meta.mtid = 'error';
                 if (!decodeError || !decodeError.keepConnection) {
-                    return [port.errors.disconnect(decodeError), $meta];
+                    return [port.errors['port.disconnect'](decodeError), $meta];
                 } else {
                     return [decodeError, $meta];
                 }
@@ -320,7 +320,7 @@ const portIdleReceive = (port, context, queue) => {
                 portEventDispatch(
                     port,
                     context,
-                    port.errors.receiveTimeout({params: {timeout: port.config.idleReceive}}),
+                    port.errors['port.receiveTimeout']({params: {timeout: port.config.idleReceive}}),
                     'idleReceive',
                     port.log.trace,
                     queue
@@ -369,13 +369,13 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
         if (context && context.requests && context.requests.size) {
             Array.from(context.requests.values()).forEach(request => {
                 request.$meta.mtid = 'error';
-                request.$meta.dispatch && request.$meta.dispatch(port.errors.disconnectBeforeResponse(), request.$meta);
+                request.$meta.dispatch && request.$meta.dispatch(port.errors['port.disconnectBeforeResponse'](), request.$meta);
             });
             context.requests.clear();
         }
         if (context && context.waiting && context.waiting.size) {
             Array.from(context.waiting.values()).forEach(end => {
-                end(port.errors.disconnectBeforeResponse());
+                end(port.errors['port.disconnectBeforeResponse']());
             });
         }
     }
@@ -430,7 +430,7 @@ const portDispatch = port => dispatchPacket => {
     };
 
     if (mtid === 'error') {
-        return Promise.reject(port.errors.unhandled(dispatchPacket[0]));
+        return Promise.reject(port.errors['port.unhandled'](dispatchPacket[0]));
     }
 
     return Promise.resolve()
@@ -459,7 +459,7 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         let $meta = params.length > 1 && params[params.length - 1];
-        timeoutManager.startPromise(params, fn, $meta, port.errors.timeout, context && context.waiting)
+        timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
                 active--;
                 counter && counter(active);
@@ -503,13 +503,13 @@ const portDuplex = (port, context, stream) => {
         }
     };
     let streamError = error => {
-        port.error(port.errors.stream({context, error}));
+        port.error(port.errors['port.stream']({context, error}));
     };
     stream.on('error', streamError);
     stream.on('close', streamClose);
     stream.on('data', streamData);
     port.config.socketTimeOut && stream.setTimeout(port.config.socketTimeOut, () => {
-        stream.destroy(port.errors.socketTimeout({params: {timeout: port.config.socketTimeOut}}));
+        stream.destroy(port.errors['port.socketTimeout']({params: {timeout: port.config.socketTimeOut}}));
     });
     let sink = pullStream.sink(stream);
     let source = receiveQueue.source;
@@ -603,15 +603,15 @@ const portFindRoute = (port, $meta, args) => port.sendQueues.get() ||
 
 const portPush = (port, promise, args) => {
     if (!args.length) {
-        return Promise.reject(port.errors.missingParams());
+        return Promise.reject(port.errors['port.missingParameters']());
     } else if (args.length === 1 || !args[args.length - 1]) {
-        return Promise.reject(port.errors.missingMeta());
+        return Promise.reject(port.errors['port.missingMeta']());
     }
     let $meta = args[args.length - 1] = Object.assign({}, args[args.length - 1]);
     let queue = portFindRoute(port, $meta, args);
     if (!queue) {
-        port.log.error && port.log.error(port.errors.queueNotFound({args}));
-        return promise ? Promise.reject(port.errors.notConnected()) : false;
+        port.log.error && port.log.error(port.errors['port.queueNotFound']({args}));
+        return promise ? Promise.reject(port.errors['port.notConnected']()) : false;
     }
     $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
     $meta.timer = packetTimer($meta.method, '*', port.config.id, $meta.timeout);
