@@ -14,12 +14,10 @@ function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
-
-    const {defineError, getError, fetchErrors} = (this.bus && this.bus.errors) || params;
-    this.errors = errorsFactory({defineError, getError, fetchErrors});
-    this.defineError = defineError;
-    this.getError = getError;
-    this.fetchErrors = fetchErrors;
+    let defineError = this.defineError = (this.bus && this.bus.errors.defineError) || params.defineError;
+    let getError = this.getError = (this.bus && this.bus.errors.getError) || params.getError;
+    let fetchErrors = this.fetchErrors = (this.bus && this.bus.errors.fetchErrors) || params.fetchErrors;
+    this.errors = require('./errors')({defineError, getError, fetchErrors});
 
     this.sendQueues = utqueue.queues();
     this.receiveQueues = utqueue.queues();
@@ -125,7 +123,7 @@ Port.prototype.fireEvent = function fireEvent(event, logData) {
     this.log.info && this.log.info(Object.assign({
         $meta: {
             mtid: 'event',
-            opcode: `port.${event}`
+            method: `port.${event}`
         }
     }, logData));
 

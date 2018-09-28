@@ -1,21 +1,22 @@
 module.exports = ({defineError, getError, fetchErrors}) => {
     if (!getError('port')) {
-        let PortError = defineError('port', null, 'port error', 'error');
-        defineError('missingParameters', PortError, 'Missing parameters', 'error');
-        defineError('missingMeta', PortError, 'Missing metadata', 'error');
-        defineError('notConnected', PortError, 'No connection', 'error');
-        defineError('disconnect', PortError, 'Port disconnected', 'error');
-        defineError('disconnectBeforeResponse', PortError, 'Disconnect before response received', 'error');
-        defineError('invalidPullStream', PortError, 'Invalid pull-stream', 'error');
-        defineError('stream', PortError, 'Port stream error', 'error');
-        defineError('timeout', PortError, 'Timeout', 'error');
-        defineError('echoTimeout', PortError, 'Echo retries limit exceeded', 'error');
-        defineError('unhandled', PortError, 'Unhandled port error', 'error');
-        defineError('bufferOverflow', PortError, 'Message size of {size} exceeds the maximum of {max}', 'error');
-        defineError('socketTimeout', PortError, 'Socket timeout', 'error');
-        defineError('receiveTimeout', PortError, 'Receive timeout', 'error');
-        defineError('dispatchFailure', PortError, 'Cannot dispatch message to bus', 'error');
-        defineError('queueNotFound', PortError, 'Queue not found', 'error');
+        const port = defineError('port', undefined, 'Port generic');
+
+        defineError('missingParameters', port, 'Missing parameters');
+        defineError('missingMeta', port, 'Missing metadata');
+        defineError('notConnected', port, 'No connection');
+        defineError('disconnect', port, 'Port disconnected');
+        defineError('disconnectBeforeResponse', port, 'Disconnect before response received');
+        defineError('stream', port, 'Port stream error');
+        defineError('timeout', port, 'Timeout');
+        defineError('echoTimeout', port, 'Echo retries limit exceeded');
+        defineError('unhandled', port, 'Unhandled port error');
+        defineError('bufferOverflow', port, 'Message size of {size} exceeds the maximum of {max}');
+        defineError('socketTimeout', port, 'Socket timeout');
+        defineError('receiveTimeout', port, 'Receive timeout');
+        defineError('dispatchFailure', port, 'Cannot dispatch message to bus');
+        defineError('queueNotFound', port, 'Queue not found');
     }
+
     return fetchErrors('port');
 };
