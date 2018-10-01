@@ -17,7 +17,7 @@ function Port(params) {
     let defineError = this.defineError = (this.bus && this.bus.errors.defineError) || params.defineError;
     let getError = this.getError = (this.bus && this.bus.errors.getError) || params.getError;
     let fetchErrors = this.fetchErrors = (this.bus && this.bus.errors.fetchErrors) || params.fetchErrors;
-    this.errors = require('./errors')({defineError, getError, fetchErrors});
+    this.errors = errorsFactory({defineError, getError, fetchErrors});
 
     this.sendQueues = utqueue.queues();
     this.receiveQueues = utqueue.queues();
