@@ -1,6 +1,6 @@
 {
   "name": "ut-port",
-  "version": "6.7.0",
+  "version": "6.8.0-rc-godfather.0",
   "dependencies": {
     "browser-process-hrtime": "0.1.2",
     "lodash.mergewith": "4.6.1",
