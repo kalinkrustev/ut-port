@@ -9,7 +9,7 @@ const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const timeoutManager = require('./timeout');
 
 const portErrorDispatch = (port, $meta) => dispatchError => {
-    port.error(dispatchError);
+    port.error(dispatchError, $meta);
     $meta.mtid = 'error';
     $meta.errorCode = dispatchError && dispatchError.code;
     $meta.errorMessage = dispatchError && dispatchError.message;
@@ -25,7 +25,7 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
         };
     }
     return portErrorDispatch(port, $meta)(port.errors['port.timeout']()).catch(error => {
-        port.error(error);
+        port.error(error, $meta);
     });
 };
 
@@ -241,7 +241,7 @@ const portExec = (port, fn) => execPacket => {
         })
         .then(execResult => [execResult, $meta])
         .catch(execError => {
-            port.error(execError);
+            port.error(execError, $meta);
             if ($meta) {
                 $meta.mtid = 'error';
             }
@@ -364,7 +364,7 @@ const portReceive = (port, context) => receivePacket => {
                 return [receivedPacket, $meta];
             })
             .catch(receiveError => {
-                port.error(receiveError);
+                port.error(receiveError, $meta);
                 $meta.mtid = 'error';
                 $meta.errorCode = receiveError && receiveError.code;
                 $meta.errorMessage = receiveError && receiveError.message;
@@ -429,7 +429,7 @@ const portDispatch = port => dispatchPacket => {
             $metaResult.dispatch = $meta.dispatch;
             $metaResult.trace = $meta.trace;
             if (isError) {
-                port.error(dispatchResult);
+                port.error(dispatchResult, $meta);
                 return [dispatchResult, $metaResult];
             } else {
                 return dispatchResult;
@@ -481,7 +481,7 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
                 cb(promiseError);
             })
             .catch(cbError => {
-                port.error(cbError);
+                port.error(cbError, $meta);
                 cb(cbError);
             });
     }, concurrency, false);
@@ -513,7 +513,7 @@ const portDuplex = (port, context, stream) => {
         }
     };
     let streamError = error => {
-        port.error(port.errors['port.stream']({context, error}));
+        port.error(port.errors['port.stream']({context, error}), {method: 'port.pull'});
     };
     stream.on('error', streamError);
     stream.on('close', streamClose);
@@ -550,7 +550,7 @@ const portPull = (port, what, context) => {
                     try {
                         fn.apply(null, replyPacket);
                     } catch (error) {
-                        port.error(error);
+                        port.error(error, $meta);
                     }
                 }
             }, () => portEventDispatch(port, context, DISCARD, 'disconnected', port.log.info)),
@@ -659,7 +659,7 @@ const portPush = (port, promise, args) => {
     let $meta = args[args.length - 1] = Object.assign({}, args[args.length - 1]);
     let queue = portFindRoute(port, $meta, args);
     if (!queue) {
-        port.log.error && port.log.error(port.errors['port.queueNotFound']({args}));
+        port.error(port.errors['port.queueNotFound']({args}), $meta);
         return promise ? Promise.reject(port.errors['port.notConnected']()) : false;
     }
     $meta.method = $meta && $meta.method && $meta.method.split('/').pop();

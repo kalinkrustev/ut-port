@@ -166,8 +166,11 @@ Port.prototype.publish = function publish(...args) {
     return portStreams.portPush(this, false, args);
 };
 
-Port.prototype.error = function portError(error) {
-    this.log.error && this.log.error(error);
+Port.prototype.error = function portError(error, $meta) {
+    if (this.log.error) {
+        if ($meta) error.method = $meta.method;
+        this.log.error(error);
+    }
 };
 
 Port.prototype.fatal = function portError(error) {
