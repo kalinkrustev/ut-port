@@ -14,10 +14,7 @@ function Port(params) {
     this.log = {};
     this.logFactory = (params && params.logFactory) || null;
     this.bus = (params && params.bus) || null;
-    let defineError = this.defineError = (this.bus && this.bus.errors.defineError) || params.defineError;
-    let getError = this.getError = (this.bus && this.bus.errors.getError) || params.getError;
-    let fetchErrors = this.fetchErrors = (this.bus && this.bus.errors.fetchErrors) || params.fetchErrors;
-    this.errors = errorsFactory({defineError, getError, fetchErrors});
+    this.errors = errorsFactory((this.bus && this.bus.errors) || params.errors);
 
     this.sendQueues = utqueue.queues();
     this.receiveQueues = utqueue.queues();

@@ -18,5 +18,9 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('queueNotFound', port, 'Queue not found');
     }
 
-    return fetchErrors('port');
+    return Object.assign({
+        defineError,
+        getError,
+        fetchErrors
+    }, fetchErrors('port'));
 };
