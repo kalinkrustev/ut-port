@@ -156,8 +156,8 @@ const portSend = (port, context) => sendPacket => {
                 return fn.apply(port, Array.prototype.concat(sendPacket, context));
             })
             .then(result => {
-                port.log.trace && port.log.trace({message: result, $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
                 sendPacket[0] = result;
+                port.log.trace && port.log.trace({message: sendPacket, $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
                 return sendPacket;
             })
             .catch(portErrorDispatch(port, $meta));
@@ -360,7 +360,7 @@ const portReceive = (port, context) => receivePacket => {
                 return fn.apply(port, Array.prototype.concat(receivePacket, context));
             })
             .then(receivedPacket => {
-                port.log.trace && port.log.trace({message: receivedPacket, $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
+                port.log.trace && port.log.trace({message: [receivedPacket, $meta], $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
                 return [receivedPacket, $meta];
             })
             .catch(receiveError => {
