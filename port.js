@@ -150,6 +150,7 @@ Port.prototype.stop = function stop() {
             this.streams.forEach(function streamEnd(stream) {
                 stream.end();
             });
+            this.sendQueues.end();
             this.state = 'stopped';
             return true;
         });

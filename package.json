@@ -7,7 +7,7 @@
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.9",
     "stream-to-pull-stream": "1.7.2",
-    "ut-queue": "^6.1.0"
+    "ut-queue": "^6.2.0-rc-godfather.1"
   },
   "devDependencies": {
     "ut-tools": "^6.3.4"
