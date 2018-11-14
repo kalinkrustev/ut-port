@@ -128,6 +128,7 @@ Port.prototype.fireEvent = function fireEvent(event, logData) {
     if (Array.isArray(this.config.imports) && this.config.imports.length) {
         let regExp = new RegExp(`\\.${event}$`);
         this.config.imports.forEach((imp) => {
+            imp = imp.split('/').pop();
             imp.match(regExp) && eventHandlers.push(this.config[imp]);
             this.config[`${imp}.${event}`] && eventHandlers.push(this.config[`${imp}.${event}`]);
         });
