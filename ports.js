@@ -1,9 +1,19 @@
 const merge = require('./merge');
-const Port = require('./port');
+const utPort = require('./port');
 
 module.exports = ({bus, logFactory, assert}) => {
     let servicePorts = new Map();
     let index = 0;
+
+    let params = config => ({
+        utLog: logFactory,
+        utBus: bus,
+        utPort,
+        parent: utPort,
+        utError: bus.errors,
+        utMethod: (...params) => bus.importMethod(...params),
+        config
+    });
 
     let createOne = (portConfig, envConfig) => {
         let Constructor;
@@ -37,37 +47,56 @@ module.exports = ({bus, logFactory, assert}) => {
                 throw new Error('Missing createPort property');
             }
         }
-        Constructor = portConfig.createPort({parent: Port});
+        Constructor = portConfig.createPort(params(portConfig));
         portConfig.order = portConfig.order || index;
         index++;
-        let port = new Constructor({bus, logFactory, config: portConfig});
+        let port = new Constructor(params(portConfig));
         return Promise.resolve(port.init()).then(function() {
             servicePorts.set(portConfig.id, port);
             return port;
         });
     };
 
-    let createMany = (ports, envConfig) => {
-        return Promise.all(
-            ports.reduce(function(all, port) {
-                port = port && createOne(port, envConfig);
-                port && all.push(port);
-                return all;
-            }, [])
-        );
-    };
+    let createMany = (ports, envConfig) => ports.reduce(function(all, port) {
+        port = port && createOne(port, envConfig);
+        port && all.push(port);
+        return all;
+    }, []);
 
-    let create = (ports, envConfig) =>
-        Array.isArray(ports) ? createMany(ports, envConfig, assert) : createOne(ports, envConfig, assert);
+    let createAny = (items, envConfig) => items.map(async({create, moduleName}) => {
+        let moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
+        let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
+        let Result;
+        if (config !== false && config !== 'false') {
+            index++;
+            Result = create(params(config));
+            if (Result instanceof Function) { // item returned a constructor
+                if (!Result.name) throw new Error('Missing constructor name for port');
+                config = (moduleConfig || {})[Result.name] || {};
+                config.order = config.order || index;
+                config.id = moduleName ? moduleName + '.' + Result.name : Result.name;
+                Result = new Result(params(config));
+                servicePorts.set(config.id, Result);
+            } else if (Result instanceof Object && create.name) {
+                bus.registerLocal(Result, moduleName ? moduleName + '.' + create.name : create.name);
+            }
+            await (Result && Result.init instanceof Function) && Result.init();
+        }
+        return Result;
+    });
+
+    let create = (ports, any, envConfig) => Promise.all([].concat(
+        createAny(any, envConfig),
+        Array.isArray(ports) ? createMany(ports, envConfig, assert) : createOne(ports, envConfig, assert)
+    ).filter(item => item));
 
     let fetch = ports => Array.from(servicePorts.values()).sort((a, b) => a.config.order > b.config.order ? 1 : -1);
 
-    let startOne = ({port}) => {
+    let startOne = async({port}) => {
         port = servicePorts.get(port);
-        return port && Promise.resolve()
-            .then(() => port.start())
-            .then(() => port.ready())
-            .then(() => port);
+        await port && port.start();
+        await port && port.ready();
+        return port;
     };
 
     let startMany = ports => {
@@ -109,11 +138,10 @@ module.exports = ({bus, logFactory, assert}) => {
         fetch,
         create,
         start,
-        stop: ({port}) => {
+        stop: async({port}) => {
             port = servicePorts.get(port);
-            return port && Promise.resolve()
-                .then(() => port.stop())
-                .then(() => port);
+            await port && port.stop();
+            return port;
         },
         move: ({port, x, y}) => {
             port = servicePorts.get(port);
