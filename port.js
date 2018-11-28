@@ -21,6 +21,7 @@ module.exports = class Port extends EventEmitter {
         this.receiveQueues = utqueue.queues();
         this.counter = null;
         this.streams = [];
+        this.imported = new Set();
         // performance metrics
         this.methodLatency = null;
         this.portLatency = null;
@@ -80,8 +81,10 @@ module.exports = class Port extends EventEmitter {
         methods.req[this.config.id + '.start'] = this.start;
         methods.req[this.config.id + '.stop'] = this.stop;
         (this.config.namespace || this.config.imports || [this.config.id]).reduce(function initReduceMethods(prev, next) {
-            prev.req[next + '.request'] = this.request.bind(this);
-            prev.pub[next + '.publish'] = this.publish.bind(this);
+            if (typeof next === 'string') {
+                prev.req[next + '.request'] = this.request.bind(this);
+                prev.pub[next + '.publish'] = this.publish.bind(this);
+            }
             return prev;
         }.bind(this), methods);
         return this.bus && Promise.all([
@@ -116,10 +119,11 @@ module.exports = class Port extends EventEmitter {
             }
         }, logData));
         let eventHandlers = this.methods[event] ? [this.methods[event]] : [];
-        if (Array.isArray(this.config.imports) && this.config.imports.length) {
+        if (this.imported.size) {
             let regExp = new RegExp(`\\.${event}$`);
-            this.config.imports.forEach((imp) => {
+            Array.from(this.imported).forEach((imp) => {
                 imp = imp.split('/').pop();
+                if (imp.substr(-1 === '.')) imp = imp.substr(0, imp.length - 1);
                 imp.match(regExp) && eventHandlers.push(this.methods[imp]);
                 this.methods[`${imp}.${event}`] && eventHandlers.push(this.methods[`${imp}.${event}`]);
             });
