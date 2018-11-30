@@ -21,7 +21,6 @@ module.exports = class Port extends EventEmitter {
         this.receiveQueues = utqueue.queues();
         this.counter = null;
         this.streams = [];
-        this.imported = new Set();
         // performance metrics
         this.methodLatency = null;
         this.portLatency = null;
@@ -119,13 +118,9 @@ module.exports = class Port extends EventEmitter {
             }
         }, logData));
         let eventHandlers = this.methods[event] ? [this.methods[event]] : [];
-        if (this.imported.size) {
-            let regExp = new RegExp(`\\.${event}$`);
-            Array.from(this.imported).forEach((imp) => {
-                imp = imp.split('/').pop();
-                if (imp.substr(-1 === '.')) imp = imp.substr(0, imp.length - 1);
-                imp.match(regExp) && eventHandlers.push(this.methods[imp]);
-                this.methods[`${imp}.${event}`] && eventHandlers.push(this.methods[`${imp}.${event}`]);
+        if (this.methods.imported) {
+            Object.values(this.methods.imported).forEach((imp) => {
+                imp[event] && eventHandlers.push(imp[event]);
             });
         }
         let result;
@@ -164,26 +159,36 @@ module.exports = class Port extends EventEmitter {
     methodPath(methodName) {
         return methodName.split('/', 2)[1];
     }
+    findHandler(methodName) {
+        let result;
+        if (this.methods.imported) {
+            for (let imported of Object.values(this.methods.imported)) {
+                result = imported[methodName];
+                if (result) break;
+            }
+        }
+        return result || this.methods[methodName];
+    }
     getConversion($meta, type) {
         let fn;
         let name;
         if ($meta) {
             if ($meta.method) {
                 name = [$meta.method, $meta.mtid, type].join('.');
-                fn = this.methods[name];
+                fn = this.findHandler(name);
                 if (!fn) {
                     name = [this.methodPath($meta.method), $meta.mtid, type].join('.');
-                    fn = this.methods[name];
+                    fn = this.findHandler(name);
                 }
             }
             if (!fn) {
                 name = [$meta.opcode, $meta.mtid, type].join('.');
-                fn = this.methods[name];
+                fn = this.findHandler(name);
             }
         }
         if (!fn && (!$meta || $meta.mtid !== 'event')) {
             name = type;
-            fn = this.methods[name];
+            fn = this.findHandler(name);
         }
         return { fn, name };
     }
@@ -212,6 +217,6 @@ module.exports = class Port extends EventEmitter {
     setTimer($meta) {
         $meta.timer = portStreams.packetTimer($meta.method, '*', this.config.id, $meta.timeout);
     }
-    timing(...params) { return timing(...params); }
-    merge(...params) { return merge(...params); }
+    get timing() { return timing; }
+    get merge() { return merge; }
 };
