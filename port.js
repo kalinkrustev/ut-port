@@ -141,6 +141,19 @@ module.exports = class Port extends EventEmitter {
         this.state = 'stopped';
         return true;
     }
+
+    async destroy() {
+        await this.stop();
+        let methods = (this.config.namespace || this.config.imports || [this.config.id]).reduce(function destroyReduceMethods(prev, next) {
+            prev.req.push(next + '.request');
+            prev.pub.push(next + '.publish');
+            return prev;
+        }, {req: [this.config.id + '.start', this.config.id + '.stop'], pub: []});
+
+        this.bus.unregister(methods.req, 'ports', this.config.id);
+        this.bus.unsubscribe(methods.pub, 'ports', this.config.id);
+    }
+
     request(...args) {
         return portStreams.portPush(this, true, args);
     }
