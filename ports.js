@@ -15,9 +15,9 @@ module.exports = ({bus, logFactory, assert}) => {
         config
     });
 
-    let createAny = (items, envConfig) => items.map(async({create, moduleName}) => {
+    let createItem = async({create, moduleName}, envConfig) => {
         let moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
-        if (moduleName) modules[moduleName] = modules[moduleName] || [];
+        modules[moduleName || '.'] = modules[moduleName || '.'] || [];
         let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
         let Result;
         if (config !== false && config !== 'false') {
@@ -37,16 +37,21 @@ module.exports = ({bus, logFactory, assert}) => {
                         bus.unregisterLocal(moduleName ? moduleName + '.' + create.name : create.name);
                     },
                     start() {
-                    }
+                    },
+                    init: Result.init
                 };
             }
             await (Result && Result.init instanceof Function) && Result.init();
-            modules[moduleName].push(Result);
+            modules[moduleName || '.'].push(Result);
         }
         return Result;
-    });
+    };
 
-    let create = (any, envConfig) => Promise.all(createAny(any, envConfig).filter(item => item));
+    let create = async(items, envConfig) => {
+        let result = [];
+        for (const item of items) result.push(await createItem(item, envConfig));
+        return result.filter(item => item);
+    };
 
     let fetch = ports => Array.from(servicePorts.values()).sort((a, b) => a.config.order > b.config.order ? 1 : -1);
 
