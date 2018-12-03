@@ -25,11 +25,16 @@ module.exports = ({bus, logFactory, assert}) => {
             Result = await create(params(config));
             if (Result instanceof Function) { // item returned a constructor
                 if (!Result.name) throw new Error('Missing constructor name for port');
-                config = (moduleConfig || {})[Result.name] || {};
-                config.order = config.order || index;
-                config.id = moduleName ? moduleName + '.' + Result.name : Result.name;
-                Result = new Result(params(config));
-                servicePorts.set(config.id, Result);
+                config = (moduleConfig || {})[Result.name];
+                if (config === false || config === 'false') {
+                    return;
+                } else {
+                    config = config || {};
+                    config.order = config.order || index;
+                    config.id = (moduleName ? moduleName + '.' + Result.name : Result.name) + `(` + index + `)`;
+                    Result = new Result(params(config));
+                    servicePorts.set(config.id, Result);
+                }
             } else if (Result instanceof Object && create.name) {
                 bus.registerLocal(Result, moduleName ? moduleName + '.' + create.name : create.name);
                 Result = {
@@ -42,7 +47,7 @@ module.exports = ({bus, logFactory, assert}) => {
                 };
             }
             await (Result && Result.init instanceof Function) && Result.init();
-            modules[moduleName || '.'].push(Result);
+            Result && modules[moduleName || '.'].push(Result);
         }
         return Result;
     };
