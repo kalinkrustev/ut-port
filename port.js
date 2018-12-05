@@ -8,15 +8,25 @@ const merge = require('./merge');
 const createErrors = require('./errors');
 const EventEmitter = require('events');
 
-module.exports = class Port extends EventEmitter {
+module.exports = (defaults) => class Port extends EventEmitter {
     constructor({ utLog, utBus, utError, config } = {}) {
         super();
         this.log = {};
         this.utLog = utLog;
         this.bus = utBus;
         this.errors = createErrors(utError);
-        this.config = this.traverse(obj => obj.hasOwnProperty('defaults') && (obj.defaults instanceof Function ? obj.defaults.apply(this) : obj.defaults), config);
-        this.methods = this.traverse(obj => obj.hasOwnProperty('handlers') && (obj.handlers instanceof Function ? obj.handlers.apply(this) : obj.handlers), {});
+        this.config = this.traverse(obj => {
+            if (obj.hasOwnProperty('defaults')) {
+                let result = obj.defaults;
+                return result instanceof Function ? result.apply(this) : result;
+            }
+        }, config);
+        this.methods = this.traverse(obj => {
+            if (obj.hasOwnProperty('handlers')) {
+                let result = obj.handlers;
+                return result instanceof Function ? result.apply(this) : result;
+            }
+        }, {});
         this.sendQueues = utqueue.queues();
         this.receiveQueues = utqueue.queues();
         this.counter = null;
@@ -51,9 +61,10 @@ module.exports = class Port extends EventEmitter {
         return merge(...config.reverse());
     }
     defaults() {
-        return {
+        return {...{
             logLevel: 'info'
-        };
+        },
+        ...defaults};
     }
     init() {
         this.utLog && (this.log = this.utLog.createLog(this.config.logLevel, { name: this.config.id, context: this.config.type + ' port' }, this.config.log));
