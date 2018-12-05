@@ -31,7 +31,7 @@ module.exports = ({bus, logFactory, assert}) => {
                 } else {
                     config = config || {};
                     config.order = config.order || index;
-                    config.id = (moduleName ? moduleName + '.' + Result.name : Result.name) + `(` + index + `)`;
+                    config.id = (moduleName ? moduleName + '.' + Result.name : Result.name);
                     Result = new Result(params(config));
                     servicePorts.set(config.id, Result);
                 }
