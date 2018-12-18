@@ -121,23 +121,31 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.state = 'started';
         return result;
     }
-    async fireEvent(event, logData) {
+    async fireEvent(event, data, mapper) {
         this.log.info && this.log.info(Object.assign({
             $meta: {
                 mtid: 'event',
                 method: `port.${event}`
             }
-        }, logData));
+        }, data));
         let eventHandlers = this.methods[event] ? [this.methods[event]] : [];
         if (this.methods.imported) {
             Object.values(this.methods.imported).forEach((imp) => {
                 imp[event] && eventHandlers.push(imp[event]);
             });
         }
-        let result;
-        for (let eventHandler of eventHandlers) {
-            result = await eventHandler.call(this);
-        };
+        let result = data;
+        switch (mapper) {
+            case 'asyncMap':
+                result = await Promise.all(eventHandlers.map(handler => handler.call(this, data)));
+                break;
+            case 'reduce':
+            default:
+                for (let eventHandler of eventHandlers) {
+                    result = await eventHandler.call(this, result);
+                };
+                break;
+        }
         await this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent(event, this);
         return result;
     }
