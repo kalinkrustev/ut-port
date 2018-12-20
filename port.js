@@ -146,7 +146,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 };
                 break;
         }
-        await this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent(event, this);
+        await (this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent(event, this));
         return result;
     }
     async stop() {

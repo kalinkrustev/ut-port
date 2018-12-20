@@ -49,7 +49,7 @@ module.exports = ({bus, logFactory, assert}) => {
                     init: Result.init
                 };
             }
-            await (Result && Result.init instanceof Function) && Result.init();
+            await (Result && Result.init instanceof Function && Result.init());
             Result && modules[moduleName || '.'].push(Result);
         }
         return Result;
@@ -66,8 +66,8 @@ module.exports = ({bus, logFactory, assert}) => {
 
     let startOne = async({port}) => {
         port = servicePorts.get(port);
-        await port && port.start();
-        await port && port.ready();
+        await (port && port.start());
+        await (port && port.ready());
         return port;
     };
 
@@ -80,12 +80,12 @@ module.exports = ({bus, logFactory, assert}) => {
                 assert && assert.ok(true, 'started port ' + port.config.id);
             }
             for (let port of portsStarted) {
-                await port.ready instanceof Function && port.ready();
+                await (port.ready instanceof Function && port.ready());
             }
         } catch (error) {
             for (let port of portsStarted) {
                 try {
-                    await port.stop instanceof Function && port.stop();
+                    await (port.stop instanceof Function && port.stop());
                 } catch (ignore) { /* just continue calling stop */ };
             }
             throw error;
@@ -103,7 +103,7 @@ module.exports = ({bus, logFactory, assert}) => {
         start,
         stop: async({port}) => {
             port = servicePorts.get(port);
-            await port && port.stop();
+            await (port && port.stop());
             return port;
         },
         destroy: async moduleName => {
