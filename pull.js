@@ -79,8 +79,8 @@ const calcTime = (port, stage, onTimeout) => pull(
     }),
     pull.map(packetThrow => {
         if (packetThrow && (
-            packetThrow[0] instanceof port.errors['port.disconnect'] ||
-            packetThrow[0] instanceof port.errors['port.receiveTimeout']
+            (packetThrow[0] instanceof Error && packetThrow[0].type === 'port.disconnect') ||
+            (packetThrow[0] instanceof Error && packetThrow[0].type === 'port.receiveTimeout')
         )) {
             throw packetThrow[0];
         } else {
