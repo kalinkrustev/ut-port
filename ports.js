@@ -10,6 +10,7 @@ module.exports = ({bus, logFactory, assert}) => {
         utBus: bus,
         utPort: base,
         utError: bus.errors,
+        registerErrors: bus.registerErrors,
         utMethod: (...params) => bus.importMethod(...params),
         config
     });
