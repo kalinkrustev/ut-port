@@ -108,13 +108,13 @@ module.exports = ({bus, logFactory, assert}) => {
             return port;
         },
         destroy: async moduleName => {
-            let started = modules[moduleName];
+            let started = modules[moduleName || '.'];
             if (started) {
                 for (let item of started) {
                     await item.destroy();
                 }
             }
-            delete modules[moduleName];
+            delete modules[moduleName || '.'];
         },
         move: ({port, x, y}) => {
             port = servicePorts.get(port);
