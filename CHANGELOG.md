@@ -1,3 +1,12 @@
+## [6.8.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.0...v6.8.1) (2019-02-02)
+
+
+### Bug Fixes
+
+* upgrade dependencies ([14b262f](https://github.com/softwaregroup-bg/ut-port/commit/14b262f))
+
+
+
 # [6.8.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.0-rc-godfather.15...v6.8.0) (2019-02-02)
 
 
