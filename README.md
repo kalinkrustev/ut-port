@@ -92,7 +92,8 @@ Returns the API below, which is accessible through the bus in the ```ports``` na
   this property will be merged to the port configuration.
 
   If envConfig contains a property matching the port id, then the value of
-  this property will also be merged to the port configuration but with a higher priority than the `port` property.
+  this property will also be merged to the port configuration but with a higher
+  priority than the `port` property.
 
 ```ports.start()``` - start all ports
 
