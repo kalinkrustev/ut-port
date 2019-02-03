@@ -1,3 +1,12 @@
+## [6.8.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.1...v6.8.2) (2019-02-03)
+
+
+### Bug Fixes
+
+* improve error handling ([5c02876](https://github.com/softwaregroup-bg/ut-port/commit/5c02876))
+
+
+
 ## [6.8.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.0...v6.8.1) (2019-02-02)
 
 
