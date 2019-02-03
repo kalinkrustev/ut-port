@@ -24,7 +24,7 @@ module.exports = ({bus, logFactory, assert}) => {
             index++;
             Result = await create(params(config, base));
             if (Result instanceof Function) { // item returned a constructor
-                if (!Result.name) throw new Error('Missing constructor name for port');
+                if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
                 config = (moduleConfig || {})[Result.name];
                 if (config === false || config === 'false') {
                     return;
@@ -35,7 +35,8 @@ module.exports = ({bus, logFactory, assert}) => {
                     Result = new Result(params(config, base));
                     servicePorts.set(config.id, Result);
                 }
-            } else if (Result instanceof Object && create.name) {
+            } else if (Result instanceof Object) {
+                if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
                 let id = moduleName ? moduleName + '.' + create.name : create.name;
                 bus.registerLocal(Result, id);
                 Result = {
@@ -49,6 +50,8 @@ module.exports = ({bus, logFactory, assert}) => {
                     },
                     init: Result.init
                 };
+            } else if (Result) {
+                throw new Error(`Module "${moduleName}" returned unexpected value:\n${Result}`);
             }
             await (Result && Result.init instanceof Function && Result.init());
             Result && modules[moduleName || '.'].push(Result);
