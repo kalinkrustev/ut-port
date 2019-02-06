@@ -477,7 +477,7 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     }, concurrency, false);
 };
 
-const portDuplex = (port, context, stream) => {
+const portDuplex = (port, context, stream, sendQueue) => {
     let cleanup = () => {
         stream.removeListener('data', streamData);
         stream.removeListener('close', streamClose);
@@ -500,6 +500,7 @@ const portDuplex = (port, context, stream) => {
             portEventDispatch(port, context, DISCARD, 'disconnected', port.log.info);
         } finally {
             receiveQueue.end();
+            sendQueue.end();
         }
     };
     let streamError = error => {
@@ -568,7 +569,7 @@ const portPull = (port, what, context) => {
             calcTime(port, 'exec', portTimeoutDispatch(port))
         );
     } else if (what.readable && what.writable) {
-        stream = portDuplex(port, context, what);
+        stream = portDuplex(port, context, what, sendQueue);
     }
     let send = paraPromise(port, context, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
     let encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
