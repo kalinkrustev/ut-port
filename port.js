@@ -15,18 +15,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.utLog = utLog;
         this.bus = utBus;
         this.errors = createErrors(utError);
-        this.config = this.traverse(obj => {
-            if (obj.hasOwnProperty('defaults')) {
-                let result = obj.defaults;
-                return result instanceof Function ? result.apply(this) : result;
-            }
-        }, config);
-        this.methods = this.traverse(obj => {
-            if (obj.hasOwnProperty('handlers')) {
-                let result = obj.handlers;
-                return result instanceof Function ? result.apply(this) : result;
-            }
-        }, {});
+        this.config = this.traverse('defaults', config);
         this.sendQueues = utqueue.queues();
         this.receiveQueues = utqueue.queues();
         this.counter = null;
@@ -55,18 +44,23 @@ module.exports = (defaults) => class Port extends EventEmitter {
     traverse(prop, initial) {
         let config = [initial];
         for (let current = Object.getPrototypeOf(this); current; current = Object.getPrototypeOf(current)) {
-            let value = prop(current);
-            if (value) config.push(value);
+            if (current.hasOwnProperty(prop)) {
+                let result = current[prop];
+                let value = result instanceof Function ? result.apply(this) : result;
+                if (value) config.push(value);
+            }
         }
         return merge(...config.reverse());
     }
     defaults() {
-        return {...{
-            logLevel: 'info'
-        },
-        ...defaults};
+        return {
+            logLevel: 'info',
+            ...defaults
+        };
     }
-    init() {
+    async init() {
+        this.state = 'initializing';
+        this.methods = this.traverse('handlers', {});
         this.utLog && (this.log = this.utLog.createLog(this.config.logLevel, { name: this.config.id, context: this.config.type + ' port' }, this.config.log));
         if (this.config.metrics !== false && this.bus && this.bus.config.implementation && this.bus.performance) {
             let measurementName = this.config.metrics || this.config.id;
@@ -97,11 +91,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
             }
             return prev;
         }.bind(this), methods);
-        return this.bus && Promise.all([
+        await this.bus && Promise.all([
             this.bus.register(methods.req, 'ports', this.config.id),
-            this.bus.subscribe(methods.pub, 'ports', this.config.id),
-            this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent('init', this)
+            this.bus.subscribe(methods.pub, 'ports', this.config.id)
         ]);
+        return this.fireEvent('init');
     }
     messageDispatch() {
         let args = Array.prototype.slice.call(arguments);

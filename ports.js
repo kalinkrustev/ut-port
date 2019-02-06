@@ -53,8 +53,7 @@ module.exports = ({bus, logFactory, assert}) => {
             } else if (Result) {
                 throw new Error(`Module "${moduleName}" returned unexpected value:\n${Result}`);
             }
-            await (Result && Result.init instanceof Function && Result.init());
-            Result && modules[moduleName || '.'].push(Result);
+            if (Result) modules[moduleName || '.'].push(Result);
         }
         return Result;
     };
@@ -70,6 +69,7 @@ module.exports = ({bus, logFactory, assert}) => {
 
     let startOne = async({port}) => {
         port = servicePorts.get(port);
+        await (port && port.init());
         await (port && port.start());
         await (port && port.ready());
         return port;
@@ -77,13 +77,16 @@ module.exports = ({bus, logFactory, assert}) => {
 
     let startMany = async ports => {
         let portsStarted = [];
+        for (let port of ports) {
+            await (port.init instanceof Function && port.init());
+        }
         try {
             for (let port of ports) {
                 portsStarted.push(port); // collect ports that are started
-                port = await port.start();
+                await port.start();
                 assert && assert.ok(true, 'started port ' + port.config.id);
             }
-            for (let port of portsStarted) {
+            for (let port of ports) {
                 await (port.ready instanceof Function && port.ready());
             }
         } catch (error) {
