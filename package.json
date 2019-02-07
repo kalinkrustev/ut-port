@@ -10,7 +10,8 @@
     "ut-queue": "^6.2.0"
   },
   "devDependencies": {
-    "ut-tools": "^6.8.10"
+    "ut-tools": "^6.8.10",
+    "tap": "kalinkrustev/node-tap#2536cc04faf85f1a6117c0f619167c0d90de5e07"
   },
   "peerDependencies": {
     "ut-bus": "^7.0.0"
@@ -21,7 +22,7 @@
     "release": "ut-release",
     "changelog": "ut-changelog",
     "check": "ut-check",
-    "cover": "ut-cover",
+    "cover": "ut-cover-parallel",
     "lint-js": "ut-lint-js .",
     "postpublish": "ut-postpublish",
     "postversion": "ut-postversion",
@@ -31,7 +32,7 @@
     "pretest": "ut-pretest",
     "precover": "ut-precover",
     "preversion": "ut-preversion",
-    "test": "ut-test",
+    "test": "ut-test-parallel",
     "version": "ut-version",
     "jenkins": "ut-jenkins",
     "gitlab": "ut-gitlab"

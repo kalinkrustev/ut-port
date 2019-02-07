@@ -21,12 +21,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, config);
-        this.methods = this.traverse(obj => {
-            if (obj.hasOwnProperty('handlers')) {
-                let result = obj.handlers;
-                return result instanceof Function ? result.apply(this) : result;
-            }
-        }, {});
+        this.methods = {};
         this.sendQueues = utqueue.queues();
         this.receiveQueues = utqueue.queues();
         this.counter = null;
@@ -67,6 +62,12 @@ module.exports = (defaults) => class Port extends EventEmitter {
         ...defaults};
     }
     init() {
+        this.methods = this.traverse(obj => {
+            if (obj.hasOwnProperty('handlers')) {
+                let result = obj.handlers;
+                return result instanceof Function ? result.apply(this) : result;
+            }
+        }, {});
         this.utLog && (this.log = this.utLog.createLog(this.config.logLevel, { name: this.config.id, context: this.config.type + ' port' }, this.config.log));
         if (this.config.metrics !== false && this.bus && this.bus.config.implementation && this.bus.performance) {
             let measurementName = this.config.metrics || this.config.id;
