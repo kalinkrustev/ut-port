@@ -1,3 +1,12 @@
+## [6.8.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.2...v6.8.3) (2019-02-07)
+
+
+### Bug Fixes
+
+* collect handlers in the init method but not in the constructor ([#26](https://github.com/softwaregroup-bg/ut-port/issues/26)) ([8ad39af](https://github.com/softwaregroup-bg/ut-port/commit/8ad39af))
+
+
+
 ## [6.8.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.1...v6.8.2) (2019-02-03)
 
 
