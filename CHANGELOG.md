@@ -1,3 +1,7 @@
+## [6.8.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.4...v6.8.5) (2019-02-08)
+
+
+
 ## [6.8.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.3...v6.8.4) (2019-02-08)
 
 
