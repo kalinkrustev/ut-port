@@ -1,3 +1,12 @@
+## [6.8.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.3...v6.8.4) (2019-02-08)
+
+
+### Bug Fixes
+
+* end send queue when port is duplex ([04dcc5f](https://github.com/softwaregroup-bg/ut-port/commit/04dcc5f))
+
+
+
 ## [6.8.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.2...v6.8.3) (2019-02-07)
 
 
