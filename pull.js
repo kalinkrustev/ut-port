@@ -487,7 +487,7 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     }, concurrency, false);
 };
 
-const portDuplex = (port, context, stream) => {
+const portDuplex = (port, context, stream, sendQueue) => {
     let cleanup = () => {
         stream.removeListener('data', streamData);
         stream.removeListener('close', streamClose);
@@ -510,6 +510,7 @@ const portDuplex = (port, context, stream) => {
             portEventDispatch(port, context, DISCARD, 'disconnected', port.log.info);
         } finally {
             receiveQueue.end();
+            sendQueue.end();
         }
     };
     let streamError = error => {
@@ -538,6 +539,14 @@ const portPull = (port, what, context) => {
     let result;
     context && (context.requests = new Map());
     context && (context.waiting = new Set());
+    const sendQueue = port.sendQueues.create({
+        min: port.config.minSend,
+        max: port.config.maxSend,
+        drainInterval: port.config.drainSend,
+        drain: (port.config.minSend >= 0 || port.config.drainSend) && drainSend(port, context),
+        skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
+        context
+    });
     if (!what) {
         let receiveQueue = port.receiveQueues.create({context});
         stream = {
@@ -570,18 +579,10 @@ const portPull = (port, what, context) => {
             calcTime(port, 'exec', portTimeoutDispatch(port))
         );
     } else if (what.readable && what.writable) {
-        stream = portDuplex(port, context, what);
+        stream = portDuplex(port, context, what, sendQueue);
     } else {
         throw port.errors['port.invalidPullStream']({params: {stream: what}});
     }
-    const sendQueue = port.sendQueues.create({
-        min: port.config.minSend,
-        max: port.config.maxSend,
-        drainInterval: port.config.drainSend,
-        drain: (port.config.minSend >= 0 || port.config.drainSend) && drainSend(port, context),
-        skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
-        context
-    });
     const send = paraPromise(port, context, portSend(port, context), port.activeSendCount, port.config.concurrency || 10);
     const encode = paraPromise(port, context, portEncode(port, context), port.activeEncodeCount, port.config.concurrency || 10);
     const unpack = portUnpack(port);
