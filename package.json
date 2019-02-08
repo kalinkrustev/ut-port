@@ -10,8 +10,8 @@
     "ut-queue": "^6.2.0"
   },
   "devDependencies": {
-    "ut-tools": "^6.8.10",
-    "tap": "kalinkrustev/node-tap#2536cc04faf85f1a6117c0f619167c0d90de5e07"
+    "tap": "12.5.2",
+    "ut-tools": "^6.8.10"
   },
   "peerDependencies": {
     "ut-bus": "^7.0.0"
