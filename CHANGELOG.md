@@ -1,3 +1,17 @@
+# [6.9.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.5...v6.9.0) (2019-02-19)
+
+
+### Bug Fixes
+
+* call events and handlers in import order ([e2571a7](https://github.com/softwaregroup-bg/ut-port/commit/e2571a7))
+
+
+### Features
+
+* allow both exec and $meta.reply ([684f3de](https://github.com/softwaregroup-bg/ut-port/commit/684f3de))
+
+
+
 ## [6.8.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.4...v6.8.5) (2019-02-08)
 
 
