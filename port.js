@@ -130,8 +130,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
             }
         }, data));
         let eventHandlers = this.methods[event] ? [this.methods[event]] : [];
-        if (this.methods.imported) {
-            Object.values(this.methods.imported).forEach((imp) => {
+        if (this.methods.importedMap) {
+            Array.from(this.methods.importedMap.values()).forEach((imp) => {
                 imp[event] && eventHandlers.push(imp[event]);
             });
         }
@@ -194,8 +194,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
     }
     findHandler(methodName) {
         let result;
-        if (this.methods.imported) {
-            for (let imported of Object.values(this.methods.imported)) {
+        if (this.methods.importedMap) {
+            for (let imported of this.methods.importedMap.values()) {
                 result = imported[methodName];
                 if (result) break;
             }
