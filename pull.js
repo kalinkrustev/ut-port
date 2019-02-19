@@ -6,6 +6,7 @@ const pullStream = require('stream-to-pull-stream');
 const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
+const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without processing
 const timeoutManager = require('./timeout');
 
 const portErrorDispatch = (port, $meta) => dispatchError => {
@@ -70,6 +71,7 @@ const packetTimer = (method, aggregate = '*', id, timeout) => {
 
 const calcTime = (port, stage, onTimeout) => pull(
     pull.filter(packetFilter => {
+        if (packetFilter[IGNORE]) return true;
         let $meta = packetFilter && packetFilter.length > 1 && packetFilter[packetFilter.length - 1];
         if ($meta && $meta.timer && $meta.timer(stage)) {
             onTimeout && onTimeout($meta);
@@ -466,6 +468,10 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
     counter && counter(active);
     return paramap((params, cb) => {
+        if (params[IGNORE]) {
+            cb(null, params);
+            return;
+        }
         active++;
         counter && counter(active);
         let $meta = params.length > 1 && params[params.length - 1];
@@ -534,6 +540,11 @@ const drainSend = (port, context) => queueLength => {
     return portEventDispatch(port, context, {length: queueLength, interval: port.config.drainSend}, 'drainSend', port.log.info);
 };
 
+const pullExec = (port, context, exec) => pull(
+    paraPromise(port, context, portExec(port, exec), port.activeExecCount, port.config.concurrency || 10),
+    calcTime(port, 'exec', portTimeoutDispatch(port))
+);
+
 const portPull = (port, what, context) => {
     let stream;
     let result;
@@ -547,7 +558,8 @@ const portPull = (port, what, context) => {
         skipDrain: packet => packet && packet.length > 1 && (packet[packet.length - 1].echo || packet[packet.length - 1].drain === false),
         context
     });
-    if (!what) {
+    if (!what || what.exec) {
+        let exec = what && what.exec;
         let receiveQueue = port.receiveQueues.create({context});
         stream = {
             sink: pull.drain(replyPacket => {
@@ -561,6 +573,8 @@ const portPull = (port, what, context) => {
                     } catch (error) {
                         port.error(error, $meta);
                     }
+                } else if (exec) {
+                    receiveQueue.push(replyPacket);
                 }
             }, () => portEventDispatch(port, context, DISCARD, 'disconnected', port.log.info)),
             source: receiveQueue.source
@@ -570,14 +584,22 @@ const portPull = (port, what, context) => {
                 let $meta = (pushPacket.length > 1 && pushPacket[pushPacket.length - 1]);
                 $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
                 $meta.timer = $meta.timer || packetTimer($meta.method, '*', port.config.id, $meta.timeout);
+                if (exec) pushPacket[IGNORE] = true;
                 receiveQueue.push(pushPacket);
             }
         };
+        if (exec) {
+            stream.source = pull(
+                stream.source,
+                pullExec(port, context, exec),
+                pull.map(packet => {
+                    delete packet[IGNORE];
+                    return packet;
+                })
+            );
+        }
     } else if (typeof what === 'function') {
-        stream = pull(
-            paraPromise(port, context, portExec(port, what), port.activeExecCount, port.config.concurrency || 10),
-            calcTime(port, 'exec', portTimeoutDispatch(port))
-        );
+        stream = pullExec(port, context, what);
     } else if (what.readable && what.writable) {
         stream = portDuplex(port, context, what, sendQueue);
     } else {
