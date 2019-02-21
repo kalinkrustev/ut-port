@@ -71,7 +71,7 @@ const packetTimer = (method, aggregate = '*', id, timeout) => {
 
 const calcTime = (port, stage, onTimeout) => pull(
     pull.filter(packetFilter => {
-        if (packetFilter[IGNORE]) return true;
+        if (packetFilter && packetFilter[IGNORE]) return true;
         let $meta = packetFilter && packetFilter.length > 1 && packetFilter[packetFilter.length - 1];
         if ($meta && $meta.timer && $meta.timer(stage)) {
             onTimeout && onTimeout($meta);
@@ -593,7 +593,7 @@ const portPull = (port, what, context) => {
                 stream.source,
                 pullExec(port, context, exec),
                 pull.map(packet => {
-                    delete packet[IGNORE];
+                    if (packet) delete packet[IGNORE];
                     return packet;
                 })
             );
