@@ -1,3 +1,12 @@
+## [6.9.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.9.0...v6.9.1) (2019-02-21)
+
+
+### Bug Fixes
+
+* packet safety checks ([7f1df55](https://github.com/softwaregroup-bg/ut-port/commit/7f1df55))
+
+
+
 # [6.9.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.8.5...v6.9.0) (2019-02-19)
 
 
