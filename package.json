@@ -7,10 +7,11 @@
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.1",
     "stream-to-pull-stream": "1.7.2",
-    "ut-queue": "^6.1.0"
+    "ut-queue": "^6.2.1-accu.0"
   },
   "devDependencies": {
-    "ut-tools": "^5.30.0"
+    "tap": "^12.5.3",
+    "ut-tools": "^6.8.10"
   },
   "peerDependencies": {
     "ut-bus": "^6.1.0"
