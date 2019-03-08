@@ -91,7 +91,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         let methods = { req: {}, pub: {} };
         methods.req[this.config.id + '.start'] = this.start;
         methods.req[this.config.id + '.stop'] = this.stop;
-        (this.config.namespace || this.config.imports || [this.config.id]).reduce(function initReduceMethods(prev, next) {
+        [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function initReduceMethods(prev, next) {
             if (typeof next === 'string') {
                 prev.req[next + '.request'] = this.request.bind(this);
                 prev.pub[next + '.publish'] = this.publish.bind(this);
@@ -164,7 +164,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     async destroy() {
         await this.stop();
-        let methods = (this.config.namespace || this.config.imports || [this.config.id]).reduce(function destroyReduceMethods(prev, next) {
+        let methods = [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function destroyReduceMethods(prev, next) {
             prev.req.push(next + '.request');
             prev.pub.push(next + '.publish');
             return prev;
