@@ -1,3 +1,12 @@
+# [6.10.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.9.1...v6.10.0) (2019-03-08)
+
+
+### Features
+
+* single namespace ([f88386b](https://github.com/softwaregroup-bg/ut-port/commit/f88386b))
+
+
+
 ## [6.9.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.9.0...v6.9.1) (2019-02-21)
 
 
