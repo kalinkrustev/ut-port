@@ -207,10 +207,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
         let name;
         if ($meta) {
             if ($meta.method) {
-                name = [$meta.method, $meta.mtid, type].join('.');
+                let path = this.bus.getPath($meta.method);
+                name = [path, $meta.mtid, type].join('.');
                 fn = this.findHandler(name);
                 if (!fn) {
-                    name = [this.methodPath($meta.method), $meta.mtid, type].join('.');
+                    name = [this.methodPath(path), $meta.mtid, type].join('.');
                     fn = this.findHandler(name);
                 }
             }
@@ -248,7 +249,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return result;
     }
     setTimer($meta) {
-        $meta.timer = portStreams.packetTimer($meta.method, '*', this.config.id, $meta.timeout);
+        $meta.timer = portStreams.packetTimer(this.bus.getPath($meta.method), '*', this.config.id, $meta.timeout);
     }
     get timing() { return timing; }
     get merge() { return merge; }
