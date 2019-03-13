@@ -1,3 +1,14 @@
+# [6.11.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.10.0...v6.11.0) (2019-03-13)
+
+
+### Features
+
+* expose utNotify ([9d04425](https://github.com/softwaregroup-bg/ut-port/commit/9d04425))
+* publish port.drain method ([bb57681](https://github.com/softwaregroup-bg/ut-port/commit/bb57681))
+* support method modifiers ([0b681e0](https://github.com/softwaregroup-bg/ut-port/commit/0b681e0))
+
+
+
 # [6.10.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.9.1...v6.10.0) (2019-03-08)
 
 
