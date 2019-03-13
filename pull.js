@@ -120,7 +120,7 @@ const reportTimes = (port, $meta) => {
 
 const traceMeta = (port, context, $meta, set, get, time) => {
     if ($meta && !$meta.timer && $meta.mtid === 'request') {
-        $meta.timer = packetTimer($meta.method, '*', port.config.id, $meta.timeout);
+        $meta.timer = packetTimer(port.bus.getPath($meta.method), '*', port.config.id, $meta.timeout);
     }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
@@ -583,7 +583,7 @@ const portPull = (port, what, context) => {
             push: pushPacket => {
                 let $meta = (pushPacket.length > 1 && pushPacket[pushPacket.length - 1]);
                 $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
-                $meta.timer = $meta.timer || packetTimer($meta.method, '*', port.config.id, $meta.timeout);
+                $meta.timer = $meta.timer || packetTimer(port.bus.getPath($meta.method), '*', port.config.id, $meta.timeout);
                 if (exec) pushPacket[IGNORE] = true;
                 receiveQueue.push(pushPacket);
             }
@@ -686,7 +686,7 @@ const portPush = (port, promise, args) => {
         return promise ? Promise.reject(port.errors['port.notConnected']()) : false;
     }
     $meta.method = $meta && $meta.method && $meta.method.split('/').pop();
-    $meta.timer = packetTimer($meta.method, '*', port.config.id, $meta.timeout);
+    $meta.timer = packetTimer(port.bus.getPath($meta.method), '*', port.config.id, $meta.timeout);
     if (!promise) {
         $meta.dispatch = () => {
             delete $meta.dispatch;
