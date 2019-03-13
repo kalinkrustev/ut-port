@@ -12,6 +12,7 @@ module.exports = ({bus, logFactory, assert}) => {
         utError: bus.errors,
         registerErrors: bus.registerErrors,
         utMethod: (...params) => bus.importMethod(...params),
+        utNotify: (...params) => bus.notification(...params),
         config
     });
 
