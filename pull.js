@@ -673,6 +673,12 @@ const portFindRoute = (port, $meta, args) => port.sendQueues.get() ||
     port.sendQueues.get($meta) ||
     (typeof port.connRouter === 'function' && port.sendQueues.get({conId: port.connRouter(port.sendQueues, args)}));
 
+const portDrain = (port, args) => {
+    let $meta = args[args.length - 1] = Object.assign({}, args[args.length - 1]);
+    let queue = portFindRoute(port, $meta, args);
+    if (!queue.length()) queue.push([DISCARD]); // force drain on empty queue
+};
+
 const portPush = (port, promise, args) => {
     if (!args.length) {
         return Promise.reject(port.errors['port.missingParameters']());
@@ -711,6 +717,7 @@ const portPush = (port, promise, args) => {
 module.exports = {
     portPull,
     portPush,
+    portDrain,
     packetTimer,
     timeoutManager
 };

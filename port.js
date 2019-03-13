@@ -91,6 +91,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         let methods = { req: {}, pub: {} };
         methods.req[this.config.id + '.start'] = this.start;
         methods.req[this.config.id + '.stop'] = this.stop;
+        methods.pub[this.config.id + '.drain'] = this.drain.bind(this);
         [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function initReduceMethods(prev, next) {
             if (typeof next === 'string') {
                 prev.req[next + '.request'] = this.request.bind(this);
@@ -168,12 +169,14 @@ module.exports = (defaults) => class Port extends EventEmitter {
             prev.req.push(next + '.request');
             prev.pub.push(next + '.publish');
             return prev;
-        }, {req: [this.config.id + '.start', this.config.id + '.stop'], pub: []});
+        }, {req: [this.config.id + '.start', this.config.id + '.stop'], pub: [this.config.id + '.drain']});
 
         this.bus.unregister(methods.req, 'ports', this.config.id);
         this.bus.unsubscribe(methods.pub, 'ports', this.config.id);
     }
-
+    drain(...args) {
+        return portStreams.portDrain(this, args);
+    }
     request(...args) {
         return portStreams.portPush(this, true, args);
     }
