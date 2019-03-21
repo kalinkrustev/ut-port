@@ -442,7 +442,11 @@ const portDispatch = port => dispatchPacket => {
     };
 
     if (mtid === 'error') {
-        return Promise.reject(port.errors['port.unhandled'](dispatchPacket[0]));
+        if (port.config.disconnectOnError) {
+            return Promise.reject(port.errors['port.unhandled'](dispatchPacket[0]));
+        } else {
+            return Promise.resolve(dispatchPacket);
+        }
     }
 
     return Promise.resolve()

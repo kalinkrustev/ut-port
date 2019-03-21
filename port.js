@@ -57,7 +57,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
     }
     defaults() {
         return {...{
-            logLevel: 'info'
+            logLevel: 'info',
+            disconnectOnError: true
         },
         ...defaults};
     }
