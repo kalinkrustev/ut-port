@@ -1,3 +1,12 @@
+# [6.12.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.11.0...v6.12.0) (2019-03-21)
+
+
+### Features
+
+* add property disconnectOnError ([4965fea](https://github.com/softwaregroup-bg/ut-port/commit/4965fea))
+
+
+
 # [6.11.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.10.0...v6.11.0) (2019-03-13)
 
 
