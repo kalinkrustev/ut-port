@@ -1,3 +1,12 @@
+## [6.12.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.0...v6.12.1) (2019-04-17)
+
+
+### Bug Fixes
+
+* elasticsearch indexing ([3f09953](https://github.com/softwaregroup-bg/ut-port/commit/3f09953))
+
+
+
 # [6.12.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.11.0...v6.12.0) (2019-03-21)
 
 
