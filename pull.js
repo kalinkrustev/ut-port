@@ -169,7 +169,7 @@ const portSend = (port, context) => sendPacket => {
 const portEncode = (port, context) => encodePacket => {
     let $meta = encodePacket.length > 1 && encodePacket[encodePacket.length - 1];
     port.log.debug && port.log.debug({
-        message: typeof encodePacket[0] === 'object' ? encodePacket[0] : {message: encodePacket[0]},
+        message: typeof encodePacket[0] === 'object' ? encodePacket[0] : {value: encodePacket[0]},
         $meta,
         log: context && context.session && context.session.log
     });
