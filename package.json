@@ -10,6 +10,7 @@
     "ut-queue": "^6.2.0-rc-godfather.1"
   },
   "devDependencies": {
+    "tap": "12.5.2",
     "ut-tools": "^6.3.4"
   },
   "peerDependencies": {
