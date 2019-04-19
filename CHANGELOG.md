@@ -1,3 +1,12 @@
+## [6.12.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.1...v6.12.2) (2019-04-19)
+
+
+### Bug Fixes
+
+* allow port activation with portid=true ([b901e68](https://github.com/softwaregroup-bg/ut-port/commit/b901e68))
+
+
+
 ## [6.12.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.0...v6.12.1) (2019-04-17)
 
 
