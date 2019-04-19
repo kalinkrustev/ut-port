@@ -31,6 +31,7 @@ module.exports = ({bus, logFactory, assert}) => {
                     return;
                 } else {
                     config = config || {};
+                    if (typeof config !== 'object') config = {};
                     config.order = config.order || index;
                     config.id = (moduleName ? moduleName + '.' + Result.name : Result.name);
                     Result = new Result(params(config, base));
