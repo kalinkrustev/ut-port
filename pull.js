@@ -424,11 +424,13 @@ const portDispatch = port => dispatchPacket => {
     }
     let mtid = $meta.mtid;
     let opcode = $meta.opcode;
+    let method = $meta.method;
 
     let portDispatchResult = isError => dispatchResult => {
         let $metaResult = (dispatchResult.length > 1 && dispatchResult[dispatchResult.length - 1]) || {};
         if (mtid === 'request' && $metaResult.mtid !== 'discard') {
-            !$metaResult.opcode && ($metaResult.opcode = opcode);
+            if (!$metaResult.opcode) $metaResult.opcode = opcode;
+            if (!$metaResult.method) $metaResult.method = method;
             $metaResult.mtid = isError ? 'error' : 'response';
             $metaResult.reply = $meta.reply;
             $metaResult.timer = $meta.timer;
