@@ -1,3 +1,12 @@
+## [6.12.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.2...v6.12.3) (2019-05-07)
+
+
+### Bug Fixes
+
+* preserve method in response $meta ([f55ea7d](https://github.com/softwaregroup-bg/ut-port/commit/f55ea7d))
+
+
+
 ## [6.12.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.1...v6.12.2) (2019-04-19)
 
 
