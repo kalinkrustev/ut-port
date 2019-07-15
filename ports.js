@@ -2,6 +2,7 @@ const utPort = require('./port');
 
 module.exports = ({bus, logFactory, assert}) => {
     let servicePorts = new Map();
+    let serviceModules = new Map();
     let index = 0;
     let modules = {};
 
@@ -16,7 +17,7 @@ module.exports = ({bus, logFactory, assert}) => {
         config
     });
 
-    let createItem = async({create, moduleName}, envConfig, base) => {
+    let createItem = async({create, moduleName, pkg}, envConfig, base) => {
         let moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
         modules[moduleName || '.'] = modules[moduleName || '.'] || [];
         let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
@@ -34,6 +35,7 @@ module.exports = ({bus, logFactory, assert}) => {
                     if (typeof config !== 'object') config = {};
                     config.order = config.order || index;
                     config.id = (moduleName ? moduleName + '.' + Result.name : Result.name);
+                    config.pkg = pkg;
                     Result = new Result(params(config, base));
                     servicePorts.set(config.id, Result);
                 }
@@ -43,15 +45,20 @@ module.exports = ({bus, logFactory, assert}) => {
                 bus.registerLocal(Result, id);
                 Result = {
                     destroy() {
+                        serviceModules.delete(id);
                         bus.unregisterLocal(id);
                     },
                     start() {
                     },
                     config: {
-                        id
+                        id,
+                        type: 'module',
+                        order: index,
+                        pkg
                     },
                     init: Result.init
                 };
+                serviceModules.set(id, Result);
             } else if (Result) {
                 throw new Error(`Module "${moduleName}" returned unexpected value:\n${Result}`);
             }
@@ -68,7 +75,10 @@ module.exports = ({bus, logFactory, assert}) => {
         return result.filter(item => item);
     };
 
-    let fetch = ports => Array.from(servicePorts.values()).sort((a, b) => a.config.order > b.config.order ? 1 : -1);
+    let fetch = filter =>
+        Array.from(servicePorts.values())
+            .concat(Array.from(serviceModules.values()))
+            .sort((a, b) => a.config.order > b.config.order ? 1 : -1);
 
     let startOne = async({port}) => {
         port = servicePorts.get(port);
