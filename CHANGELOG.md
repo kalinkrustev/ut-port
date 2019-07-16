@@ -1,3 +1,12 @@
+# [6.13.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.3...v6.13.0) (2019-07-16)
+
+
+### Features
+
+* attach package info to modules and ports ([b328bdb](https://github.com/softwaregroup-bg/ut-port/commit/b328bdb))
+
+
+
 ## [6.12.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.2...v6.12.3) (2019-05-07)
 
 
