@@ -1,3 +1,12 @@
+## [6.13.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.13.0...v6.13.1) (2019-07-29)
+
+
+### Bug Fixes
+
+* avoid lodash prototype pollution ([6274f5f](https://github.com/softwaregroup-bg/ut-port/commit/6274f5f))
+
+
+
 # [6.13.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.12.3...v6.13.0) (2019-07-16)
 
 
