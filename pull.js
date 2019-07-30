@@ -687,6 +687,7 @@ const portDrain = (port, args) => {
     let $meta = args[args.length - 1] = Object.assign({}, args[args.length - 1]);
     let queue = portFindRoute(port, $meta, args);
     if (!queue.length()) queue.push([DISCARD]); // force drain on empty queue
+    return true;
 };
 
 const portPush = (port, promise, args) => {
