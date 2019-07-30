@@ -1,3 +1,13 @@
+## [6.13.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.13.1...v6.13.2) (2019-07-30)
+
+
+### Bug Fixes
+
+* properly expose methods when port id has dot ([2a143a7](https://github.com/softwaregroup-bg/ut-port/commit/2a143a7))
+* return result from portDrain ([b0b3a69](https://github.com/softwaregroup-bg/ut-port/commit/b0b3a69))
+
+
+
 ## [6.13.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.13.0...v6.13.1) (2019-07-29)
 
 
