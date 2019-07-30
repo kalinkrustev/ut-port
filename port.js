@@ -90,10 +90,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
             this.msgReceived = this.counter('counter', 'mr', 'Messages received', 300);
         }
         let methods = { req: {}, pub: {} };
-        methods.req[this.config.id + '.start'] = this.start;
-        methods.req[this.config.id + '.stop'] = this.stop;
-        methods.pub[this.config.id + '.drain'] = this.drain.bind(this);
-        [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function initReduceMethods(prev, next) {
+        const id = this.config.id.replace(/\./g, '-');
+        methods.req[id + '.start'] = this.start;
+        methods.req[id + '.stop'] = this.stop;
+        methods.pub[id + '.drain'] = this.drain.bind(this);
+        [].concat(this.config.namespace || this.config.imports || id).reduce(function initReduceMethods(prev, next) {
             if (typeof next === 'string') {
                 prev.req[next + '.request'] = this.request.bind(this);
                 prev.pub[next + '.publish'] = this.publish.bind(this);
