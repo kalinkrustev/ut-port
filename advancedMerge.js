@@ -32,7 +32,8 @@ const mergeHandlers = {
 
 module.exports = (objects = [], options = {}) => {
     const {
-        mergeStrategies = {}
+        mergeStrategies = {},
+        convert = false
     } = options;
     return mergeWith(...objects, (targetVal, sourceVal, key, object, source, stack) => {
         if (stack) {
@@ -55,6 +56,18 @@ module.exports = (objects = [], options = {}) => {
             if (sourceVal instanceof Set) {
                 const merge = mergeHandlers.combine;
                 return merge(targetVal, Array.from(sourceVal));
+            }
+        } else if (convert && typeof sourceVal === 'string') {
+            switch (sourceVal) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+                default:
+                    const float = parseFloat(src);
+                    if (!isNaN(float) && (float + '') === src) return float;
             }
         }
     });
