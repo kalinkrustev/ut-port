@@ -1,2 +1,2 @@
 const advancedMerge = require('./advancedMerge');
-module.exports = (...objects) => advancedMerge({objects});
+module.exports = (...args) => advancedMerge(args);

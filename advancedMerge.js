@@ -30,7 +30,7 @@ const mergeHandlers = {
     }
 };
 
-module.exports = ({objects = [], options = {}}) => {
+module.exports = (objects = [], options = {}) => {
     const {
         mergeStrategies = {}
     } = options;
