@@ -7,7 +7,7 @@
     "pull-stream": "3.6.9",
     "stream-to-pull-stream": "1.7.2",
     "ut-queue": "^6.2.1",
-    "ut-merge": "^0.1.1"
+    "ut-merge": "^1.0.1"
   },
   "devDependencies": {
     "tap": "^12.5.2",

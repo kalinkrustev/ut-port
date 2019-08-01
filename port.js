@@ -53,7 +53,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             let value = prop(current);
             if (value) config.push(value);
         }
-        return merge(...config.reverse());
+        return merge(config.reverse());
     }
     defaults() {
         return {...{
