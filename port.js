@@ -4,7 +4,7 @@ const includes = require('./includes');
 const utqueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
-const merge = require('./merge');
+const merge = require('ut-merge');
 const createErrors = require('./errors');
 const EventEmitter = require('events');
 
@@ -53,7 +53,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             let value = prop(current);
             if (value) config.push(value);
         }
-        return merge(...config.reverse());
+        return merge(config.reverse());
     }
     defaults() {
         return {...{
