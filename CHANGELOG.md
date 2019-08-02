@@ -1,3 +1,12 @@
+# [6.14.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.13.2...v6.14.0) (2019-08-02)
+
+
+### Features
+
+* advanced merge ([#30](https://github.com/softwaregroup-bg/ut-port/issues/30)) ([715b545](https://github.com/softwaregroup-bg/ut-port/commit/715b545))
+
+
+
 ## [6.13.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.13.1...v6.13.2) (2019-07-30)
 
 
