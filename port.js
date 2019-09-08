@@ -74,13 +74,34 @@ module.exports = (defaults) => class Port extends EventEmitter {
             let measurementName = this.config.metrics || this.config.id;
             let tags = {
                 host: os.hostname(),
-                impl: this.bus.performance.config.id || this.bus.config.implementation,
-                pid: process.pid
+                impl: this.bus.performance.config.id || this.bus.config.implementation
             };
+            if (this.bus.config.service) {
+                tags.svc = this.bus.config.service;
+            } else {
+                tags.pid = process.pid;
+            }
             this.counter = function initCounters(fieldType, fieldCode, fieldName, interval) {
-                return this.bus.performance.register(measurementName, fieldType, fieldCode, fieldName, 'standard', tags, interval);
+                return this.bus.performance.register(measurementName, fieldType, fieldCode, this.config.id + ': ' + fieldName, 'standard', tags, interval);
             }.bind(this);
-            this.methodLatency = this.bus.performance.register(measurementName + '_T', 'average', ['q', 'r', 'e', 'x', 'd', 's', 'w'], 'Method exec time', 'tagged', tags);
+            this.methodLatency = this.bus.performance.register(
+                measurementName + '_T',
+                'average',
+                ['q', 'r', 'e', 'x', 'd', 's', 'w'],
+                this.config.id + ': Method exec',
+                'tagged',
+                tags,
+                undefined,
+                [
+                    {help: 'queue time', code: 'q'},
+                    {help: 'receive time', code: 'r'},
+                    {help: 'encode time', code: 'e'},
+                    {help: 'execute time', code: 'x'},
+                    {help: 'decode time', code: 'd'},
+                    {help: 'send time', code: 's'},
+                    {help: 'dispatch time', code: 'w'}
+                ]
+            );
             this.portLatency = this.counter('average', 'lt', 'Port latency', 300);
             this.activeExecCount = this.counter('gauge', 'ae', 'Active exec count', 300);
             this.activeDispatchCount = this.counter('gauge', 'ad', 'Active dispatch count', 300);
