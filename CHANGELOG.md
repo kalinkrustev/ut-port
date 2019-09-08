@@ -1,3 +1,12 @@
+## [6.14.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.0...v6.14.1) (2019-09-08)
+
+
+### Bug Fixes
+
+* improve performance logging ([060c74a](https://github.com/softwaregroup-bg/ut-port/commit/060c74a))
+
+
+
 # [6.14.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.13.2...v6.14.0) (2019-08-02)
 
 
