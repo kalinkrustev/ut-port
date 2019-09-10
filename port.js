@@ -72,10 +72,16 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.utLog && (this.log = this.utLog.createLog(this.config.logLevel, { name: this.config.id, context: this.config.type + ' port' }, this.config.log));
         if (this.config.metrics !== false && this.bus && this.bus.config.implementation && this.bus.performance) {
             let measurementName = this.config.metrics || this.config.id;
+            let taggedMeasurementName = measurementName + '_T';
             let tags = {
                 host: os.hostname(),
-                impl: this.bus.performance.config.id || this.bus.config.implementation
+                impl: this.bus.performance.config.impl || this.bus.performance.config.id || this.bus.config.implementation
             };
+            if (this.bus.performance.config.prometheus) {
+                tags.port = measurementName;
+                measurementName = 'count';
+                taggedMeasurementName = 'time';
+            }
             if (this.bus.config.service) {
                 tags.svc = this.bus.config.service;
             } else {
@@ -85,7 +91,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 return this.bus.performance.register(measurementName, fieldType, fieldCode, this.config.id + ': ' + fieldName, 'standard', tags, interval);
             }.bind(this);
             this.methodLatency = this.bus.performance.register(
-                measurementName + '_T',
+                taggedMeasurementName,
                 'average',
                 ['q', 'r', 'e', 'x', 'd', 's', 'w'],
                 this.config.id + ': Method exec',
