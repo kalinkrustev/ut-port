@@ -1,3 +1,12 @@
+## [6.14.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.1...v6.14.2) (2019-09-10)
+
+
+### Bug Fixes
+
+* simplify measurement names ([c687cc8](https://github.com/softwaregroup-bg/ut-port/commit/c687cc8))
+
+
+
 ## [6.14.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.0...v6.14.1) (2019-09-08)
 
 
