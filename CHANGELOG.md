@@ -1,3 +1,12 @@
+## [6.14.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.3...v6.14.4) (2019-09-13)
+
+
+### Bug Fixes
+
+* do not log undefined property ([f5418cb](https://github.com/softwaregroup-bg/ut-port/commit/f5418cb))
+
+
+
 ## [6.14.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.2...v6.14.3) (2019-09-13)
 
 
