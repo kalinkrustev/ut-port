@@ -4,7 +4,7 @@ const includes = require('./includes');
 const utqueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
-const merge = require('ut-merge');
+const merge = require('ut-function.merge');
 const createErrors = require('./errors');
 const EventEmitter = require('events');
 
