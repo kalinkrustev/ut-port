@@ -159,7 +159,11 @@ const portSend = (port, context) => sendPacket => {
             })
             .then(result => {
                 sendPacket[0] = result;
-                port.log.trace && port.log.trace({message: sendPacket, $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
+                port.log.trace && port.log.trace({
+                    message: sendPacket,
+                    $meta: {method: name, mtid: 'convert'},
+                    ...context && context.session && {log: context.session.log}
+                });
                 return sendPacket;
             })
             .catch(portErrorDispatch(port, $meta));
@@ -173,7 +177,7 @@ const portEncode = (port, context) => encodePacket => {
     port.log.debug && port.log.debug({
         message: typeof encodePacket[0] === 'object' ? encodePacket[0] : {value: encodePacket[0]},
         $meta,
-        log: context && context.session && context.session.log
+        ...context && context.session && {log: context.session.log}
     });
     return Promise.resolve()
         .then(function encodeCall() {
@@ -204,7 +208,7 @@ const portEncode = (port, context) => encodePacket => {
                         method: $meta.method ? $meta.method + '.encode' : 'port.encode'
                     },
                     message: encodeBuffer,
-                    log: context && context.session && context.session.log
+                    ...context && context.session && {log: context.session.log}
                 });
                 return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
             }
@@ -285,7 +289,11 @@ const portUnframe = (port, context, buffer) => {
         pull.map(datagram => {
             let result = [];
             port.bytesReceived && port.bytesReceived(datagram.length);
-            !port.codec && port.log.trace && port.log.trace({$meta: {mtid: 'payload', method: 'port.decode'}, message: datagram, log: context && context.session && context.session.log});
+            !port.codec && port.log.trace && port.log.trace({
+                $meta: {mtid: 'payload', method: 'port.decode'},
+                message: datagram,
+                ...context && context.session && {log: context.session.log}
+            });
             // todo check buffer size
             buffer = Buffer.concat([buffer, datagram]);
             let dataPacket;
@@ -366,7 +374,11 @@ const portReceive = (port, context) => receivePacket => {
                 return fn.apply(port, Array.prototype.concat(receivePacket, context));
             })
             .then(receivedPacket => {
-                port.log.trace && port.log.trace({message: [receivedPacket, $meta], $meta: {method: name, mtid: 'convert'}, log: context && context.session && context.session.log});
+                port.log.trace && port.log.trace({
+                    message: [receivedPacket, $meta],
+                    $meta: {method: name, mtid: 'convert'},
+                    ...context && context.session && {log: context.session.log}
+                });
                 return [receivedPacket, $meta];
             })
             .catch(receiveError => {
@@ -380,7 +392,11 @@ const portReceive = (port, context) => receivePacket => {
 };
 
 const portQueueEventCreate = (port, context, message, event, logger) => {
-    context && (typeof logger === 'function') && logger({$meta: {mtid: 'event', method: 'port.' + event}, connection: context, log: context && context.session && context.session.log});
+    context && (typeof logger === 'function') && logger({
+        $meta: {mtid: 'event', method: 'port.' + event},
+        connection: context,
+        ...context && context.session && {log: context.session.log}
+    });
     if (event === 'disconnected') {
         if (context && context.requests && context.requests.size) {
             Array.from(context.requests.values()).forEach(request => {
