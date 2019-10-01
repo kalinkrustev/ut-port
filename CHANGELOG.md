@@ -1,3 +1,12 @@
+## [6.14.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.4...v6.14.5) (2019-10-01)
+
+
+### Bug Fixes
+
+* invalidPullStream missing error adaded ([6053485](https://github.com/softwaregroup-bg/ut-port/commit/6053485))
+
+
+
 ## [6.14.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.3...v6.14.4) (2019-09-13)
 
 
