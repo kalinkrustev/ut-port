@@ -16,6 +16,7 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('receiveTimeout', port, 'Receive timeout');
         defineError('dispatchFailure', port, 'Cannot dispatch message to bus');
         defineError('queueNotFound', port, 'Queue not found');
+        defineError('invalidPullStream', port, 'Invalid pull stream');
     }
 
     return Object.assign({
