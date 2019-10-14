@@ -1,0 +1,40 @@
+PUT http://{{elasticHost}}:{{elasticPort}}/ut
+Content-Type: application/json
+
+{
+    "settings": {
+        "index.mapping.ignore_malformed": true
+    },
+    "mappings": {
+        "dynamic": "false",
+        "properties": {
+            "@timestamp": {"type": "date"},
+            "@meta": {
+                "properties": {
+                    "mtid": {"type": "keyword"},
+                    "method": {"type": "keyword"},
+                    "opcode": {"type": "keyword"},
+                    "trace": {"type": "keyword"},
+                    "conId": {"type": "keyword"}
+                }
+            },
+            "level": {"type": "long"},
+            "impl": {"type": "keyword"},
+            "env": {"type": "keyword"},
+            "location": {"type": "keyword"},
+            "service": {"type": "keyword"},
+            "context": {"type": "keyword"},
+            "name": {"type": "keyword"},
+            "msg": {"type": "text"},
+            "error": {
+                "properties": {
+                    "type": {"type": "keyword"},
+                    "method": {"type": "keyword"},
+                    "stack": {"type": "text"}
+                }
+            },
+            "hostname": {"type": "keyword"},
+            "layer": {"type": "keyword"}
+        }
+    }
+}
