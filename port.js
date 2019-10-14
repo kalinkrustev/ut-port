@@ -112,8 +112,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 ]
             );
             this.portLatency = this.counter('average', 'lt', 'Port latency', 300);
-            this.activeExecCount = this.counter('gauge', 'ae', 'Active exec count', 300);
-            this.activeDispatchCount = this.counter('gauge', 'ad', 'Active dispatch count', 300);
+            this.activeExecCount = this.counter('gauge', 'ax', 'Active exec count', 300);
+            this.activeDispatchCount = this.counter('gauge', 'aw', 'Active dispatch count', 300);
             this.activeSendCount = this.counter('gauge', 'as', 'Active send count');
             this.activeReceiveCount = this.counter('gauge', 'ar', 'Active receive count');
             this.msgSent = this.counter('counter', 'ms', 'Messages sent', 300);
