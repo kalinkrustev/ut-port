@@ -1,3 +1,12 @@
+## [6.14.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.5...v6.14.6) (2019-10-14)
+
+
+### Bug Fixes
+
+* use the same field names in logs and metrics ([bc3107c](https://github.com/softwaregroup-bg/ut-port/commit/bc3107c))
+
+
+
 ## [6.14.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.4...v6.14.5) (2019-10-01)
 
 
