@@ -192,7 +192,7 @@ Each port configures a default set of metrics, named as follows:
   - `r` - Count of concurrenlty executing `receive` hooks
   - `e` - Count of concurrenlty executing `encode` hooks
   - `x` - Count of concurrenlty executing `execute` hooks
-  - `e` - Count of concurrenlty executing `decode` hooks
+  - `d` - Count of concurrenlty executing `decode` hooks
   - `s` - Count of concurrenlty executing `send` hooks
   - `w` - Count of concurrenlty executing dispatches
 - `ms` - Count of sent messages per second
