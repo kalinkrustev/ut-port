@@ -1,3 +1,12 @@
+## [6.14.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.6...v6.14.7) (2019-10-14)
+
+
+### Bug Fixes
+
+* align telemetry field naming ([3c28ade](https://github.com/softwaregroup-bg/ut-port/commit/3c28ade))
+
+
+
 ## [6.14.6](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.5...v6.14.6) (2019-10-14)
 
 
