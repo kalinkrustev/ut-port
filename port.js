@@ -74,16 +74,19 @@ module.exports = (defaults) => class Port extends EventEmitter {
             let measurementName = this.config.metrics || this.config.id;
             let taggedMeasurementName = measurementName + '_T';
             let tags = {
-                host: os.hostname(),
+                hostname: os.hostname(),
+                env: this.bus.config.params && this.bus.config.params.env,
+                location: this.bus.config.location,
+                context: this.config.type + ' port',
                 impl: this.bus.performance.config.impl || this.bus.performance.config.id || this.bus.config.implementation
             };
             if (this.bus.performance.config.prometheus) {
-                tags.port = measurementName;
+                tags.name = measurementName;
                 measurementName = 'count';
                 taggedMeasurementName = 'time';
             }
             if (this.bus.config.service) {
-                tags.svc = this.bus.config.service;
+                tags.service = this.bus.config.service;
             } else {
                 tags.pid = process.pid;
             }
