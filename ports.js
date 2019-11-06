@@ -42,7 +42,7 @@ module.exports = ({bus, logFactory, assert}) => {
             } else if (Result instanceof Object) {
                 if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
                 let id = moduleName ? moduleName + '.' + create.name : create.name;
-                bus.registerLocal(Result, id);
+                bus.registerLocal(Result, id, pkg);
                 Result = {
                     destroy() {
                         serviceModules.delete(id);
