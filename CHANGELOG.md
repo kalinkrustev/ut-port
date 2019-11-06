@@ -1,3 +1,12 @@
+# [6.15.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.8...v6.15.0) (2019-11-06)
+
+
+### Features
+
+* pass pkg to registerLocal ([b7e5a86](https://github.com/softwaregroup-bg/ut-port/commit/b7e5a86))
+
+
+
 ## [6.14.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.7...v6.14.8) (2019-10-14)
 
 
