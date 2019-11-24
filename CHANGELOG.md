@@ -1,3 +1,12 @@
+# [6.16.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.15.0...v6.16.0) (2019-11-24)
+
+
+### Features
+
+* set utMethod.pkg ([b75f3a9](https://github.com/softwaregroup-bg/ut-port/commit/b75f3a9))
+
+
+
 # [6.15.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.14.8...v6.15.0) (2019-11-06)
 
 
