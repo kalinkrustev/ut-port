@@ -6,14 +6,14 @@ module.exports = ({bus, logFactory, assert}) => {
     let index = 0;
     let modules = {};
 
-    let params = (config, base) => ({
+    let params = (config, base, pkg) => ({
         utLog: logFactory,
         utBus: bus,
         utPort: base,
         utError: bus.errors,
         registerErrors: bus.registerErrors,
-        utMethod: (...params) => bus.importMethod(...params),
-        utNotify: (...params) => bus.notification(...params),
+        utMethod: Object.assign((...params) => bus.importMethod(...params), {pkg}),
+        utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
         config
     });
 
@@ -24,7 +24,7 @@ module.exports = ({bus, logFactory, assert}) => {
         let Result;
         if (config !== false && config !== 'false') {
             index++;
-            Result = await create(params(config, base));
+            Result = await create(params(config, base, pkg));
             if (Result instanceof Function) { // item returned a constructor
                 if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
                 config = (moduleConfig || {})[Result.name];
@@ -36,7 +36,7 @@ module.exports = ({bus, logFactory, assert}) => {
                     config.order = config.order || index;
                     config.id = (moduleName ? moduleName + '.' + Result.name : Result.name);
                     config.pkg = pkg;
-                    Result = new Result(params(config, base));
+                    Result = new Result(params(config, base, pkg));
                     servicePorts.set(config.id, Result);
                 }
             } else if (Result instanceof Object) {
