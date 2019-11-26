@@ -1,10 +1,18 @@
 const utPort = require('./port');
+const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}.${letter.toLowerCase()}`;
+const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])/;
 
 module.exports = ({bus, logFactory, assert}) => {
     let servicePorts = new Map();
     let serviceModules = new Map();
     let index = 0;
     let modules = {};
+    const proxy = new Proxy({}, {
+        get(target, key) {
+            if (!key.includes('.')) key = key.replace(capitalWords, lowercase);
+            return bus.importMethod(key);
+        }
+    });
 
     let params = (config, base, pkg) => ({
         utLog: logFactory,
@@ -14,6 +22,7 @@ module.exports = ({bus, logFactory, assert}) => {
         registerErrors: bus.registerErrors,
         utMethod: Object.assign((...params) => bus.importMethod(...params), {pkg}),
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
+        import: proxy,
         config
     });
 
