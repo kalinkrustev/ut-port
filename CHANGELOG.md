@@ -1,3 +1,12 @@
+# [6.17.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.16.0...v6.17.0) (2019-11-26)
+
+
+### Features
+
+* easily import methods ([5ee3261](https://github.com/softwaregroup-bg/ut-port/commit/5ee3261))
+
+
+
 # [6.16.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.15.0...v6.16.0) (2019-11-24)
 
 
