@@ -17,10 +17,16 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.errors = createErrors(utError);
         this.config = this.traverse(obj => {
             if (obj.hasOwnProperty('defaults')) {
-                let result = obj.defaults;
+                const result = obj.defaults;
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, config);
+        this.configSchema = this.traverse(obj => {
+            if (obj.hasOwnProperty('schema')) {
+                const result = obj.schema;
+                return result instanceof Function ? result.apply(this) : result;
+            }
+        }, {});
         this.methods = {};
         this.sendQueues = utqueue.queues();
         this.receiveQueues = utqueue.queues();
@@ -47,13 +53,29 @@ module.exports = (defaults) => class Port extends EventEmitter {
         });
         this.state = 'stopped';
     }
-    traverse(prop, initial) {
-        let config = [initial];
+    get schema() {
+        return {
+            type: 'object',
+            properties: {
+                logLevel: {
+                    type: 'string',
+                    enum: ['error', 'warning', 'info', 'debug', 'trace'],
+                    default: 'info'
+                },
+                disconnectOnError: {
+                    type: 'boolean',
+                    default: true
+                }
+            }
+        };
+    }
+    traverse(prop, initial, mergeOptions) {
+        const config = [initial];
         for (let current = Object.getPrototypeOf(this); current; current = Object.getPrototypeOf(current)) {
-            let value = prop(current);
+            const value = prop(current);
             if (value) config.push(value);
         }
-        return merge(config.reverse());
+        return merge(config.reverse(), mergeOptions);
     }
     defaults() {
         return {...{
@@ -65,7 +87,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
     init() {
         this.methods = this.traverse(obj => {
             if (obj.hasOwnProperty('handlers')) {
-                let result = obj.handlers;
+                const result = obj.handlers;
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, {});
@@ -73,7 +95,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         if (this.config.metrics !== false && this.bus && this.bus.config.implementation && this.bus.performance) {
             let measurementName = this.config.metrics || this.config.id;
             let taggedMeasurementName = measurementName + '_T';
-            let tags = {
+            const tags = {
                 hostname: os.hostname(),
                 env: this.bus.config.params && this.bus.config.params.env,
                 location: this.bus.config.location,
@@ -119,7 +141,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             this.msgSent = this.counter('counter', 'ms', 'Messages sent', 300);
             this.msgReceived = this.counter('counter', 'mr', 'Messages received', 300);
         }
-        let methods = { req: {}, pub: {} };
+        const methods = { req: {}, pub: {} };
         const id = this.config.id.replace(/\./g, '-');
         methods.req[id + '.start'] = this.start;
         methods.req[id + '.stop'] = this.stop;
@@ -138,8 +160,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
         ]);
     }
     messageDispatch() {
-        let args = Array.prototype.slice.call(arguments);
-        let result = this.bus && this.bus.dispatch.apply(this.bus, args);
+        const args = Array.prototype.slice.call(arguments);
+        const result = this.bus && this.bus.dispatch.apply(this.bus, args);
         if (!result) {
             this.log.error && this.log.error(this.errors['port.dispatchFailure']({ args }));
         }
@@ -150,7 +172,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return this.fireEvent('start', { config: this.config });
     }
     async ready() {
-        let result = await this.fireEvent('ready');
+        const result = await this.fireEvent('ready');
         this.isReady = true;
         this.state = 'started';
         return result;
@@ -162,7 +184,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 method: `port.${event}`
             }
         }, data));
-        let eventHandlers = this.methods[event] ? [this.methods[event]] : [];
+        const eventHandlers = this.methods[event] ? [this.methods[event]] : [];
         if (this.methods.importedMap) {
             Array.from(this.methods.importedMap.values()).forEach((imp) => {
                 imp[event] && eventHandlers.push(imp[event]);
@@ -197,7 +219,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     async destroy() {
         await this.stop();
-        let methods = [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function destroyReduceMethods(prev, next) {
+        const methods = [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function destroyReduceMethods(prev, next) {
             prev.req.push(next + '.request');
             prev.pub.push(next + '.publish');
             return prev;
@@ -242,7 +264,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         let name;
         if ($meta) {
             if ($meta.method) {
-                let path = this.bus.getPath($meta.method);
+                const path = this.bus.getPath($meta.method);
                 name = [path, $meta.mtid, type].join('.');
                 fn = this.findHandler(name);
                 if (!fn) {
@@ -269,7 +291,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return this.config.debug || (this.config.debug == null && this.bus.config && this.bus.config.debug);
     }
     includesConfig(name, values, defaultValue) {
-        let configValue = this.config[name];
+        const configValue = this.config[name];
         if (configValue == null) {
             return defaultValue;
         }
@@ -279,7 +301,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return includes(configValue, values);
     }
     pull(what, context) {
-        let result = portStreams.portPull(this, what, context);
+        const result = portStreams.portPull(this, what, context);
         this.resolveConnected(true);
         return result;
     }
