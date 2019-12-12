@@ -79,7 +79,7 @@ Returns the API below, which is accessible through the bus in the ```ports``` na
 
 ```ports.create(portsConfig, envConfig)``` - create a new port
 
-- ```portsConfig``` - port configururation coming from the implementation.
+- ```portsConfig``` - port configuration coming from the implementation.
   Can be array or single value of the following:
   - function - will call the function with envConfig as parameter, the function
   should return object to be used as configuration
@@ -127,7 +127,7 @@ to annotate the date. Their names are:
 
 ### Port logging
 
-Each port initilizes its own logger instance, so that logging level
+Each port initializes its own logger instance, so that logging level
 can be set per each port. By default, all ports will use `info` level
 for logging. The default can be changed using the configuration key `utPort.logLevel`:
 
@@ -142,7 +142,7 @@ for logging. The default can be changed using the configuration key `utPort.logL
 In addition to the standard tags, logging defines the following additional ones:
 
 - `msg` - includes information in text form, which can be used for indexing and searching
-- `level` - descibes the logging level and can be one of:
+- `level` - describes the logging level and can be one of:
   - `60` - `fatal` - application has reached an unrecoverable condition
   - `50` - `error` - expected error, the application will continue to process
   further requests
@@ -150,7 +150,7 @@ In addition to the standard tags, logging defines the following additional ones:
   it in an inefficient way
   - `30` - `info` - standard level of logging, that is of daily use of an
   application operator
-  - `20` - `debug` - more verbove level of logging, that includes additional details,
+  - `20` - `debug` - more verbose level of logging, that includes additional details,
   useful for application developers, may include data on API calls, parameters
   and results
   - `10` - `trace` - most detailed level, which may include low level details like
@@ -177,7 +177,7 @@ In addition to the standard tags, logging defines the following additional ones:
 
 Each port configures a default set of metrics, named as follows:
 
-- `time_#`, `time_#_min`, `time_#_max` - average, minimum and maxumium stage
+- `time_#`, `time_#_min`, `time_#_max` - average, minimum and maximum stage
   execution time in milliseconds. Depending on execution stage, `#` can be one of:
   - `q` - Time spent in the incoming queue
   - `r` - Time spent in the `receive` hook
@@ -185,16 +185,16 @@ Each port configures a default set of metrics, named as follows:
   - `x` - Time spent in the `execute` hook
   - `d` - Time spent in the `decode` hook
   - `s` - Time spent in the `send` hook
-  - `w` - Time spent in distpatch stage
+  - `w` - Time spent in dispatch stage
 - `time_cnt` - count of completed executions
 - `count_a#`, `count_a#_min`, `count_a#_max` - current, minimum and maximum concurrent
   executions per stage. `#` can be one of:
-  - `r` - Count of concurrenlty executing `receive` hooks
-  - `e` - Count of concurrenlty executing `encode` hooks
-  - `x` - Count of concurrenlty executing `execute` hooks
-  - `d` - Count of concurrenlty executing `decode` hooks
-  - `s` - Count of concurrenlty executing `send` hooks
-  - `w` - Count of concurrenlty executing dispatches
+  - `r` - Count of concurrently executing `receive` hooks
+  - `e` - Count of concurrently executing `encode` hooks
+  - `x` - Count of concurrently executing `execute` hooks
+  - `d` - Count of concurrently executing `decode` hooks
+  - `s` - Count of concurrently executing `send` hooks
+  - `w` - Count of concurrently executing dispatches
 - `ms` - Count of sent messages per second
 - `mr` - Count of received messages per second
 - `bs` - Count of sent bytes per second

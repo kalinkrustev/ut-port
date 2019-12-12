@@ -66,6 +66,41 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 disconnectOnError: {
                     type: 'boolean',
                     default: true
+                },
+                id: {
+                    type: 'string'
+                },
+                type: {
+                    type: 'string'
+                },
+                namespace: {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ]
+                },
+                imports: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                },
+                metrics: {
+                    oneOf: [
+                        {
+                            enum: [false]
+                        },
+                        {
+                            type: 'string'
+                        }
+                    ]
                 }
             }
         };
