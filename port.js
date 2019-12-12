@@ -1,13 +1,13 @@
 'use strict';
 const os = require('os');
 const includes = require('./includes');
-const utqueue = require('ut-queue');
+const utQueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
 const merge = require('ut-function.merge');
 const createErrors = require('./errors');
 const EventEmitter = require('events');
-
+const Ajv = require('ajv');
 module.exports = (defaults) => class Port extends EventEmitter {
     constructor({ utLog, utBus, utError, config } = {}) {
         super();
@@ -27,9 +27,10 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, {});
+
         this.methods = {};
-        this.sendQueues = utqueue.queues();
-        this.receiveQueues = utqueue.queues();
+        this.sendQueues = utQueue.queues();
+        this.receiveQueues = utQueue.queues();
         this.counter = null;
         this.streams = [];
         // performance metrics
@@ -168,6 +169,10 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return result;
     }
     start() {
+        const ajv = new Ajv();
+        const validate = ajv.compile(this.configSchema);
+        const valid = validate(this.config);
+        if (!valid) throw this.errors['port.configValidation']({errors: validate.errors});
         this.state = 'starting';
         return this.fireEvent('start', { config: this.config });
     }
