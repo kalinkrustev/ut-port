@@ -1,3 +1,12 @@
+# [6.18.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.17.0...v6.18.0) (2019-12-12)
+
+
+### Features
+
+* traverse port config schemas and set the result in 'configSchema' property ([8fca4c0](https://github.com/softwaregroup-bg/ut-port/commit/8fca4c0))
+
+
+
 # [6.17.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.16.0...v6.17.0) (2019-11-26)
 
 
