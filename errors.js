@@ -2,6 +2,7 @@ module.exports = ({defineError, getError, fetchErrors}) => {
     if (!getError('port')) {
         const port = defineError('port', undefined, 'Port generic');
 
+        defineError('configValidation', port, 'Config validation');
         defineError('missingParameters', port, 'Missing parameters');
         defineError('missingMeta', port, 'Missing metadata');
         defineError('notConnected', port, 'No connection');
