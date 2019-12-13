@@ -1,3 +1,12 @@
+## [6.19.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.19.0...v6.19.1) (2019-12-13)
+
+
+### Bug Fixes
+
+* log levels and imports validations ([3f03b6a](https://github.com/softwaregroup-bg/ut-port/commit/3f03b6a))
+
+
+
 # [6.19.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.18.0...v6.19.0) (2019-12-13)
 
 
