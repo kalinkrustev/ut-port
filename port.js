@@ -60,7 +60,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             properties: {
                 logLevel: {
                     type: 'string',
-                    enum: ['error', 'warning', 'info', 'debug', 'trace'],
+                    enum: ['off', 'fatal', 'error', 'warn', 'info', 'debug', 'trace'],
                     default: 'info'
                 },
                 disconnectOnError: {
@@ -89,7 +89,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 imports: {
                     type: 'array',
                     items: {
-                        type: 'string'
+                        oneOf: [{
+                            type: 'string'
+                        }, {
+                            type: 'object' // can be regex
+                        }]
                     }
                 },
                 metrics: {
