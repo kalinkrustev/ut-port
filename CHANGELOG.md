@@ -1,3 +1,12 @@
+# [6.19.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.18.0...v6.19.0) (2019-12-13)
+
+
+### Features
+
+* config validation ([#33](https://github.com/softwaregroup-bg/ut-port/issues/33)) ([0c5da00](https://github.com/softwaregroup-bg/ut-port/commit/0c5da00))
+
+
+
 # [6.18.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.17.0...v6.18.0) (2019-12-12)
 
 

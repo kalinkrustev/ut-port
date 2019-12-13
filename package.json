@@ -1,6 +1,6 @@
 {
   "name": "ut-port",
-  "version": "6.18.0",
+  "version": "6.19.0",
   "dependencies": {
     "ajv": "6.10.0",
     "browser-process-hrtime": "1.0.0",
