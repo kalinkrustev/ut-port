@@ -1,3 +1,12 @@
+## [6.19.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.19.1...v6.19.2) (2019-12-23)
+
+
+### Bug Fixes
+
+* print verbose validation errors ([7b876a7](https://github.com/softwaregroup-bg/ut-port/commit/7b876a7))
+
+
+
 ## [6.19.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.19.0...v6.19.1) (2019-12-13)
 
 
