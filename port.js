@@ -208,7 +208,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return result;
     }
     start() {
-        const ajv = new Ajv();
+        const ajv = new Ajv({allErrors: true, verbose: true});
         const validate = ajv.compile(this.configSchema);
         const valid = validate(this.config);
         if (!valid) throw this.errors['port.configValidation']({errors: validate.errors});

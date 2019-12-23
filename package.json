@@ -7,12 +7,12 @@
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.9",
     "stream-to-pull-stream": "1.7.2",
-    "ut-function.merge": "^1.2.0",
+    "ut-function.merge": "^1.5.0",
     "ut-queue": "^6.2.1"
   },
   "devDependencies": {
     "tap": "^12.5.2",
-    "ut-tools": "^6.29.7"
+    "ut-tools": "^6.29.11"
   },
   "peerDependencies": {
     "ut-bus": "^7.1.1"
