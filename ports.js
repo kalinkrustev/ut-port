@@ -1,6 +1,6 @@
 const utPort = require('./port');
-const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}.${letter.toLowerCase()}`;
-const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])/;
+const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
+const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
 
 module.exports = ({bus, logFactory, assert}) => {
     let servicePorts = new Map();
