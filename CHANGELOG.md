@@ -1,3 +1,17 @@
+# [6.20.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.19.2...v6.20.0) (2020-01-13)
+
+
+### Bug Fixes
+
+* support two part names ([da22732](https://github.com/softwaregroup-bg/ut-port/commit/da22732))
+
+
+### Features
+
+* support calling super methods in modules ([7b9d52f](https://github.com/softwaregroup-bg/ut-port/commit/7b9d52f))
+
+
+
 ## [6.19.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.19.1...v6.19.2) (2019-12-23)
 
 
