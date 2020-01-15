@@ -1,3 +1,7 @@
+## [6.20.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.20.0...v6.20.1) (2020-01-15)
+
+
+
 # [6.20.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.19.2...v6.20.0) (2020-01-13)
 
 
