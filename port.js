@@ -294,7 +294,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return methodName.split('/', 2)[1];
     }
     findHandler(methodName) {
-        if (!this.methods.imported && this.methods.importedMap) throw new Error('Incorrect ut-bus version, please use 7.11 or newer');
+        if (!this.methods.imported && this.methods.importedMap) throw new Error('Incorrect ut-bus version, please use 7.11.3 or newer');
         const result = this.methods.imported && this.methods.imported[methodName];
         return result || this.methods[methodName];
     }
