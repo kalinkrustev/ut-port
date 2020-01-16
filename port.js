@@ -28,6 +28,13 @@ module.exports = (defaults) => class Port extends EventEmitter {
             }
         }, {});
 
+        this.configUiSchema = this.traverse(obj => {
+            if (obj.hasOwnProperty('uiSchema')) {
+                const result = obj.uiSchema;
+                return result instanceof Function ? result.apply(this) : result;
+            }
+        }, {});
+
         this.methods = {};
         this.sendQueues = utQueue.queues();
         this.receiveQueues = utQueue.queues();
@@ -109,6 +116,24 @@ module.exports = (defaults) => class Port extends EventEmitter {
             }
         };
     }
+
+    get uiSchema() {
+        return {
+            id: {
+                'ui:widget': 'hidden'
+            },
+            type: {
+                'ui:widget': 'hidden'
+            },
+            namespace: {
+                'ui:widget': 'hidden'
+            },
+            imports: {
+                'ui:widget': 'hidden'
+            }
+        };
+    }
+
     traverse(prop, initial, mergeOptions) {
         const config = [initial];
         for (let current = Object.getPrototypeOf(this); current; current = Object.getPrototypeOf(current)) {
