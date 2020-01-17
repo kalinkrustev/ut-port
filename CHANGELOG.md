@@ -1,3 +1,12 @@
+# [6.21.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.20.2...v6.21.0) (2020-01-17)
+
+
+### Features
+
+* traverse port.uiSchema and expose via port.configUiSchema ([#35](https://github.com/softwaregroup-bg/ut-port/issues/35)) ([805125f](https://github.com/softwaregroup-bg/ut-port/commit/805125f))
+
+
+
 ## [6.20.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.20.1...v6.20.2) (2020-01-15)
 
 
