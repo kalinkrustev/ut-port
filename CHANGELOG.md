@@ -1,3 +1,12 @@
+## [6.21.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.21.0...v6.21.1) (2020-01-17)
+
+
+### Bug Fixes
+
+* swich from hidden to read only ([3780924](https://github.com/softwaregroup-bg/ut-port/commit/3780924))
+
+
+
 # [6.21.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.20.2...v6.21.0) (2020-01-17)
 
 
