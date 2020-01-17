@@ -66,21 +66,25 @@ module.exports = (defaults) => class Port extends EventEmitter {
             type: 'object',
             properties: {
                 logLevel: {
+                    readOnly: true,
                     type: 'string',
-                    enum: ['off', 'fatal', 'error', 'warn', 'info', 'debug', 'trace'],
-                    default: 'info'
+                    enum: ['off', 'fatal', 'error', 'warn', 'info', 'debug', 'trace']
                 },
                 disconnectOnError: {
+                    readOnly: true,
                     type: 'boolean',
                     default: true
                 },
                 id: {
+                    readOnly: true,
                     type: 'string'
                 },
                 type: {
+                    readOnly: true,
                     type: 'string'
                 },
                 namespace: {
+                    readOnly: true,
                     oneOf: [
                         {
                             type: 'string'
@@ -94,6 +98,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     ]
                 },
                 imports: {
+                    readOnly: true,
                     type: 'array',
                     items: {
                         oneOf: [{
@@ -104,6 +109,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     }
                 },
                 metrics: {
+                    readOnly: true,
                     oneOf: [
                         {
                             enum: [false]
@@ -113,23 +119,6 @@ module.exports = (defaults) => class Port extends EventEmitter {
                         }
                     ]
                 }
-            }
-        };
-    }
-
-    get uiSchema() {
-        return {
-            id: {
-                'ui:widget': 'hidden'
-            },
-            type: {
-                'ui:widget': 'hidden'
-            },
-            namespace: {
-                'ui:widget': 'hidden'
-            },
-            imports: {
-                'ui:widget': 'hidden'
             }
         };
     }
