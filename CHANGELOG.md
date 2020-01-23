@@ -1,3 +1,12 @@
+# [6.22.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.21.1...v6.22.0) (2020-01-23)
+
+
+### Features
+
+* pass vfs ([a781df7](https://github.com/softwaregroup-bg/ut-port/commit/a781df7))
+
+
+
 ## [6.21.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.21.0...v6.21.1) (2020-01-17)
 
 
