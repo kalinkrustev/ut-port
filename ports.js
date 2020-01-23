@@ -2,7 +2,7 @@ const utPort = require('./port');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
 
-module.exports = ({bus, logFactory, assert}) => {
+module.exports = ({bus, logFactory, assert, vfs}) => {
     let servicePorts = new Map();
     let serviceModules = new Map();
     let index = 0;
@@ -23,7 +23,8 @@ module.exports = ({bus, logFactory, assert}) => {
         utMethod: Object.assign((...params) => bus.importMethod(...params), {pkg}),
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
         import: proxy,
-        config
+        config,
+        vfs
     });
 
     let createItem = async({create, moduleName, pkg}, envConfig, base) => {
