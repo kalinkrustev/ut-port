@@ -1,3 +1,17 @@
+### delete index
+DELETE http://{{elasticHost}}:{{elasticPort}}/ut
+
+### delete index data
+POST http://{{elasticHost}}:{{elasticPort}}/ut/_delete_by_query?conflicts=proceed
+Content-Type: application/json
+
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+### create index
 PUT http://{{elasticHost}}:{{elasticPort}}/ut
 Content-Type: application/json
 
