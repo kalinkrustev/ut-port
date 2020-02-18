@@ -6,13 +6,13 @@ function Timeout() {
 }
 
 Timeout.prototype.clean = function timeoutClean() {
-    let now = timing.now();
+    const now = timing.now();
     Array.from(this.calls).forEach(end => end.checkTimeout(now));
 };
 
 Timeout.prototype.startWait = function timeoutStartWait(onTimeout, timeout, createTimeoutError, set) {
     this.interval = this.interval || setInterval(this.clean.bind(this), 500);
-    let end = error => {
+    const end = error => {
         this.endWait(end, set);
         error && onTimeout(error);
     };
@@ -34,7 +34,7 @@ Timeout.prototype.endWait = function timeoutEndWait(end, set) {
 Timeout.prototype.startPromise = function timeoutStartPromise(params, fn, $meta, error, set) {
     if (Array.isArray($meta && $meta.timeout)) {
         return new Promise((resolve, reject) => {
-            let endWait = this.startWait(error => {
+            const endWait = this.startWait(error => {
                 $meta.mtid = 'error';
                 if ($meta.dispatch) {
                     $meta.dispatch(error, $meta);

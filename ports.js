@@ -3,10 +3,10 @@ const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
 
 module.exports = ({bus, logFactory, assert, vfs}) => {
-    let servicePorts = new Map();
-    let serviceModules = new Map();
+    const servicePorts = new Map();
+    const serviceModules = new Map();
     let index = 0;
-    let modules = {};
+    const modules = {};
     const proxy = new Proxy({}, {
         get(target, key) {
             if (!key.includes('.')) key = key.replace(capitalWords, lowercase);
@@ -14,7 +14,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         }
     });
 
-    let params = (config, base, pkg) => ({
+    const params = (config, base, pkg) => ({
         utLog: logFactory,
         utBus: bus,
         utPort: base,
@@ -27,8 +27,8 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         vfs
     });
 
-    let createItem = async({create, moduleName, pkg}, envConfig, base) => {
-        let moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
+    const createItem = async({create, moduleName, pkg}, envConfig, base) => {
+        const moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
         modules[moduleName || '.'] = modules[moduleName || '.'] || [];
         let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
         let Result;
@@ -51,7 +51,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
                 }
             } else if (Result instanceof Object) {
                 if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
-                let id = moduleName ? moduleName + '.' + create.name : create.name;
+                const id = moduleName ? moduleName + '.' + create.name : create.name;
                 bus.registerLocal(Result, id, pkg);
                 Result = {
                     destroy() {
@@ -78,38 +78,38 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         return Result;
     };
 
-    let create = async(items, envConfig) => {
-        let result = [];
-        let base = utPort(envConfig.utPort);
+    const create = async(items, envConfig) => {
+        const result = [];
+        const base = utPort(envConfig.utPort);
         for (const item of items) result.push(await createItem(item, envConfig, base));
         return result.filter(item => item);
     };
 
-    let fetch = filter =>
+    const fetch = filter =>
         Array.from(servicePorts.values())
             .concat(Array.from(serviceModules.values()))
             .sort((a, b) => a.config.order > b.config.order ? 1 : -1);
 
-    let startOne = async({port}) => {
+    const startOne = async({port}) => {
         port = servicePorts.get(port);
         await (port && port.start());
         await (port && port.ready());
         return port;
     };
 
-    let startMany = async ports => {
-        let portsStarted = [];
+    const startMany = async ports => {
+        const portsStarted = [];
         try {
             for (let port of ports) {
                 portsStarted.push(port); // collect ports that are started
                 port = await port.start();
                 assert && assert.ok(true, 'started port ' + port.config.id);
             }
-            for (let port of portsStarted) {
+            for (const port of portsStarted) {
                 await (port.ready instanceof Function && port.ready());
             }
         } catch (error) {
-            for (let port of portsStarted) {
+            for (const port of portsStarted) {
                 try {
                     await (port.stop instanceof Function && port.stop());
                 } catch (ignore) { /* just continue calling stop */ };
@@ -119,10 +119,10 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         return portsStarted;
     };
 
-    let start = params =>
+    const start = params =>
         Array.isArray(params || []) ? startMany(params) : startOne(params);
 
-    var port = {
+    const port = {
         get: ({port}) => servicePorts.get(port),
         fetch,
         create,
@@ -133,9 +133,9 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
             return port;
         },
         destroy: async moduleName => {
-            let started = modules[moduleName || '.'];
+            const started = modules[moduleName || '.'];
             if (started) {
-                for (let item of started) {
+                for (const item of started) {
                     await item.destroy();
                 }
             }

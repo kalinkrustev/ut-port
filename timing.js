@@ -5,8 +5,8 @@ const now = () => hrtime();
 module.exports = {
     diff,
     after: milliseconds => {
-        let seconds = Math.floor(milliseconds / 1000);
-        let result = now();
+        const seconds = Math.floor(milliseconds / 1000);
+        const result = now();
         result[1] += Math.floor((milliseconds - seconds * 1000) * 1000000);
         result[0] += seconds;
         if (result[1] >= 1000000000) {

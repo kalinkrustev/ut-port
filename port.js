@@ -16,20 +16,20 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.bus = utBus;
         this.errors = createErrors(utError);
         this.config = this.traverse(obj => {
-            if (obj.hasOwnProperty('defaults')) {
+            if (Object.prototype.hasOwnProperty.call(obj, 'defaults')) {
                 const result = obj.defaults;
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, config);
         this.configSchema = this.traverse(obj => {
-            if (obj.hasOwnProperty('schema')) {
+            if (Object.prototype.hasOwnProperty.call(obj, 'schema')) {
                 const result = obj.schema;
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, {});
 
         this.configUiSchema = this.traverse(obj => {
-            if (obj.hasOwnProperty('uiSchema')) {
+            if (Object.prototype.hasOwnProperty.call(obj, 'uiSchema')) {
                 const result = obj.uiSchema;
                 return result instanceof Function ? result.apply(this) : result;
             }
@@ -61,6 +61,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         });
         this.state = 'stopped';
     }
+
     get schema() {
         return {
             type: 'object',
@@ -131,16 +132,20 @@ module.exports = (defaults) => class Port extends EventEmitter {
         }
         return merge(config.reverse(), mergeOptions);
     }
+
     defaults() {
-        return {...{
-            logLevel: 'info',
-            disconnectOnError: true
-        },
-        ...defaults};
+        return {
+            ...{
+                logLevel: 'info',
+                disconnectOnError: true
+            },
+            ...defaults
+        };
     }
+
     init() {
         this.methods = this.traverse(obj => {
-            if (obj.hasOwnProperty('handlers')) {
+            if (Object.prototype.hasOwnProperty.call(obj, 'handlers')) {
                 const result = obj.handlers;
                 return result instanceof Function ? result.apply(this) : result;
             }
@@ -213,6 +218,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent('init', this)
         ]);
     }
+
     messageDispatch() {
         const args = Array.prototype.slice.call(arguments);
         const result = this.bus && this.bus.dispatch.apply(this.bus, args);
@@ -221,6 +227,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         }
         return result;
     }
+
     start() {
         const ajv = new Ajv({allErrors: true, verbose: true});
         const validate = ajv.compile(this.configSchema);
@@ -229,12 +236,14 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.state = 'starting';
         return this.fireEvent('start', { config: this.config });
     }
+
     async ready() {
         const result = await this.fireEvent('ready');
         this.isReady = true;
         this.state = 'started';
         return result;
     }
+
     async fireEvent(event, data, mapper) {
         this.log.info && this.log.info(Object.assign({
             $meta: {
@@ -255,7 +264,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 break;
             case 'reduce':
             default:
-                for (let eventHandler of eventHandlers) {
+                for (const eventHandler of eventHandlers) {
                     result = await eventHandler.call(this, result);
                 };
                 break;
@@ -263,6 +272,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
         await (this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent(event, this));
         return result;
     }
+
     async stop() {
         this.state = 'stopping';
         await this.fireEvent('stop');
@@ -286,32 +296,40 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.bus.unregister(methods.req, 'ports', this.config.id);
         this.bus.unsubscribe(methods.pub, 'ports', this.config.id);
     }
+
     drain(...args) {
         return portStreams.portDrain(this, args);
     }
+
     request(...args) {
         return portStreams.portPush(this, true, args);
     }
+
     publish(...args) {
         return portStreams.portPush(this, false, args);
     }
+
     error(error, $meta) {
         if (this.log.error) {
             if ($meta) error.method = $meta.method;
             this.log.error(error);
         }
     }
+
     fatal(error) {
         this.log.fatal && this.log.fatal(error);
     }
+
     methodPath(methodName) {
         return methodName.split('/', 2)[1];
     }
+
     findHandler(methodName) {
         if (!this.methods.imported && this.methods.importedMap) throw new Error('Incorrect ut-bus version, please use 7.11.3 or newer');
         const result = this.methods.imported && this.methods.imported[methodName];
         return result || this.methods[methodName];
     }
+
     getConversion($meta, type) {
         let fn;
         let name;
@@ -336,13 +354,16 @@ module.exports = (defaults) => class Port extends EventEmitter {
         }
         return { fn, name };
     }
+
     disconnect(reason) {
         this.error(reason);
         throw this.errors['port.disconnect'](reason);
     }
+
     isDebug() {
         return this.config.debug || (this.config.debug == null && this.bus.config && this.bus.config.debug);
     }
+
     includesConfig(name, values, defaultValue) {
         const configValue = this.config[name];
         if (configValue == null) {
@@ -353,14 +374,17 @@ module.exports = (defaults) => class Port extends EventEmitter {
         }
         return includes(configValue, values);
     }
+
     pull(what, context) {
         const result = portStreams.portPull(this, what, context);
         this.resolveConnected(true);
         return result;
     }
+
     setTimer($meta) {
         $meta.timer = portStreams.packetTimer(this.bus.getPath($meta.method), '*', this.config.id, $meta.timeout);
     }
+
     get timing() { return timing; }
     get merge() { return merge; }
 };
