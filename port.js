@@ -213,8 +213,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
             return prev;
         }.bind(this), methods);
         return this.bus && Promise.all([
-            this.bus.register(methods.req, 'ports', this.config.id),
-            this.bus.subscribe(methods.pub, 'ports', this.config.id),
+            this.bus.register(methods.req, 'ports', this.config.id, this.config.pkg),
+            this.bus.subscribe(methods.pub, 'ports', this.config.id, this.config.pkg),
             this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent('init', this)
         ]);
     }
