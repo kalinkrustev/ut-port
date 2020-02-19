@@ -40,8 +40,8 @@ This exports 2 APIs:
 
 - ```result``` - return promise so that ```ready``` method of the next ports
   can be called after the returned promise resolves. Usually if promise is
-  returned, it will be resolved when the I/O operation initiated by the start
-  method has finished.
+  returned, it will be resolved when the I/O operation initiated by
+  the start method has finished.
 
 ```Port.prototype.stop()``` - stops further processing of messages, closes
 connections / stops listening
