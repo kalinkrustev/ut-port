@@ -383,7 +383,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             fn = this.findHandler(name);
         }
 
-        const validate = fn && this.validators[$meta.method];
+        const validate = fn && $meta.mtid === 'request' && this.validators[$meta.method];
         if (validate) {
             fn = (convert => async(msg, ...rest) => {
                 await validate(msg);
