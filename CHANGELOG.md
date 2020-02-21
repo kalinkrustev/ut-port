@@ -1,3 +1,12 @@
+## [6.22.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.1...v6.22.2) (2020-02-21)
+
+
+### Bug Fixes
+
+* pass pkg to bus ([f794911](https://github.com/softwaregroup-bg/ut-port/commit/f7949111f94ab4b0fca08cad0aa85698e7c65832))
+
+
+
 ## [6.22.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.0...v6.22.1) (2020-01-31)
 
 
