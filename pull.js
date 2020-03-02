@@ -9,15 +9,24 @@ const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without processing
 const timeoutManager = require('./timeout');
 
-const portErrorDispatch = (port, $meta) => dispatchError => {
+const portErrorDispatch = async(port, $meta, dispatchError) => {
     port.error(dispatchError, $meta);
     $meta.mtid = 'error';
     $meta.errorCode = dispatchError && dispatchError.code;
     $meta.errorMessage = dispatchError && dispatchError.message;
-    return portDispatch(port)([dispatchError, $meta]).then(() => [DISCARD, $meta]);
+    await portDispatch(port)([dispatchError, $meta]);
+    return [DISCARD, $meta];
 };
 
-const portTimeoutDispatch = (port, sendQueue) => $meta => {
+const portErrorReceive = async(port, $meta, receiveError) => {
+    port.error(receiveError, $meta);
+    $meta.mtid = 'error';
+    $meta.errorCode = receiveError && receiveError.code;
+    $meta.errorMessage = receiveError && receiveError.message;
+    return [receiveError, $meta];
+};
+
+const portTimeoutDispatch = (port, sendQueue) => async $meta => {
     if (sendQueue && !$meta.dispatch && $meta.mtid === 'request') {
         $meta.dispatch = (...packet) => {
             delete $meta.dispatch;
@@ -25,9 +34,11 @@ const portTimeoutDispatch = (port, sendQueue) => $meta => {
             return [DISCARD];
         };
     }
-    return portErrorDispatch(port, $meta)(port.errors['port.timeout']()).catch(error => {
+    try {
+        return portErrorDispatch(port, $meta, port.errors['port.timeout']());
+    } catch (error) {
         port.error(error, $meta);
-    });
+    }
 };
 
 const packetTimer = (method, aggregate = '*', id, timeout) => {
@@ -149,72 +160,67 @@ const traceMeta = (port, context, $meta, set, get, time) => {
     }
 };
 
-const portSend = (port, context) => sendPacket => {
+const portSend = (port, context) => async sendPacket => {
     const $meta = sendPacket.length > 1 && sendPacket[sendPacket.length - 1];
-    const {fn, name} = port.getConversion($meta, 'send');
-    if (fn) {
-        return Promise.resolve()
-            .then(function sendCall() {
-                return fn.apply(port, Array.prototype.concat(sendPacket, context));
-            })
-            .then(result => {
-                sendPacket[0] = result;
-                port.log.trace && port.log.trace({
-                    message: sendPacket,
-                    $meta: {method: name, mtid: 'convert'},
-                    ...context && context.session && {log: context.session.log}
-                });
-                return sendPacket;
-            })
-            .catch(portErrorDispatch(port, $meta));
-    } else {
-        return Promise.resolve(sendPacket);
+    try {
+        const validate = port.findValidation($meta);
+        if (validate) sendPacket[0] = validate.apply(port, sendPacket);
+        const {fn, name} = port.getConversion($meta, 'send');
+        if (fn) {
+            sendPacket[0] = await fn.apply(port, Array.prototype.concat(sendPacket, context));
+            port.log.trace && port.log.trace({
+                message: sendPacket,
+                $meta: {method: name, mtid: 'convert'},
+                ...context && context.session && {log: context.session.log}
+            });
+        }
+    } catch (error) {
+        return portErrorDispatch(port, $meta || {}, error);
     }
+    return sendPacket;
 };
 
-const portEncode = (port, context) => encodePacket => {
+const portEncode = (port, context) => async encodePacket => {
     const $meta = encodePacket.length > 1 && encodePacket[encodePacket.length - 1];
     port.log.debug && port.log.debug({
         message: typeof encodePacket[0] === 'object' ? encodePacket[0] : {value: encodePacket[0]},
         $meta,
         ...context && context.session && {log: context.session.log}
     });
-    return Promise.resolve()
-        .then(function encodeCall() {
-            return port.codec ? port.codec.encode(encodePacket[0], $meta, context, port.log) : encodePacket;
-        })
-        .then(encodeBuffer => {
-            let size;
-            let sizeAdjust = 0;
-            traceMeta(port, context, $meta, 'out/', 'in/');
-            if (port.codec) {
-                if (port.framePatternSize) {
-                    sizeAdjust = port.config.format.sizeAdjust;
-                }
-                size = encodeBuffer && encodeBuffer.length + sizeAdjust;
-            } else {
-                size = encodeBuffer && encodeBuffer.length;
+    try {
+        let encodeBuffer = port.codec ? await port.codec.encode(encodePacket[0], $meta, context, port.log) : encodePacket;
+        let size;
+        let sizeAdjust = 0;
+        traceMeta(port, context, $meta, 'out/', 'in/');
+        if (port.codec) {
+            if (port.framePatternSize) {
+                sizeAdjust = port.config.format.sizeAdjust;
             }
-            if (port.frameBuilder) {
-                encodeBuffer = port.frameBuilder({size: size, data: encodeBuffer});
-                encodeBuffer = encodeBuffer.slice(0, encodeBuffer.length - sizeAdjust);
-                port.bytesSent && port.bytesSent(encodeBuffer.length);
-            }
-            if (encodeBuffer) {
-                port.msgSent && port.msgSent(1);
-                !port.codec && port.log.trace && port.log.trace({
-                    $meta: {
-                        mtid: 'payload',
-                        method: $meta.method ? $meta.method + '.encode' : 'port.encode'
-                    },
-                    message: encodeBuffer,
-                    ...context && context.session && {log: context.session.log}
-                });
-                return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
-            }
-            return [DISCARD, $meta];
-        })
-        .catch(portErrorDispatch(port, $meta));
+            size = encodeBuffer && encodeBuffer.length + sizeAdjust;
+        } else {
+            size = encodeBuffer && encodeBuffer.length;
+        }
+        if (port.frameBuilder) {
+            encodeBuffer = port.frameBuilder({size: size, data: encodeBuffer});
+            encodeBuffer = encodeBuffer.slice(0, encodeBuffer.length - sizeAdjust);
+            port.bytesSent && port.bytesSent(encodeBuffer.length);
+        }
+        if (encodeBuffer) {
+            port.msgSent && port.msgSent(1);
+            !port.codec && port.log.trace && port.log.trace({
+                $meta: {
+                    mtid: 'payload',
+                    method: $meta.method ? $meta.method + '.encode' : 'port.encode'
+                },
+                message: encodeBuffer,
+                ...context && context.session && {log: context.session.log}
+            });
+            return port.frameBuilder ? [encodeBuffer, $meta] : encodeBuffer;
+        }
+        return [DISCARD, $meta];
+    } catch (error) {
+        return portErrorDispatch(port, $meta, error);
+    }
 };
 
 const portUnpack = port => pull.map(unpackPacket => port.frameBuilder ? unpackPacket[0] : unpackPacket);
@@ -363,32 +369,24 @@ const portIdleReceive = (port, context, queue) => {
     }
 };
 
-const portReceive = (port, context) => receivePacket => {
+const portReceive = (port, context) => async receivePacket => {
     const $meta = receivePacket.length > 1 && receivePacket[receivePacket.length - 1];
-    const {fn, name} = port.getConversion($meta, 'receive');
-    if (!fn) {
-        return Promise.resolve(receivePacket);
-    } else {
-        return Promise.resolve()
-            .then(function receiveCall() {
-                return fn.apply(port, Array.prototype.concat(receivePacket, context));
-            })
-            .then(receivedPacket => {
-                port.log.trace && port.log.trace({
-                    message: [receivedPacket, $meta],
-                    $meta: {method: name, mtid: 'convert'},
-                    ...context && context.session && {log: context.session.log}
-                });
-                return [receivedPacket, $meta];
-            })
-            .catch(receiveError => {
-                port.error(receiveError, $meta);
-                $meta.mtid = 'error';
-                $meta.errorCode = receiveError && receiveError.code;
-                $meta.errorMessage = receiveError && receiveError.message;
-                return [receiveError, $meta];
+    try {
+        const {fn, name} = port.getConversion($meta, 'receive');
+        if (fn) {
+            receivePacket[0] = await fn.apply(port, Array.prototype.concat(receivePacket, context));
+            port.log.trace && port.log.trace({
+                message: receivePacket,
+                $meta: { method: name, mtid: 'convert' },
+                ...context && context.session && { log: context.session.log }
             });
+        }
+        const validate = port.findValidation($meta);
+        if (validate) receivePacket[0] = validate.apply(port, receivePacket);
+    } catch (error) {
+        return portErrorReceive(port, $meta || {}, error);
     }
+    return receivePacket;
 };
 
 const portQueueEventCreate = (port, context, message, event, logger) => {
