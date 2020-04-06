@@ -272,3 +272,48 @@ module.exports = function script({
   }
 }
 ```
+
+Also aliasing is supported when defining methods
+in the import proxy. This would allow to predefine multiple imports
+with different options for one and the same method.
+
+Example:
+
+```js
+// script
+module.exports = function script({
+    import: {
+        'db/core.configuration.fetch:aliasX': x,
+        'db/core.configuration.fetch:aliasY': y
+    }
+}) {
+    return {
+        test() {
+            // x(params) is identical
+            // to this.bus.importMethod('db/core.configuration.fetch')(params)
+        }
+    };
+};
+
+// once we have defined the alias like described above
+// then the configuration should look like:
+{
+  utModule: {
+      orchestrator: true,
+      script: {
+          import: {
+              aliasX: {
+                  cache: {
+                      ttl: 6 * 60 * 60 * 1000
+                  }
+              },
+              aliasY: {
+                  cache: {
+                      ttl: 6 * 60 * 60 * 1000
+                  }
+              }
+          }
+      }
+  }
+}
+```
