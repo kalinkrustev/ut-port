@@ -1,3 +1,12 @@
+# [6.23.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.2...v6.23.0) (2020-04-06)
+
+
+### Features
+
+* Possibility to configure importMethod options per method for import proxy ([#37](https://github.com/softwaregroup-bg/ut-port/issues/37)) ([44fbc48](https://github.com/softwaregroup-bg/ut-port/commit/44fbc484f5fe25f63e006776bacbb0ebfe78b809))
+
+
+
 ## [6.22.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.1...v6.22.2) (2020-02-21)
 
 
