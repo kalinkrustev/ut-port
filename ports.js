@@ -7,10 +7,11 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
     const serviceModules = new Map();
     let index = 0;
     const modules = {};
-    const proxy = new Proxy({}, {
+    const proxy = config => new Proxy({}, {
         get(target, key) {
+            const options = config && config.import && config.import[key];
             if (!key.includes('.')) key = key.replace(capitalWords, lowercase);
-            return bus.importMethod(key);
+            return bus.importMethod(key, options);
         }
     });
 
@@ -22,7 +23,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         registerErrors: bus.registerErrors,
         utMethod: Object.assign((...params) => bus.importMethod(...params), {pkg}),
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
-        import: proxy,
+        import: proxy(config),
         config,
         vfs
     });
