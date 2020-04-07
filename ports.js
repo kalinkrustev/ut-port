@@ -10,7 +10,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
     const proxy = config => new Proxy({}, {
         get(target, key) {
             let [method, alias = method] = key.split(':');
-            const options = config && config.import && config.import[alias];
+            const options = config && config.import && (config.import[key] || config.import[alias]);
             if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
             return bus.importMethod(method, options);
         }
