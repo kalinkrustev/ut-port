@@ -1,3 +1,12 @@
+# [6.24.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.23.0...v6.24.0) (2020-04-09)
+
+
+### Features
+
+* possibility to define 'error.receive' and 'response.receive' handlers ([#39](https://github.com/softwaregroup-bg/ut-port/issues/39)) ([e368856](https://github.com/softwaregroup-bg/ut-port/commit/e3688567b4aa1f9a4a8c2634191c28f63c6d940a))
+
+
+
 # [6.23.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.2...v6.23.0) (2020-04-06)
 
 
