@@ -347,6 +347,10 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 name = [$meta.opcode, $meta.mtid, type].join('.');
                 fn = this.findHandler(name);
             }
+            if (!fn) {
+                name = [$meta.mtid, type].join('.');
+                fn = this.findHandler(name);
+            }
         }
         if (!fn && (!$meta || $meta.mtid !== 'event')) {
             name = type;
