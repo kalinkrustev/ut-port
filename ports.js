@@ -1,6 +1,8 @@
 const utPort = require('./port');
+const merge = require('ut-function.merge');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
+const importKeyRegexp = /^(?<tags>(@[a-z][a-z0-9]*\s)*)(?<method>([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+)$/;
 
 module.exports = ({bus, logFactory, assert, vfs}) => {
     const servicePorts = new Map();
@@ -9,9 +11,19 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
     const modules = {};
     const proxy = config => new Proxy({}, {
         get(target, key) {
-            const options = config && config.import && config.import[key];
-            if (!key.includes('.')) key = key.replace(capitalWords, lowercase);
-            return bus.importMethod(key, options);
+            const options = {};
+            const match = key.match(importKeyRegexp);
+            if (!match) throw new Error('wrong import proxy key format');
+            let {tags = '', method} = match.groups;
+            if (config && config.import) {
+                merge([
+                    options,
+                    ...tags && tags.trim().split(/\s?@/).filter(Boolean).map(tag => config.import[tag]),
+                    config.import[method]
+                ]);
+            }
+            if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
+            return bus.importMethod(method, options);
         }
     });
 
