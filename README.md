@@ -272,3 +272,64 @@ module.exports = function script({
   }
 }
 ```
+
+Also annotation-like syntax can be used
+to define multiple configurations for one
+and the same method
+
+Example:
+
+```js
+// module wrapper
+module.exports = () => function utModule() {
+    return {
+        orchestrator: () => [
+            require('./api/script')
+        ]
+    }
+};
+
+// script
+module.exports = function script({
+    import: {
+        '@shortCache namespace.entity.action': alias
+    }
+}) {
+    return {
+        test() {
+            // alias(params) is identical
+            // to this.bus.importMethod('namespace.entity.action')(params)
+        }
+    };
+};
+
+// in the js/json configuration multiple options sets
+// can be defined for the method above
+// and they will be merged recursively
+// in the specified order
+// in this case: shortCache <- namespace.entity.action
+{
+  utModule: {
+      orchestrator: true,
+      script: {
+          import: {
+              shortCache: {
+                  cache: {
+                      ttl: 60 * 1000
+                  }
+              },
+              'namespace.entity.action': {
+                  cache: {
+                      before: 'get',
+                      after: 'set',
+                      key: ({key}) => ({
+                          id: key,
+                          segment: 'namespace.entity.action'
+                      })
+                  }
+              }
+          }
+      }
+  }
+}
+```
