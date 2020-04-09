@@ -1,3 +1,12 @@
+# [6.25.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.24.0...v6.25.0) (2020-04-09)
+
+
+### Features
+
+* implement annotation-like proxy import definitions ([#40](https://github.com/softwaregroup-bg/ut-port/issues/40)) ([6d93721](https://github.com/softwaregroup-bg/ut-port/commit/6d93721f2eb2db776e98fdbb463bdb2a00f0c5d0))
+
+
+
 # [6.24.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.23.0...v6.24.0) (2020-04-09)
 
 
