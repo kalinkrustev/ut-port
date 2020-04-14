@@ -1,3 +1,12 @@
+## [6.25.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.25.0...v6.25.1) (2020-04-14)
+
+
+### Bug Fixes
+
+* use regexp that is supported by older versions of node ([#41](https://github.com/softwaregroup-bg/ut-port/issues/41)) ([b545826](https://github.com/softwaregroup-bg/ut-port/commit/b5458260cd4f0b27320e2746d4d431ff5e406d91))
+
+
+
 # [6.25.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.24.0...v6.25.0) (2020-04-09)
 
 
