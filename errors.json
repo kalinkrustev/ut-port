@@ -1,0 +1,19 @@
+{
+    "port.configValidation": "Config validation",
+    "port.missingParameters": "Missing parameters",
+    "port.missingMeta": "Missing metadata",
+    "port.notConnected": "No connection",
+    "port.disconnect": "Port disconnected",
+    "port.disconnectBeforeResponse": "Disconnect before response received",
+    "port.stream": "Port stream error",
+    "port.timeout": "Timeout",
+    "port.echoTimeout": "Echo retries limit exceeded",
+    "port.unhandled": "Unhandled port error",
+    "port.bufferOverflow": "Message size of {size} exceeds the maximum of {max}",
+    "port.socketTimeout": "Socket timeout",
+    "port.receiveTimeout": "Receive timeout",
+    "port.dispatchFailure": "Cannot dispatch message to bus",
+    "port.queueNotFound": "Queue not found",
+    "port.invalidPullStream": "Invalid pull stream",
+    "port.paramsValidation": "Params validation"
+}

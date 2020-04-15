@@ -5,16 +5,32 @@ const utQueue = require('ut-queue');
 const portStreams = require('./pull');
 const timing = require('./timing');
 const merge = require('ut-function.merge');
-const createErrors = require('./errors');
+const errors = require('./errors');
 const EventEmitter = require('events');
 const Ajv = require('ajv');
+const ajv = new Ajv({allErrors: true, verbose: true});
 module.exports = (defaults) => class Port extends EventEmitter {
-    constructor({ utLog, utBus, utError, config } = {}) {
+    constructor({
+        utLog,
+        utBus,
+        utError: {
+            defineError,
+            getError,
+            fetchErrors
+        },
+        registerErrors,
+        config
+    } = {}) {
         super();
         this.log = {};
         this.utLog = utLog;
         this.bus = utBus;
-        this.errors = createErrors(utError);
+        this.errors = {
+            ...registerErrors(errors),
+            defineError,
+            getError,
+            fetchErrors
+        };
         this.config = this.traverse(obj => {
             if (Object.prototype.hasOwnProperty.call(obj, 'defaults')) {
                 const result = obj.defaults;
@@ -60,6 +76,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             this.resolveConnected = resolve;
         });
         this.state = 'stopped';
+        this.validators = {};
     }
 
     get schema() {
@@ -119,6 +136,10 @@ module.exports = (defaults) => class Port extends EventEmitter {
                             type: 'string'
                         }
                     ]
+                },
+                validations: {
+                    readOnly: true,
+                    type: 'object'
                 }
             }
         };
@@ -135,10 +156,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     defaults() {
         return {
-            ...{
-                logLevel: 'info',
-                disconnectOnError: true
-            },
+            logLevel: 'info',
+            disconnectOnError: true,
             ...defaults
         };
     }
@@ -229,10 +248,21 @@ module.exports = (defaults) => class Port extends EventEmitter {
     }
 
     start() {
-        const ajv = new Ajv({allErrors: true, verbose: true});
         const validate = ajv.compile(this.configSchema);
         const valid = validate(this.config);
         if (!valid) throw this.errors['port.configValidation']({errors: validate.errors});
+        if (this.config.validations) {
+            Object.entries(this.config.validations).forEach(([method, schema]) => {
+                const validate = ajv.compile({ ...schema, $async: true });
+                this.validators[method] = async msg => {
+                    try {
+                        return await validate(msg);
+                    } catch (e) {
+                        throw this.errors['port.paramsValidation'](e);
+                    }
+                };
+            });
+        }
         this.state = 'starting';
         return this.fireEvent('start', { config: this.config });
     }
@@ -356,6 +386,15 @@ module.exports = (defaults) => class Port extends EventEmitter {
             name = type;
             fn = this.findHandler(name);
         }
+
+        const validate = fn && $meta.mtid === 'request' && this.validators[$meta.method];
+        if (validate) {
+            fn = (convert => async(msg, ...rest) => {
+                await validate(msg);
+                return convert(msg, ...rest);
+            })(fn);
+        }
+
         return { fn, name };
     }
 
