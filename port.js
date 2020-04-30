@@ -36,6 +36,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
         }, {});
 
         this.methods = {};
+        this.methodValidations = {};
+        this.validationsCache = {};
         this.sendQueues = utQueue.queues();
         this.receiveQueues = utQueue.queues();
         this.counter = null;
@@ -147,6 +149,12 @@ module.exports = (defaults) => class Port extends EventEmitter {
         this.methods = this.traverse(obj => {
             if (Object.prototype.hasOwnProperty.call(obj, 'handlers')) {
                 const result = obj.handlers;
+                return result instanceof Function ? result.apply(this) : result;
+            }
+        }, {});
+        this.methodValidations = this.traverse(obj => {
+            if (Object.prototype.hasOwnProperty.call(obj, 'validations')) {
+                const result = obj.validations;
                 return result instanceof Function ? result.apply(this) : result;
             }
         }, {});
@@ -328,6 +336,56 @@ module.exports = (defaults) => class Port extends EventEmitter {
         if (!this.methods.imported && this.methods.importedMap) throw new Error('Incorrect ut-bus version, please use 7.11.3 or newer');
         const result = this.methods.imported && this.methods.imported[methodName];
         return result || this.methods[methodName];
+    }
+
+    validator(schema, method, type) {
+        if (!schema) return;
+        if (schema.isJoi) {
+            const abortEarly = !this.isDebug();
+            return value => {
+                const {error, value: result, warning} = schema.validate(value, {
+                    abortEarly
+                });
+                if (error) {
+                    throw this.errors[`port.${type}Validation`]({
+                        cause: error,
+                        params: {
+                            method,
+                            type
+                        }
+                    });
+                }
+                warning && this.log.warn && this.log.warn({
+                    warning,
+                    $meta: {
+                        mtid: 'validation',
+                        method
+                    }
+                });
+                return result;
+            };
+        }
+    }
+
+    findValidation($meta) {
+        const method = $meta && $meta.method && ($meta.method);
+        const type = $meta && {
+            request: 'params',
+            notification: 'params',
+            response: 'result'
+        }[$meta.mtid];
+        if (method && type) {
+            let validation = this.validationsCache[method];
+            if (!validation) {
+                validation = method && ((this.methodValidations.imported && this.methodValidations.imported[method]) || this.methodValidations[method]);
+                if (typeof validation === 'function') validation = validation();
+                validation = this.validationsCache[method] = validation && {
+                    params: this.validator(validation.params, method, 'params'),
+                    result: this.validator(validation.result, method, 'result')
+                };
+            }
+            return validation && validation[type];
+        }
     }
 
     getConversion($meta, type) {

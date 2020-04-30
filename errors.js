@@ -18,6 +18,8 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('dispatchFailure', port, 'Cannot dispatch message to bus');
         defineError('queueNotFound', port, 'Queue not found');
         defineError('invalidPullStream', port, 'Invalid pull stream');
+        defineError('paramsValidation', port, 'Method {method} parameters failed validation');
+        defineError('resultValidation', port, 'Method {method} result failed validation');
     }
 
     return Object.assign({
