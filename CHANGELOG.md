@@ -1,3 +1,12 @@
+# [6.26.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.25.1...v6.26.0) (2020-04-30)
+
+
+### Features
+
+* configure validation of params and result ([7dba458](https://github.com/softwaregroup-bg/ut-port/commit/7dba4586f6d4fd2276dce7ad4ab52f4fb64fb11c))
+
+
+
 ## [6.25.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.25.0...v6.25.1) (2020-04-14)
 
 
