@@ -222,3 +222,114 @@ To visualize metrics, the file
 can be imported in Grafana as a dashboard. It requires
 that metrics are stored in Prometheus and a datasource
 pointed to it exists in Grafana.
+
+### Automatic method import bindings
+
+When defining modules, one can define a list of all bus
+methods that are going to be used withing the code as part of the
+factory function parameters definition.
+
+Example:
+
+```js
+// module wrapper
+module.exports = () => function utModule() {
+    return {
+        orchestrator: () => [
+            require('./api/script')
+        ]
+    }
+};
+
+// script
+module.exports = function script({
+    import: {
+        userIdentityLookup
+    }
+}) {
+    return {
+        test() {
+            // userIdentityLookup(params) is identical
+            // to this.bus.importMethod('user.identity.lookup')(params)
+        }
+    };
+};
+
+// additionally, the import options can be defined
+// per method in the js/json configuration as follows
+{
+  utModule: {
+      orchestrator: true,
+      script: {
+          import: {
+              userIdentityLookup: {
+                  cache: {
+                      ttl: 6 * 60 * 60 * 1000
+                  }
+              }
+          }
+      }
+  }
+}
+```
+
+Also annotation-like syntax can be used
+to define multiple configurations for one
+and the same method
+
+Example:
+
+```js
+// module wrapper
+module.exports = () => function utModule() {
+    return {
+        orchestrator: () => [
+            require('./api/script')
+        ]
+    }
+};
+
+// script
+module.exports = function script({
+    import: {
+        '@shortCache namespace.entity.action': alias
+    }
+}) {
+    return {
+        test() {
+            // alias(params) is identical
+            // to this.bus.importMethod('namespace.entity.action')(params)
+        }
+    };
+};
+
+// in the js/json configuration multiple options sets
+// can be defined for the method above
+// and they will be merged recursively
+// in the specified order
+// in this case: shortCache <- namespace.entity.action
+{
+  utModule: {
+      orchestrator: true,
+      script: {
+          import: {
+              shortCache: {
+                  cache: {
+                      ttl: 60 * 1000
+                  }
+              },
+              'namespace.entity.action': {
+                  cache: {
+                      before: 'get',
+                      after: 'set',
+                      key: ({key}) => ({
+                          id: key,
+                          segment: 'namespace.entity.action'
+                      })
+                  }
+              }
+          }
+      }
+  }
+}
+```

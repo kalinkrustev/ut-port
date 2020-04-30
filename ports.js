@@ -1,16 +1,29 @@
 const utPort = require('./port');
+const merge = require('ut-function.merge');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
+const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+$/;
 
 module.exports = ({bus, logFactory, assert, vfs}) => {
     const servicePorts = new Map();
     const serviceModules = new Map();
     let index = 0;
     const modules = {};
-    const proxy = new Proxy({}, {
+    const proxy = config => new Proxy({}, {
         get(target, key) {
-            if (!key.includes('.')) key = key.replace(capitalWords, lowercase);
-            return bus.importMethod(key);
+            const options = {};
+            if (!importKeyRegexp.test(key)) throw new Error('wrong import proxy key format');
+            const tags = key.split(' ');
+            let method = tags.pop();
+            if (config && config.import) {
+                merge([
+                    options,
+                    ...tags.map(tag => config.import[tag.slice(1)]).filter(Boolean),
+                    config.import[method]
+                ]);
+            }
+            if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
+            return bus.importMethod(method, options);
         }
     });
 
@@ -22,7 +35,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         registerErrors: bus.registerErrors,
         utMethod: Object.assign((...params) => bus.importMethod(...params), {pkg}),
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
-        import: proxy,
+        import: proxy(config),
         config,
         vfs
     });

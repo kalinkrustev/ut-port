@@ -1,3 +1,39 @@
+## [6.25.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.25.0...v6.25.1) (2020-04-14)
+
+
+### Bug Fixes
+
+* use regexp that is supported by older versions of node ([#41](https://github.com/softwaregroup-bg/ut-port/issues/41)) ([b545826](https://github.com/softwaregroup-bg/ut-port/commit/b5458260cd4f0b27320e2746d4d431ff5e406d91))
+
+
+
+# [6.25.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.24.0...v6.25.0) (2020-04-09)
+
+
+### Features
+
+* implement annotation-like proxy import definitions ([#40](https://github.com/softwaregroup-bg/ut-port/issues/40)) ([6d93721](https://github.com/softwaregroup-bg/ut-port/commit/6d93721f2eb2db776e98fdbb463bdb2a00f0c5d0))
+
+
+
+# [6.24.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.23.0...v6.24.0) (2020-04-09)
+
+
+### Features
+
+* possibility to define 'error.receive' and 'response.receive' handlers ([#39](https://github.com/softwaregroup-bg/ut-port/issues/39)) ([e368856](https://github.com/softwaregroup-bg/ut-port/commit/e3688567b4aa1f9a4a8c2634191c28f63c6d940a))
+
+
+
+# [6.23.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.2...v6.23.0) (2020-04-06)
+
+
+### Features
+
+* Possibility to configure importMethod options per method for import proxy ([#37](https://github.com/softwaregroup-bg/ut-port/issues/37)) ([44fbc48](https://github.com/softwaregroup-bg/ut-port/commit/44fbc484f5fe25f63e006776bacbb0ebfe78b809))
+
+
+
 ## [6.22.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.22.1...v6.22.2) (2020-02-21)
 
 
