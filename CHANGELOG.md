@@ -1,3 +1,12 @@
+## [6.26.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.26.0...v6.26.1) (2020-05-15)
+
+
+### Bug Fixes
+
+* allow import of # suffixed methods ([80c1210](https://github.com/softwaregroup-bg/ut-port/commit/80c12100f442a70c5054b9e4dbf9be91c441ab87))
+
+
+
 # [6.26.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.25.1...v6.26.0) (2020-04-30)
 
 
