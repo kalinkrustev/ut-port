@@ -2,7 +2,7 @@ const utPort = require('./port');
 const merge = require('ut-function.merge');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
-const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+$/;
+const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+(#\[[0+?^]?])?$/;
 
 module.exports = ({bus, logFactory, assert, vfs}) => {
     const servicePorts = new Map();
