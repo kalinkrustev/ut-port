@@ -166,7 +166,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         }
     };
 
-    bus.registerLocal({port}, 'ut');
+    bus.registerLocal({port}, 'ut', require('./package.json'));
 
     return port;
 };
