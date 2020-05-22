@@ -1,3 +1,12 @@
+# [6.28.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.27.0...v6.28.0) (2020-05-22)
+
+
+### Features
+
+* pass pkg ([f84d3b9](https://github.com/softwaregroup-bg/ut-port/commit/f84d3b953925a0f91b89f18c2d7a7c199ec414bb))
+
+
+
 # [6.27.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.26.1...v6.27.0) (2020-05-22)
 
 
