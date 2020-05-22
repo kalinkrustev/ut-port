@@ -95,6 +95,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         const result = [];
         const base = utPort(envConfig.utPort);
         for (const item of items) result.push(await createItem(item, envConfig, base));
+        bus.ready && await bus.ready();
         return result.filter(item => item);
     };
 
@@ -153,6 +154,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
                 }
             }
             delete modules[moduleName || '.'];
+            bus.reload && await bus.reload();
         },
         move: ({port, x, y}) => {
             port = servicePorts.get(port);
