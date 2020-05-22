@@ -1,3 +1,12 @@
+# [6.27.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.26.1...v6.27.0) (2020-05-22)
+
+
+### Features
+
+* call bus.reload and bus.ready ([a6ffdb8](https://github.com/softwaregroup-bg/ut-port/commit/a6ffdb853ac0c4a55d966478c40b8b07413988e3))
+
+
+
 ## [6.26.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.26.0...v6.26.1) (2020-05-15)
 
 
