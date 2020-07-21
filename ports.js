@@ -23,6 +23,11 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
                 ]);
             }
             if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
+            if (method.startsWith('error.')) {
+                const result = bus.errors.getError(method.substr(6));
+                if (!result) throw new Error(`Error ${method.substr(6)} not found`);
+                return result;
+            }
             return bus.importMethod(method, options);
         }
     });
