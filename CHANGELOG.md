@@ -1,3 +1,12 @@
+# [6.29.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.28.0...v6.29.0) (2020-07-21)
+
+
+### Features
+
+* allow importing errors ([58aea3d](https://github.com/softwaregroup-bg/ut-port/commit/58aea3d6fcc69534c23c5059b49c8c6b64aa570a))
+
+
+
 # [6.28.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.27.0...v6.28.0) (2020-05-22)
 
 
