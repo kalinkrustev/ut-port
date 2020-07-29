@@ -208,21 +208,10 @@ module.exports = (defaults) => class Port extends EventEmitter {
             this.msgSent = this.counter('counter', 'ms', 'Messages sent', 300);
             this.msgReceived = this.counter('counter', 'mr', 'Messages received', 300);
         }
-        const methods = { req: {}, pub: {} };
         const id = this.config.id.replace(/\./g, '-');
-        methods.req[id + '.start'] = this.start;
-        methods.req[id + '.stop'] = this.stop;
-        methods.pub[id + '.drain'] = this.drain.bind(this);
-        [].concat(this.config.namespace || this.config.imports || id).reduce(function initReduceMethods(prev, next) {
-            if (typeof next === 'string') {
-                prev.req[next + '.request'] = this.request.bind(this);
-                prev.pub[next + '.publish'] = this.publish.bind(this);
-            }
-            return prev;
-        }.bind(this), methods);
         return this.bus && Promise.all([
-            this.bus.register(methods.req, 'ports', this.config.id, this.config.pkg),
-            this.bus.subscribe(methods.pub, 'ports', this.config.id, this.config.pkg),
+            this.bus.register({[`${id}.start`]: this.start, [`${id}.stop`]: this.stop}, 'ports', this.config.id, this.config.pkg),
+            this.bus.subscribe({[`${id}.drain`]: this.drain.bind(this)}, 'ports', this.config.id, this.config.pkg),
             this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent('init', this)
         ]);
     }
@@ -236,12 +225,30 @@ module.exports = (defaults) => class Port extends EventEmitter {
         return result;
     }
 
-    start() {
+    forNamespaces(reducer, initial) {
+        const id = this.config.id.replace(/\./g, '-');
+        return [].concat(this.config.namespace || this.config.imports || id).reduce(reducer.bind(this), initial);
+    }
+
+    async start() {
         const ajv = new Ajv({allErrors: true, verbose: true});
         const validate = ajv.compile(this.configSchema);
         const valid = validate(this.config);
         if (!valid) throw this.errors['port.configValidation']({errors: validate.errors});
         this.state = 'starting';
+
+        const {req, pub} = this.forNamespaces(function startPortNamespaces(prev, next) {
+            if (typeof next === 'string') {
+                prev.req[`${next}.request`] = this.request.bind(this);
+                prev.pub[`${next}.publish`] = this.publish.bind(this);
+            }
+            return prev;
+        }, {req: {}, pub: {}});
+        await (this.bus && Promise.all([
+            this.bus.register(req, 'ports', this.config.id, this.config.pkg),
+            this.bus.subscribe(pub, 'ports', this.config.id, this.config.pkg)
+        ]));
+
         return this.fireEvent('start', { config: this.config });
     }
 
@@ -283,6 +290,15 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     async stop() {
         this.state = 'stopping';
+
+        const {req, pub} = this.forNamespaces(function stopPortNamespaces(prev, next) {
+            prev.req.push(`${next}.request`);
+            prev.pub.push(`${next}.publish`);
+            return prev;
+        }, {req: [], pub: []});
+        this.bus.unregister(req, 'ports', this.config.id);
+        this.bus.unsubscribe(pub, 'ports', this.config.id);
+
         await this.fireEvent('stop');
         this.removeAllListeners();
         this.streams.forEach(function streamEnd(stream) {
@@ -295,14 +311,9 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     async destroy() {
         await this.stop();
-        const methods = [].concat(this.config.namespace || this.config.imports || this.config.id).reduce(function destroyReduceMethods(prev, next) {
-            prev.req.push(next + '.request');
-            prev.pub.push(next + '.publish');
-            return prev;
-        }, {req: [this.config.id + '.start', this.config.id + '.stop'], pub: [this.config.id + '.drain']});
-
-        this.bus.unregister(methods.req, 'ports', this.config.id);
-        this.bus.unsubscribe(methods.pub, 'ports', this.config.id);
+        const id = this.config.id.replace(/\./g, '-');
+        this.bus.unregister([`${id}.start`, `${id}.stop`], 'ports', this.config.id);
+        this.bus.unsubscribe([`${id}.drain`], 'ports', this.config.id);
     }
 
     drain(...args) {

@@ -100,7 +100,6 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         const result = [];
         const base = utPort(envConfig.utPort);
         for (const item of items) result.push(await createItem(item, envConfig, base));
-        bus.ready && await bus.ready();
         return result.filter(item => item);
     };
 
@@ -138,8 +137,11 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         return portsStarted;
     };
 
-    const start = params =>
-        Array.isArray(params || []) ? startMany(params) : startOne(params);
+    const start = async params => {
+        const result = await (Array.isArray(params || []) ? startMany(params) : startOne(params));
+        bus.ready && await bus.ready();
+        return result;
+    }
 
     const port = {
         get: ({port}) => servicePorts.get(port),
