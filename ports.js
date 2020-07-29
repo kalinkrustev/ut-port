@@ -111,6 +111,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
     const startOne = async({port}) => {
         port = servicePorts.get(port);
         await (port && port.start());
+        await (bus.ready && bus.ready());
         await (port && port.ready());
         return port;
     };
@@ -123,6 +124,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
                 port = await port.start();
                 assert && assert.ok(true, 'started port ' + port.config.id);
             }
+            await (bus.ready && bus.ready());
             for (const port of portsStarted) {
                 await (port.ready instanceof Function && port.ready());
             }
@@ -137,11 +139,8 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         return portsStarted;
     };
 
-    const start = async params => {
-        const result = await (Array.isArray(params || []) ? startMany(params) : startOne(params));
-        bus.ready && await bus.ready();
-        return result;
-    };
+    const start = params =>
+        Array.isArray(params || []) ? startMany(params) : startOne(params);
 
     const port = {
         get: ({port}) => servicePorts.get(port),
