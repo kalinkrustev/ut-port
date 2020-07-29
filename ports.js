@@ -141,7 +141,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         const result = await (Array.isArray(params || []) ? startMany(params) : startOne(params));
         bus.ready && await bus.ready();
         return result;
-    }
+    };
 
     const port = {
         get: ({port}) => servicePorts.get(port),
