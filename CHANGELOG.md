@@ -1,3 +1,12 @@
+# [6.30.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.29.0...v6.30.0) (2020-07-30)
+
+
+### Features
+
+* register namespace during port start ([6f8d72a](https://github.com/softwaregroup-bg/ut-port/commit/6f8d72aef554d47587e9ec39fdd12e298d3f5957))
+
+
+
 # [6.29.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.28.0...v6.29.0) (2020-07-21)
 
 
