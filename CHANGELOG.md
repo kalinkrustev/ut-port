@@ -1,3 +1,12 @@
+# [6.31.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.30.0...v6.31.0) (2020-07-31)
+
+
+### Features
+
+* pass mergeOptions to config merge ([b585e98](https://github.com/softwaregroup-bg/ut-port/commit/b585e980455f85ca4c6c0eec0f467333a1fab7ab))
+
+
+
 # [6.30.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.29.0...v6.30.0) (2020-07-30)
 
 
