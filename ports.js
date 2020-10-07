@@ -3,11 +3,11 @@ const merge = require('ut-function.merge');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
 const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+(#\[[0+?^]?])?$/;
-async function portEvent(port, event) {
+async function portMethod(port, method) {
     try {
-        return await (port[event] instanceof Function && port[event]());
+        return await (port[method] instanceof Function && port[method]());
     } catch (e) {
-        port.error(e);
+        port.error(e, {method});
         throw e;
     }
 };
@@ -118,9 +118,9 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
 
     const startOne = async({port}) => {
         port = servicePorts.get(port);
-        await (port && portEvent(port, 'start'));
+        await (port && portMethod(port, 'start'));
         await (bus.ready && bus.ready());
-        await (port && portEvent(port, 'ready'));
+        await (port && portMethod(port, 'ready'));
         return port;
     };
 
@@ -129,17 +129,17 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         try {
             for (let port of ports) {
                 portsStarted.push(port); // collect ports that are started
-                port = await portEvent(port, 'start');
+                port = await portMethod(port, 'start');
                 assert && assert.ok(true, 'started port ' + port.config.id);
             }
             await (bus.ready && bus.ready());
             for (const port of portsStarted) {
-                await portEvent(port, 'ready');
+                await portMethod(port, 'ready');
             }
         } catch (error) {
             for (const port of portsStarted) {
                 try {
-                    await portEvent(port, 'stop');
+                    await portMethod(port, 'stop');
                 } catch (ignore) { /* just continue calling stop */ };
             }
             throw error;
@@ -157,7 +157,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         start,
         stop: async({port}) => {
             port = servicePorts.get(port);
-            await (port && portEvent(port, 'stop'));
+            await (port && portMethod(port, 'stop'));
             return port;
         },
         destroy: async moduleName => {
