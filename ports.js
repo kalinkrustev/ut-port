@@ -3,6 +3,14 @@ const merge = require('ut-function.merge');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
 const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+(#\[[0+?^]?])?$/;
+async function portEvent(port, event) {
+    try {
+        return await (port[event] instanceof Function && port[event]());
+    } catch (e) {
+        port.error(e);
+        throw e;
+    }
+};
 
 module.exports = ({bus, logFactory, assert, vfs}) => {
     const servicePorts = new Map();
@@ -110,9 +118,9 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
 
     const startOne = async({port}) => {
         port = servicePorts.get(port);
-        await (port && port.start());
+        await (port && portEvent(port, 'start'));
         await (bus.ready && bus.ready());
-        await (port && port.ready());
+        await (port && portEvent(port, 'ready'));
         return port;
     };
 
@@ -121,17 +129,17 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         try {
             for (let port of ports) {
                 portsStarted.push(port); // collect ports that are started
-                port = await port.start();
+                port = await portEvent(port, 'start');
                 assert && assert.ok(true, 'started port ' + port.config.id);
             }
             await (bus.ready && bus.ready());
             for (const port of portsStarted) {
-                await (port.ready instanceof Function && port.ready());
+                await portEvent(port, 'ready');
             }
         } catch (error) {
             for (const port of portsStarted) {
                 try {
-                    await (port.stop instanceof Function && port.stop());
+                    await portEvent(port, 'stop');
                 } catch (ignore) { /* just continue calling stop */ };
             }
             throw error;
@@ -149,7 +157,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         start,
         stop: async({port}) => {
             port = servicePorts.get(port);
-            await (port && port.stop());
+            await (port && portEvent(port, 'stop'));
             return port;
         },
         destroy: async moduleName => {
