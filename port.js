@@ -234,7 +234,14 @@ module.exports = (defaults) => class Port extends EventEmitter {
         const ajv = new Ajv({allErrors: true, verbose: true});
         const validate = ajv.compile(this.configSchema);
         const valid = validate(this.config);
-        if (!valid) throw this.errors['port.configValidation']({errors: validate.errors});
+        if (!valid) {
+            throw this.errors['port.configValidation']({
+                errors: validate.errors,
+                params: {
+                    message: [].concat(validate.errors).map(error => this.config.id + error.dataPath + ' ' + error.message).join('\r\n')
+                }
+            });
+        }
         this.state = 'starting';
 
         const {req, pub} = this.forNamespaces(function startPortNamespaces(prev, next) {
