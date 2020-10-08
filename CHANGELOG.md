@@ -1,3 +1,12 @@
+## [6.31.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.31.0...v6.31.1) (2020-10-08)
+
+
+### Bug Fixes
+
+* better error handling for port lifecycle events ([#45](https://github.com/softwaregroup-bg/ut-port/issues/45)) ([4f259ee](https://github.com/softwaregroup-bg/ut-port/commit/4f259ee6cf9e550c1725325a28a216782b743f8a))
+
+
+
 # [6.31.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.30.0...v6.31.0) (2020-07-31)
 
 
