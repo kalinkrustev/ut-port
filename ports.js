@@ -60,7 +60,8 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         let Result;
         if (config !== false && config !== 'false') {
             index++;
-            Result = await create(params(config, base, pkg));
+            const createParams = params(config, base, pkg);
+            Result = await create(createParams);
             if (Result instanceof Function) { // item returned a constructor
                 if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
                 config = (moduleConfig || {})[Result.name];
@@ -78,6 +79,16 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
             } else if (Result instanceof Object) {
                 if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
                 const id = moduleName ? moduleName + '.' + create.name : create.name;
+                if (Array.isArray(Result)) {
+                    Result = Result.reduce(([lib, handlers], fn) => {
+                        const methods = fn({...createParams, lib});
+                        Object.assign(lib, methods);
+                        Object.entries(methods).forEach(([key, value]) => {
+                            if (key.includes('.')) handlers[key] = value;
+                        });
+                        return [lib, handlers];
+                    }, [[], []])[1];
+                }
                 bus.registerLocal(Result, id, pkg);
                 Result = {
                     destroy() {
