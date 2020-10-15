@@ -1,3 +1,12 @@
+# [6.32.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.31.1...v6.32.0) (2020-10-15)
+
+
+### Features
+
+* composed handlers ([52d7b4c](https://github.com/softwaregroup-bg/ut-port/commit/52d7b4c4b1b42928a200adb23b9c097e1cc0f7ad))
+
+
+
 ## [6.31.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.31.0...v6.31.1) (2020-10-08)
 
 
