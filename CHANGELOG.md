@@ -1,3 +1,12 @@
+## [6.32.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.32.0...v6.32.1) (2020-10-15)
+
+
+### Bug Fixes
+
+* typo ([7e4310d](https://github.com/softwaregroup-bg/ut-port/commit/7e4310dd336d2df12ca17c557cf317653767895f))
+
+
+
 # [6.32.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.31.1...v6.32.0) (2020-10-15)
 
 
