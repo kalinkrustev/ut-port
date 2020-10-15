@@ -87,7 +87,7 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
                             if (key.includes('.')) handlers[key] = value;
                         });
                         return [lib, handlers];
-                    }, [[], []])[1];
+                    }, [{}, {}])[1];
                 }
                 bus.registerLocal(Result, id, pkg);
                 Result = {
