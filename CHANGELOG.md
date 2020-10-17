@@ -1,3 +1,12 @@
+## [6.32.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.32.1...v6.32.2) (2020-10-17)
+
+
+### Bug Fixes
+
+* support super in composed handlers ([b9aad05](https://github.com/softwaregroup-bg/ut-port/commit/b9aad05592318d02cc89a3751663899d29ef6e82))
+
+
+
 ## [6.32.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.32.0...v6.32.1) (2020-10-15)
 
 
