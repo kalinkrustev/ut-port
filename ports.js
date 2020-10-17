@@ -80,16 +80,16 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
                 if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
                 const id = moduleName ? moduleName + '.' + create.name : create.name;
                 if (Array.isArray(Result)) {
-                    Result = Result.reduce(([lib, handlers], fn) => {
-                        const methods = fn({...createParams, lib});
-                        Object.assign(lib, methods);
-                        Object.entries(methods).forEach(([key, value]) => {
+                    const [, handlers, literals] = Result.reduce(([lib, handlers, literals], fn) => {
+                        const literal = fn({...createParams, lib});
+                        Object.assign(lib, literal);
+                        Object.entries(literal).forEach(([key, value]) => {
                             if (key.includes('.')) handlers[key] = value;
                         });
-                        return [lib, handlers];
-                    }, [{}, {}])[1];
-                }
-                bus.registerLocal(Result, id, pkg);
+                        return [lib, handlers, [...literals, literal]];
+                    }, [{}, {}, []]);
+                    bus.registerLocal(handlers, id, pkg, literals); // use super in object literals
+                } else bus.registerLocal(Result, id, pkg);
                 Result = {
                     destroy() {
                         serviceModules.delete(id);
