@@ -167,7 +167,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 env: this.bus.config.params && this.bus.config.params.env,
                 location: this.bus.config.location,
                 context: this.config.type + ' port',
-                impl: this.bus.performance.config.impl || this.bus.performance.config.id || this.bus.config.implementation
+                impl: this.bus.performance.config.impl || this.bus.config.implementation || this.bus.performance.config.id
             };
             if (this.bus.performance.config.prometheus) {
                 tags.name = measurementName;
