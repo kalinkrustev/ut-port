@@ -12,7 +12,7 @@ async function portMethod(port, method) {
     }
 };
 
-module.exports = ({bus, logFactory, assert, vfs}) => {
+module.exports = ({bus, logFactory, assert, vfs, version}) => {
     const servicePorts = new Map();
     const serviceModules = new Map();
     let index = 0;
@@ -50,7 +50,8 @@ module.exports = ({bus, logFactory, assert, vfs}) => {
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
         import: proxy(config),
         config,
-        vfs
+        vfs,
+        version
     });
 
     const createItem = async({create, moduleName, pkg}, envConfig, base) => {
