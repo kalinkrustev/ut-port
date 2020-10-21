@@ -1,3 +1,12 @@
+# [6.33.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.32.3...v6.33.0) (2020-10-21)
+
+
+### Features
+
+* pass version ([8c1fa98](https://github.com/softwaregroup-bg/ut-port/commit/8c1fa98b757396e296bb55b5c34a8cf092c9a69a))
+
+
+
 ## [6.32.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.32.2...v6.32.3) (2020-10-19)
 
 
