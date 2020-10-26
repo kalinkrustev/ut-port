@@ -12,7 +12,7 @@ async function portMethod(port, method) {
     }
 };
 
-module.exports = ({bus, logFactory, assert, vfs, version}) => {
+module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
     const servicePorts = new Map();
     const serviceModules = new Map();
     let index = 0;
@@ -51,6 +51,7 @@ module.exports = ({bus, logFactory, assert, vfs, version}) => {
         import: proxy(config),
         config,
         vfs,
+        joi,
         version
     });
 
