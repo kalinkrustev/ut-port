@@ -1,3 +1,12 @@
+# [6.34.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.33.0...v6.34.0) (2020-10-26)
+
+
+### Features
+
+* pass joi ([bdc5015](https://github.com/softwaregroup-bg/ut-port/commit/bdc5015d5f7db987aba1fcaed51a76982e88face))
+
+
+
 # [6.33.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.32.3...v6.33.0) (2020-10-21)
 
 
