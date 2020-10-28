@@ -358,7 +358,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     validator(schema, method, type) {
         if (!schema) return;
-        if (schema.isJoi) {
+        if (schema.validate) {
             const abortEarly = !this.isDebug();
             return value => {
                 const {error, value: result, warning} = schema.validate(value, {
