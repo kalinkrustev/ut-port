@@ -1,3 +1,12 @@
+## [6.34.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.34.0...v6.34.1) (2020-10-28)
+
+
+### Bug Fixes
+
+* upgrade joi ([238ccab](https://github.com/softwaregroup-bg/ut-port/commit/238ccabc80277f89b5827bc3207cac0fd2edd0f5))
+
+
+
 # [6.34.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.33.0...v6.34.0) (2020-10-26)
 
 
