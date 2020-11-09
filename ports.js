@@ -11,6 +11,7 @@ async function portMethod(port, method) {
         throw e;
     }
 };
+const isHandler = name => name.includes('.') || ['start', 'stop', 'ready'].includes(name);
 
 module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
     const servicePorts = new Map();
@@ -86,7 +87,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
                         const literal = fn({...createParams, lib});
                         Object.assign(lib, literal);
                         Object.entries(literal).forEach(([key, value]) => {
-                            if (key.includes('.')) handlers[key] = value;
+                            if (isHandler(key)) handlers[key] = value;
                         });
                         return [lib, handlers, [...literals, literal]];
                     }, [{}, {}, []]);
