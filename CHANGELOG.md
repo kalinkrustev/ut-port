@@ -1,3 +1,12 @@
+## [6.34.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.34.1...v6.34.2) (2020-11-09)
+
+
+### Bug Fixes
+
+* handler detection for start, stop, ready ([a68d3dc](https://github.com/softwaregroup-bg/ut-port/commit/a68d3dcf293b3e018d537d99aebcf7a60b2c40fc))
+
+
+
 ## [6.34.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.34.0...v6.34.1) (2020-10-28)
 
 
