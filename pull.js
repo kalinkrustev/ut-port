@@ -500,23 +500,23 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
-        const xB3TraceId = $meta && $meta.forward && $meta.forward['x-b3-traceid'];
-        if (xB3TraceId) {
-            if (trace[xB3TraceId]) {
-                cb(port.errors['port.deadlock']({$meta, scope: trace[xB3TraceId]}));
+        const traceId = $meta && $meta.forward && $meta.forward['x-b3-traceid'];
+        if (traceId) {
+            if (trace[traceId]) {
+                cb(port.errors['port.deadlock']({$meta, scope: trace[traceId]}));
                 return;
             }
-            trace[xB3TraceId] = $meta;
+            trace[traceId] = $meta;
         }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
-                if (xB3TraceId) delete trace[xB3TraceId];
+                if (traceId) delete trace[traceId];
                 active--;
                 counter && counter(active);
                 cb(null, promiseResult);
                 return true;
             }, promiseError => {
-                if (xB3TraceId) delete trace[xB3TraceId];
+                if (traceId) delete trace[traceId];
                 active--;
                 counter && counter(active);
                 cb(promiseError);
