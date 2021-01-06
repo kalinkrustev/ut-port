@@ -490,6 +490,7 @@ const portSink = (port, queue) => pull.drain(sinkPacket => {
 
 const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
+    const trace = {};
     counter && counter(active);
     return paramap((params, cb) => {
         if (params[IGNORE]) {
@@ -499,13 +500,23 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
+        const xB3TraceId = $meta && $meta.forward && $meta.forward['x-b3-traceid'];
+        if (xB3TraceId) {
+            if (trace[xB3TraceId]) {
+                cb(port.errors['port.deadlock']({$meta, scope: trace[xB3TraceId]}));
+                return;
+            }
+            trace[xB3TraceId] = $meta;
+        }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
+                if (xB3TraceId) delete trace[xB3TraceId];
                 active--;
                 counter && counter(active);
                 cb(null, promiseResult);
                 return true;
             }, promiseError => {
+                if (xB3TraceId) delete trace[xB3TraceId];
                 active--;
                 counter && counter(active);
                 cb(promiseError);
