@@ -497,8 +497,6 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
             cb(null, params);
             return;
         }
-        active++;
-        counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
         const traceId = $meta && $meta.forward && $meta.forward['x-b3-traceid'];
         if (traceId) {
@@ -508,6 +506,8 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
             }
             trace[traceId] = $meta;
         }
+        active++;
+        counter && counter(active);
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
                 if (traceId) delete trace[traceId];
