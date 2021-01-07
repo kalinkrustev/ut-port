@@ -7,6 +7,7 @@ const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without processing
+const DEADLOCK = Symbol('ut-port.pull.DEADLOCK'); // pass this packet without processing
 const timeoutManager = require('./timeout');
 
 const portErrorDispatch = async(port, $meta, dispatchError) => {
@@ -160,34 +161,25 @@ const traceMeta = (port, context, $meta, set, get, time) => {
     }
 };
 
-const portSend = (port, context) => {
-    const trace = {};
-    return async sendPacket => {
-        const $meta = sendPacket.length > 1 && sendPacket[sendPacket.length - 1];
-        const traceId = port.config.forbidRecursiveInvocation && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
-        if (traceId) {
-            if (trace[traceId]) return portErrorDispatch(port, $meta, port.errors['port.deadlock']({scope: trace[traceId], method: $meta.method}));
-            trace[traceId] = {method: $meta.method};
+const portSend = (port, context) => async sendPacket => {
+    const $meta = sendPacket.length > 1 && sendPacket[sendPacket.length - 1];
+    if (sendPacket && sendPacket[DEADLOCK]) return portErrorDispatch(port, $meta || {}, sendPacket[DEADLOCK]);
+    try {
+        const validate = port.findValidation($meta);
+        if (validate) sendPacket[0] = validate.apply(port, sendPacket);
+        const {fn, name} = port.getConversion($meta, 'send');
+        if (fn) {
+            sendPacket[0] = await fn.apply(port, Array.prototype.concat(sendPacket, context));
+            port.log.trace && port.log.trace({
+                message: sendPacket,
+                $meta: {method: name, mtid: 'convert'},
+                ...context && context.session && {log: context.session.log}
+            });
         }
-        try {
-            const validate = port.findValidation($meta);
-            if (validate) sendPacket[0] = validate.apply(port, sendPacket);
-            const {fn, name} = port.getConversion($meta, 'send');
-            if (fn) {
-                sendPacket[0] = await fn.apply(port, Array.prototype.concat(sendPacket, context));
-                if (traceId) delete trace[traceId];
-                port.log.trace && port.log.trace({
-                    message: sendPacket,
-                    $meta: {method: name, mtid: 'convert'},
-                    ...context && context.session && {log: context.session.log}
-                });
-            }
-        } catch (error) {
-            if (traceId) delete trace[traceId];
-            return portErrorDispatch(port, $meta || {}, error);
-        }
-        return sendPacket;
+    } catch (error) {
+        return portErrorDispatch(port, $meta || {}, error);
     }
+    return sendPacket;
 };
 
 const portEncode = (port, context) => async encodePacket => {
@@ -500,6 +492,7 @@ const portSink = (port, queue) => pull.drain(sinkPacket => {
 
 const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
+    const trace = {};
     counter && counter(active);
     return paramap((params, cb) => {
         if (params[IGNORE]) {
@@ -509,14 +502,21 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
+        const traceId = port.config.forbidRecursiveInvocation && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
+        if (traceId) {
+            if (trace[traceId]) params[DEADLOCK] = port.errors['port.deadlock']({scope: trace[traceId], method: $meta.method});
+            trace[traceId] = {method: $meta.method};
+        }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
                 active--;
+                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(null, promiseResult);
                 return true;
             }, promiseError => {
                 active--;
+                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(promiseError);
             })
