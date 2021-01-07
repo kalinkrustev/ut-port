@@ -163,7 +163,7 @@ const traceMeta = (port, context, $meta, set, get, time) => {
 
 const portSend = (port, context) => async sendPacket => {
     const $meta = sendPacket.length > 1 && sendPacket[sendPacket.length - 1];
-    if (sendPacket && sendPacket[DEADLOCK]) return portErrorDispatch(port, $meta || {}, sendPacket[DEADLOCK]);
+    if (sendPacket[DEADLOCK]) return portErrorDispatch(port, $meta || {}, sendPacket[DEADLOCK]);
     try {
         const validate = port.findValidation($meta);
         if (validate) sendPacket[0] = validate.apply(port, sendPacket);
@@ -373,7 +373,7 @@ const portIdleReceive = (port, context, queue) => {
 
 const portReceive = (port, context) => async receivePacket => {
     const $meta = receivePacket.length > 1 && receivePacket[receivePacket.length - 1];
-    if (receivePacket && receivePacket[DEADLOCK]) return portErrorReceive(port, $meta || {}, receivePacket[DEADLOCK]);
+    if (receivePacket[DEADLOCK]) return portErrorReceive(port, $meta || {}, receivePacket[DEADLOCK]);
     try {
         const {fn, name} = port.getConversion($meta, 'receive');
         if (fn) {
