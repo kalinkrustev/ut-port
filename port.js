@@ -121,6 +121,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
                             type: 'string'
                         }
                     ]
+                },
+                allowRecursiveInvocation: {
+                    readOnly: true,
+                    type: 'boolean',
+                    default: true
                 }
             }
         };
