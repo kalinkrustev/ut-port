@@ -7,7 +7,7 @@ const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without processing
-const DEADLOCK = Symbol('ut-port.pull.DEADLOCK'); // pass this packet without processing
+const DEADLOCK = Symbol('ut-port.pull.DEADLOCK');
 const timeoutManager = require('./timeout');
 
 const portErrorDispatch = async(port, $meta, dispatchError) => {
