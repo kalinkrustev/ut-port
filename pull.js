@@ -373,6 +373,7 @@ const portIdleReceive = (port, context, queue) => {
 
 const portReceive = (port, context) => async receivePacket => {
     const $meta = receivePacket.length > 1 && receivePacket[receivePacket.length - 1];
+    if (receivePacket && receivePacket[DEADLOCK]) return portErrorReceive(port, $meta || {}, receivePacket[DEADLOCK]);
     try {
         const {fn, name} = port.getConversion($meta, 'receive');
         if (fn) {
