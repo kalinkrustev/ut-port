@@ -503,12 +503,12 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
-        let traceId = port.config.forbidRecursiveInvocation && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
+        let traceId = port.config.noRecursion && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
         if (traceId) {
             if (trace[traceId]) {
-                params[DEADLOCK] = port.errors['port.deadlock']({scope: trace[traceId]});
+                params[DEADLOCK] = port.errors['port.deadlock']({params: {...trace[traceId], method: $meta.method}});
                 traceId = false; // set to false - outer method should take care for deleting it
-            } else trace[traceId] = {method: $meta.method};
+            } else trace[traceId] = {scope: $meta.method};
         }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {

@@ -122,7 +122,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                         }
                     ]
                 },
-                forbidRecursiveInvocation: {
+                noRecursion: {
                     readOnly: true,
                     type: 'boolean',
                     default: false
