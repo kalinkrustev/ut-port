@@ -1,3 +1,12 @@
+# [6.35.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.34.2...v6.35.0) (2021-01-07)
+
+
+### Features
+
+* detect recursive calls ([f3aec18](https://github.com/softwaregroup-bg/ut-port/commit/f3aec1807f15250274eda8d22c299770fe17cb1e))
+
+
+
 ## [6.34.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.34.1...v6.34.2) (2020-11-09)
 
 
