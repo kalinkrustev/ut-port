@@ -675,7 +675,6 @@ const portPull = (port, what, context) => {
             }
         );
     };
-
     pull(
         sendQueue,
         calcTime(port, 'queue', portTimeoutDispatch(port)),
