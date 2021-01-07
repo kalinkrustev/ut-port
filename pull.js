@@ -7,6 +7,7 @@ const paramap = require('pull-paramap');
 const DISCARD = Symbol('ut-port.pull.DISCARD');
 const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without processing
+const DEADLOCK = Symbol('ut-port.pull.DEADLOCK');
 const timeoutManager = require('./timeout');
 
 const portErrorDispatch = async(port, $meta, dispatchError) => {
@@ -162,6 +163,7 @@ const traceMeta = (port, context, $meta, set, get, time) => {
 
 const portSend = (port, context) => async sendPacket => {
     const $meta = sendPacket.length > 1 && sendPacket[sendPacket.length - 1];
+    if (sendPacket[DEADLOCK]) return portErrorDispatch(port, $meta || {}, sendPacket[DEADLOCK]);
     try {
         const validate = port.findValidation($meta);
         if (validate) sendPacket[0] = validate.apply(port, sendPacket);
@@ -371,6 +373,7 @@ const portIdleReceive = (port, context, queue) => {
 
 const portReceive = (port, context) => async receivePacket => {
     const $meta = receivePacket.length > 1 && receivePacket[receivePacket.length - 1];
+    if (receivePacket[DEADLOCK]) return portErrorReceive(port, $meta || {}, receivePacket[DEADLOCK]);
     try {
         const {fn, name} = port.getConversion($meta, 'receive');
         if (fn) {
@@ -490,6 +493,7 @@ const portSink = (port, queue) => pull.drain(sinkPacket => {
 
 const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
+    const trace = {};
     counter && counter(active);
     return paramap((params, cb) => {
         if (params[IGNORE]) {
@@ -499,14 +503,23 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
+        let traceId = port.config.noRecursion && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
+        if (traceId) {
+            if (trace[traceId]) {
+                params[DEADLOCK] = port.errors['port.deadlock']({params: {...trace[traceId], method: $meta.method}});
+                traceId = false; // set to false - outer method should take care for deleting it
+            } else trace[traceId] = {scope: $meta.method};
+        }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
                 active--;
+                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(null, promiseResult);
                 return true;
             }, promiseError => {
                 active--;
+                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(promiseError);
             })
