@@ -498,12 +498,13 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
             return;
         }
         const $meta = params.length > 1 && params[params.length - 1];
-        const traceId = $meta && $meta.forward && $meta.forward['x-b3-traceid'];
+        const traceId = port.config.forbidRecursiveInvocation && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
         if (traceId) {
             if (trace[traceId]) {
                 const error = port.errors['port.deadlock']({scope: trace[traceId], method: $meta.method});
+                $meta.mtid = 'error';
                 port.error(error, $meta);
-                if (!port.config.allowRecursiveInvocation) return cb(error);
+                return cb(null, [error, $meta]);
             }
             trace[traceId] = {method: $meta.method};
         }
