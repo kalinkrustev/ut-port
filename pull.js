@@ -133,7 +133,7 @@ const reportTimes = (port, $meta) => {
 const traceMeta = (port, context, $meta, set, get, time) => {
     if ($meta && !$meta.timer && $meta.mtid === 'request') {
         $meta.timer = packetTimer(port.bus.getPath($meta.method), '*', port.config.id, $meta.timeout);
-        }
+    }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
             context.requests.set(set + $meta.trace, {
