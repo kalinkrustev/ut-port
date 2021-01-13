@@ -20,7 +20,7 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('invalidPullStream', port, 'Invalid pull stream');
         defineError('paramsValidation', port, 'Method {method} parameters failed validation');
         defineError('resultValidation', port, 'Method {method} result failed validation');
-        defineError('deadlock', port, 'Method {scope} called recursively {method}, which may cause a deadlock');
+        defineError('deadlock', port, 'Method {method} was recursively called, which may cause a deadlock! Sequence: {sequence}');
     }
 
     return Object.assign({

@@ -133,7 +133,7 @@ const reportTimes = (port, $meta) => {
 const traceMeta = (port, context, $meta, set, get, time) => {
     if ($meta && !$meta.timer && $meta.mtid === 'request') {
         $meta.timer = packetTimer(port.bus.getPath($meta.method), '*', port.config.id, $meta.timeout);
-    }
+        }
     if ($meta && $meta.trace && context) {
         if ($meta.mtid === 'request') { // todo improve what needs to be tracked
             context.requests.set(set + $meta.trace, {
@@ -493,7 +493,6 @@ const portSink = (port, queue) => pull.drain(sinkPacket => {
 
 const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
-    const trace = {};
     counter && counter(active);
     return paramap((params, cb) => {
         if (params[IGNORE]) {
@@ -503,23 +502,14 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
-        let traceId = port.config.noRecursion && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
-        if (traceId) {
-            if (trace[traceId]) {
-                params[DEADLOCK] = port.errors['port.deadlock']({params: {...trace[traceId], method: $meta.method}});
-                traceId = false; // set to false - outer method should take care for deleting it
-            } else trace[traceId] = {scope: $meta.method};
-        }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
                 active--;
-                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(null, promiseResult);
                 return true;
             }, promiseError => {
                 active--;
-                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(promiseError);
             })
@@ -678,9 +668,28 @@ const portPull = (port, what, context) => {
             }
         );
     };
+
+    const checkDeadlock = port => {
+        const stackId = port.config.stackId || port.config.id;
+        return pull.filter(packet => {
+            const $meta = packet && packet.length > 1 && packet[packet.length - 1];
+            const stack = $meta && $meta.mtid === 'request' && $meta.forward && $meta.forward['x-ut-stack'];
+            if (typeof stack !== 'string') return true;
+            if (!stack) {
+                $meta.forward['x-ut-stack'] = stackId;
+                return true;
+            }
+            $meta.forward['x-ut-stack'] += '-' + stackId;
+            if (!port.config.noRecursion || stack.indexOf(stackId) === -1) return true;
+            portErrorDispatch(port, $meta, port.errors['port.deadlock']({params: {method: $meta.method, sequence: $meta.forward['x-ut-stack']}}));
+            return false;
+        });
+    };
+
     pull(
         sendQueue,
         calcTime(port, 'queue', portTimeoutDispatch(port)),
+        checkDeadlock(port, 'send'),
         send,
         calcTime(port, 'send', portTimeoutDispatch(port)),
         emit('send'),
@@ -695,6 +704,7 @@ const portPull = (port, what, context) => {
         decode,
         calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
+        checkDeadlock(port, 'receive'),
         emit('receive'),
         receive,
         calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
