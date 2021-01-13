@@ -689,7 +689,7 @@ const portPull = (port, what, context) => {
     pull(
         sendQueue,
         calcTime(port, 'queue', portTimeoutDispatch(port)),
-        checkDeadlock(port, 'send'),
+        checkDeadlock(port),
         send,
         calcTime(port, 'send', portTimeoutDispatch(port)),
         emit('send'),
@@ -704,7 +704,7 @@ const portPull = (port, what, context) => {
         decode,
         calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
-        checkDeadlock(port, 'receive'),
+        checkDeadlock(port),
         emit('receive'),
         receive,
         calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
