@@ -678,16 +678,16 @@ const portPull = (port, what, context) => {
             case 'debug':
             case 'info':
             case 'warn': {
-                proceed = ($meta, error) => {
-                    port.log[noRecursion] && port.log[noRecursion](error);
+                proceed = ($meta, error, params) => {
+                    if (port.log[noRecursion]) port.log[noRecursion](port.errors[error]({params}));
                     return true;
                 };
                 break;
             }
             case 'error':
             case true:
-                proceed = ($meta, error) => {
-                    portErrorDispatch(port, $meta, error);
+                proceed = ($meta, error, params) => {
+                    portErrorDispatch(port, $meta, port.errors[error]({params}));
                     return false;
                 };
                 break;
@@ -697,15 +697,22 @@ const portPull = (port, what, context) => {
         }
         return pull.filter(packet => {
             const $meta = packet && packet.length > 1 && packet[packet.length - 1];
-            if (!$meta || ($meta.mtid !== 'request' && $meta.mtid !== 'notification')) return true;
-            const traceId = $meta.forward && $meta.forward['x-b3-traceid'];
-            if (!traceId) return proceed($meta, port.errors['port.noMetaForward']({method: $meta.method}));
+            if (!$meta) return proceed($meta, 'port.noMeta');
+            if ($meta.mtid !== 'request' && $meta.mtid !== 'notification') return true;
+            if (!$meta.forward) return proceed($meta, 'port.noMetaForward', {method: $meta.method});
             const stack = $meta.forward['x-ut-stack'];
-            if (!stack || stack.indexOf(stackId) < 0) {
-                if (stack || noRecursion) $meta.forward['x-ut-stack'] = (stack || '') + stackId;
+            if (!stack && !noRecursion) return true;
+            const traceId = $meta.forward['x-b3-traceid'];
+            if (!traceId) return proceed($meta, 'port.noTraceId', {method: $meta.method});
+            if (!stack && noRecursion) {
+                $meta.forward['x-ut-stack'] = stackId;
                 return true;
             }
-            return proceed($meta, port.errors['port.deadlock']({ params: { method: $meta.method, traceId, sequence: stack } }));
+            if (stack.indexOf(stackId) < 0) {
+                $meta.forward['x-ut-stack'] = stack + stackId;
+                return true;
+            }
+            return proceed($meta, 'port.deadlock', {method: $meta.method, traceId, sequence: stack});
         });
     };
 

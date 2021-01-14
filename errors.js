@@ -21,7 +21,9 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('paramsValidation', port, 'Method {method} parameters failed validation');
         defineError('resultValidation', port, 'Method {method} result failed validation');
         defineError('deadlock', port, 'Method {method} was recursively called, which may cause a deadlock!\nx-b3-traceid: {traceId}\nx-ut-stack: {sequence}');
+        defineError('noMeta', port, '$meta not passed');
         defineError('noMetaForward', port, '$meta.forward not passed to method {method}');
+        defineError('noTraceId', port, '$meta.forward[\'x-b3-traceid\'] not passed to method {method}');
     }
 
     return Object.assign({
