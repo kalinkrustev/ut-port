@@ -20,7 +20,8 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('invalidPullStream', port, 'Invalid pull stream');
         defineError('paramsValidation', port, 'Method {method} parameters failed validation');
         defineError('resultValidation', port, 'Method {method} result failed validation');
-        defineError('deadlock', port, 'Method {method} was recursively called, which may cause a deadlock! Sequence: {sequence}');
+        defineError('deadlock', port, 'Method {method} was recursively called, which may cause a deadlock!\nx-b3-traceid: {traceId}\nx-ut-stack: {sequence}');
+        defineError('noMetaForward', port, '$meta.forward not passed to method {method}');
     }
 
     return Object.assign({

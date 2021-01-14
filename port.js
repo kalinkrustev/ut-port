@@ -124,7 +124,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 },
                 noRecursion: {
                     readOnly: true,
-                    type: 'boolean',
+                    enum: [false, 'trace', 'debug', 'info', 'warn', 'error', true],
                     default: false
                 }
             }

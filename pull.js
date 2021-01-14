@@ -670,19 +670,42 @@ const portPull = (port, what, context) => {
     };
 
     const checkDeadlock = port => {
-        const stackId = port.config.stackId || port.config.id;
+        const stackId = '->' + (port.config.stackId || port.config.id);
+        const proceed = ($meta, error) => {
+            if (error) {
+                switch (port.config.noRecursion) {
+                    case 'trace':
+                    case 'debug':
+                    case 'info':
+                    case 'warn':
+                        port.log[port.config.noRecursion] && port.log[port.config.noRecursion](error);
+                        return true;
+                    case 'error':
+                    case true:
+                        portErrorDispatch(port, $meta, error);
+                        return false;
+                    default:
+                        return true;
+                }
+            }
+            return true;
+        };
         return pull.filter(packet => {
             const $meta = packet && packet.length > 1 && packet[packet.length - 1];
-            const stack = $meta && $meta.mtid === 'request' && $meta.forward && $meta.forward['x-ut-stack'];
-            if (typeof stack !== 'string') return true;
-            if (!stack) {
-                $meta.forward['x-ut-stack'] = stackId;
+            if (!$meta || ($meta.mtid !== 'request' && $meta.mtid !== 'notification')) return true;
+            if (!$meta.forward || !$meta.forward['x-b3-traceid']) return proceed($meta, port.errors['port.noMetaForward']({method: $meta.method}));
+            const stack = $meta.forward['x-ut-stack'];
+            if (!stack || stack.indexOf(stackId) < 0) {
+                if (stack || port.config.noRecursion) $meta.forward['x-ut-stack'] = (stack || '') + stackId;
                 return true;
             }
-            $meta.forward['x-ut-stack'] += '-' + stackId;
-            if (!port.config.noRecursion || stack.indexOf(stackId) === -1) return true;
-            portErrorDispatch(port, $meta, port.errors['port.deadlock']({params: {method: $meta.method, sequence: $meta.forward['x-ut-stack']}}));
-            return false;
+            return proceed($meta, port.errors['port.deadlock']({
+                params: {
+                    method: $meta.method,
+                    traceId: $meta.forward['x-b3-traceid'],
+                    sequence: stack
+                }
+            }))
         });
     };
 
