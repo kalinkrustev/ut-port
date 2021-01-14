@@ -707,7 +707,7 @@ const portPull = (port, what, context) => {
                 if (stack || port.config.noRecursion) $meta.forward['x-ut-stack'] = (stack || '') + stackId;
                 return true;
             }
-            return proceed($meta, port.errors['port.deadlock']({ params: { method: $meta.method, traceId, sequence: stack } }))
+            return proceed($meta, port.errors['port.deadlock']({ params: { method: $meta.method, traceId, sequence: stack } }));
         });
     };
 
