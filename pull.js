@@ -689,7 +689,7 @@ const portPull = (port, what, context) => {
                 proceed = ($meta, error) => {
                     portErrorDispatch(port, $meta, error);
                     return false;
-                }
+                };
                 break;
             default:
                 proceed = () => true;
