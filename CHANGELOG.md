@@ -1,3 +1,12 @@
+# [6.36.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.35.0...v6.36.0) (2021-01-15)
+
+
+### Features
+
+* configurable check for recursion ([#47](https://github.com/softwaregroup-bg/ut-port/issues/47)) ([1d18c57](https://github.com/softwaregroup-bg/ut-port/commit/1d18c57113fb96c6899d71b42c587180851c6bee))
+
+
+
 # [6.35.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.34.2...v6.35.0) (2021-01-07)
 
 
