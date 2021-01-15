@@ -493,7 +493,6 @@ const portSink = (port, queue) => pull.drain(sinkPacket => {
 
 const paraPromise = (port, context, fn, counter, concurrency = 1) => {
     let active = 0;
-    const trace = {};
     counter && counter(active);
     return paramap((params, cb) => {
         if (params[IGNORE]) {
@@ -503,23 +502,14 @@ const paraPromise = (port, context, fn, counter, concurrency = 1) => {
         active++;
         counter && counter(active);
         const $meta = params.length > 1 && params[params.length - 1];
-        let traceId = port.config.noRecursion && $meta && $meta.forward && $meta.forward['x-b3-traceid'];
-        if (traceId) {
-            if (trace[traceId]) {
-                params[DEADLOCK] = port.errors['port.deadlock']({params: {...trace[traceId], method: $meta.method}});
-                traceId = false; // set to false - outer method should take care for deleting it
-            } else trace[traceId] = {scope: $meta.method};
-        }
         timeoutManager.startPromise(params, fn, $meta, port.errors['port.timeout'], context && context.waiting)
             .then(promiseResult => {
                 active--;
-                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(null, promiseResult);
                 return true;
             }, promiseError => {
                 active--;
-                if (traceId) delete trace[traceId];
                 counter && counter(active);
                 cb(promiseError);
             })
@@ -678,9 +668,58 @@ const portPull = (port, what, context) => {
             }
         );
     };
+
+    const checkDeadlock = port => {
+        const stackId = '->' + (port.config.stackId || port.config.id);
+        const {noRecursion} = port.config;
+        let proceed;
+        switch (noRecursion) {
+            case 'trace':
+            case 'debug':
+            case 'info':
+            case 'warn': {
+                proceed = ($meta, error, params) => {
+                    if (port.log[noRecursion]) port.log[noRecursion](port.errors[error]({params}));
+                    return true;
+                };
+                break;
+            }
+            case 'error':
+            case true:
+                proceed = ($meta, error, params) => {
+                    portErrorDispatch(port, $meta, port.errors[error]({params}));
+                    return false;
+                };
+                break;
+            default:
+                proceed = () => true;
+                break;
+        }
+        return pull.filter(packet => {
+            const $meta = packet && packet.length > 1 && packet[packet.length - 1];
+            if (!$meta) return proceed($meta, 'port.noMeta');
+            if ($meta.mtid !== 'request' && $meta.mtid !== 'notification') return true;
+            if (!$meta.forward) return proceed($meta, 'port.noMetaForward', {method: $meta.method});
+            const stack = $meta.forward['x-ut-stack'];
+            if (!stack && !noRecursion) return true;
+            const traceId = $meta.forward['x-b3-traceid'];
+            if (!traceId) return proceed($meta, 'port.noTraceId', {method: $meta.method});
+            if (!stack && noRecursion) {
+                $meta.forward['x-ut-stack'] = stackId;
+                return true;
+            }
+            if (stack.indexOf(stackId) < 0) {
+                $meta.forward['x-ut-stack'] = stack + stackId;
+                return true;
+            }
+            return proceed($meta, 'port.deadlock', {method: $meta.method, traceId, sequence: stack});
+        });
+    };
+
     pull(
         sendQueue,
         calcTime(port, 'queue', portTimeoutDispatch(port)),
+        checkDeadlock(port),
         send,
         calcTime(port, 'send', portTimeoutDispatch(port)),
         emit('send'),
@@ -695,6 +734,7 @@ const portPull = (port, what, context) => {
         decode,
         calcTime(port, 'decode', portTimeoutDispatch(port, sendQueue)),
         idleReceive,
+        checkDeadlock(port),
         emit('receive'),
         receive,
         calcTime(port, 'receive', portTimeoutDispatch(port, sendQueue)),
