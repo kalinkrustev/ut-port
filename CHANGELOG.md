@@ -1,3 +1,13 @@
+## [6.36.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.36.0...v6.36.1) (2021-01-21)
+
+
+### Bug Fixes
+
+* allow composable init handler ([5eab252](https://github.com/softwaregroup-bg/ut-port/commit/5eab252905ca3a9b59831fe8288c91879f7ea582))
+* allow import for words starting with digits ([76d6fa2](https://github.com/softwaregroup-bg/ut-port/commit/76d6fa2057356111197d1e7b0340a2ba3a90f199))
+
+
+
 # [6.36.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.35.0...v6.36.0) (2021-01-15)
 
 
