@@ -3,7 +3,7 @@ const merge = require('ut-function.merge');
 const uuid = require('uuid').v4;
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
-const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?([a-z][a-zA-Z0-9]+\.)*[a-z][a-zA-Z0-9]+(#\[[0+?^]?])?$/;
+const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?[a-z][a-zA-Z0-9]+(\.[a-z0-9][a-zA-Z0-9]+)*(#\[[0+?^]?])?$/;
 async function portMethod(port, method) {
     try {
         return await (port[method] instanceof Function && port[method]());
