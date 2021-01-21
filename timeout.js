@@ -34,13 +34,13 @@ Timeout.prototype.endWait = function timeoutEndWait(end, set) {
 Timeout.prototype.startPromise = function timeoutStartPromise(params, fn, $meta, error, set) {
     if (Array.isArray($meta && $meta.timeout)) {
         return new Promise((resolve, reject) => {
-            const endWait = this.startWait(error => {
+            const endWait = this.startWait(waitError => {
                 $meta.mtid = 'error';
                 if ($meta.dispatch) {
-                    $meta.dispatch(error, $meta);
+                    $meta.dispatch(waitError, $meta);
                     resolve(false);
                 } else {
-                    resolve([error, $meta]);
+                    resolve([waitError, $meta]);
                 }
             }, $meta.timeout, error, set);
             Promise.resolve(params).then(fn)
@@ -49,9 +49,9 @@ Timeout.prototype.startPromise = function timeoutStartPromise(params, fn, $meta,
                     resolve(result);
                     return result;
                 })
-                .catch(error => {
+                .catch(fnError => {
                     endWait();
-                    reject(error);
+                    reject(fnError);
                 });
         });
     } else {

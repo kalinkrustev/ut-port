@@ -88,7 +88,7 @@ const calcTime = (port, stage, onTimeout) => pull(
         if ($meta && $meta.timer && $meta.timer(stage)) {
             onTimeout && onTimeout($meta);
             return false;
-        };
+        }
         return (packetFilter && packetFilter[0] !== DISCARD);
     }),
     pull.map(packetThrow => {
@@ -656,7 +656,7 @@ const portPull = (port, what, context) => {
                 break;
             default:
                 shouldEmit = false;
-        };
+        }
         // better to return false in order to skip piping instead of returning a dummy through stream
         return shouldEmit && pull.through(
             packet => {

@@ -42,7 +42,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         }
     });
 
-    const params = (config, base, pkg) => ({
+    const factoryParams = (config, base, pkg) => ({
         utLog: logFactory,
         utBus: bus,
         utPort: base,
@@ -65,7 +65,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         let Result;
         if (config !== false && config !== 'false') {
             index++;
-            const createParams = params(config, base, pkg);
+            const createParams = factoryParams(config, base, pkg);
             Result = await create(createParams);
             if (Result instanceof Function) { // item returned a constructor
                 if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
@@ -76,14 +76,14 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
                     config = config || {};
                     if (typeof config !== 'object') config = {};
                     config.order = config.order || index;
-                    config.id = (moduleName ? moduleName + '.' + Result.name : Result.name);
+                    config.id = (moduleName ? `${moduleName}.${Result.name}` : Result.name);
                     config.pkg = pkg;
-                    Result = new Result(params(config, base, pkg));
+                    Result = new Result(factoryParams(config, base, pkg));
                     servicePorts.set(config.id, Result);
                 }
             } else if (Result instanceof Object) {
                 if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
-                const id = moduleName ? moduleName + '.' + create.name : create.name;
+                const id = moduleName ? `${moduleName}.${create.name}` : create.name;
                 if (Array.isArray(Result)) {
                     const [, handlers, literals] = Result.reduce(([lib, handlers, literals], fn) => {
                         const literal = fn({...createParams, lib});
