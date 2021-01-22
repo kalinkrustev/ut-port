@@ -671,6 +671,9 @@ const portPull = (port, what, context) => {
 
     const checkDeadlock = port => {
         const stackId = '->' + (port.config.stackId || port.config.id);
+        const extendStack = port.config.debug
+            ? (stack, method) => stack + stackId + '(' + method + ')'
+            : (stack) => stack + stackId;
         const {noRecursion} = port.config;
         let proceed;
         switch (noRecursion) {
@@ -705,14 +708,14 @@ const portPull = (port, what, context) => {
             const traceId = $meta.forward['x-b3-traceid'];
             if (!traceId) return proceed($meta, 'port.noTraceId', {method: $meta.method});
             if (!stack && noRecursion) {
-                $meta.forward['x-ut-stack'] = stackId;
+                $meta.forward['x-ut-stack'] = extendStack('', $meta.method);
                 return true;
             }
             if (stack.indexOf(stackId) < 0) {
-                $meta.forward['x-ut-stack'] = stack + stackId;
+                $meta.forward['x-ut-stack'] = extendStack(stack, $meta.method);
                 return true;
             }
-            return proceed($meta, 'port.deadlock', {method: $meta.method, traceId, sequence: stack});
+            return proceed($meta, 'port.deadlock', {method: $meta.method, traceId, sequence: extendStack(stack, $meta.method)});
         });
     };
 
