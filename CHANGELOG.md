@@ -1,3 +1,12 @@
+## [6.36.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.36.1...v6.36.2) (2021-01-22)
+
+
+### Bug Fixes
+
+* consider port.config.debug in noRecursion ([78d84b6](https://github.com/softwaregroup-bg/ut-port/commit/78d84b6693a53087152f803d596c9bea40c54d25))
+
+
+
 ## [6.36.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.36.0...v6.36.1) (2021-01-21)
 
 
