@@ -63,60 +63,65 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         modules[moduleName || '.'] = modules[moduleName || '.'] || [];
         let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
         let Result;
-        if (config !== false && config !== 'false') {
-            index++;
-            const createParams = factoryParams(config, base, pkg);
-            Result = await create(createParams);
-            if (Result instanceof Function) { // item returned a constructor
-                if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
-                config = (moduleConfig || {})[Result.name];
-                if (config === false || config === 'false') {
-                    return;
-                } else {
-                    config = config || {};
-                    if (typeof config !== 'object') config = {};
-                    config.order = config.order || index;
-                    config.id = (moduleName ? `${moduleName}.${Result.name}` : Result.name);
-                    config.pkg = pkg;
-                    Result = new Result(factoryParams(config, base, pkg));
-                    servicePorts.set(config.id, Result);
-                }
-            } else if (Result instanceof Object) {
-                if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
-                const id = moduleName ? `${moduleName}.${create.name}` : create.name;
-                if (Array.isArray(Result)) {
-                    const [, handlers, literals] = Result.reduce(([lib, handlers, literals], fn) => {
-                        const literal = fn({...createParams, lib});
-                        Object.assign(lib, literal);
-                        Object.entries(literal).forEach(([key, value]) => {
-                            if (isHandler(key)) handlers[key] = value;
-                        });
-                        return [lib, handlers, [...literals, literal]];
-                    }, [{}, {}, []]);
-                    bus.registerLocal(handlers, id, pkg, literals); // use super in object literals
-                } else bus.registerLocal(Result, id, pkg);
-                Result = {
-                    destroy() {
-                        serviceModules.delete(id);
-                        bus.unregisterLocal(id);
-                    },
-                    start() {
-                    },
-                    config: {
-                        id,
-                        type: 'module',
-                        order: index,
-                        pkg
-                    },
-                    init: Result.init
-                };
-                serviceModules.set(id, Result);
-            } else if (Result) {
-                throw new Error(`Module "${moduleName}" returned unexpected value:\n${Result}`);
+        if (config === false || config === 'false') return;
+        index++;
+        const createParams = factoryParams(config, base, pkg);
+        Result = await create(createParams);
+        if (Result instanceof Function) { // item returned a constructor
+            if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
+            config = (moduleConfig || {})[Result.name];
+            if (config === false || config === 'false') {
+                return;
+            } else {
+                config = config || {};
+                if (typeof config !== 'object') config = {};
+                config.order = config.order || index;
+                config.id = (moduleName ? `${moduleName}.${Result.name}` : Result.name);
+                config.pkg = pkg;
+                Result = new Result(factoryParams(config, base, pkg));
+                servicePorts.set(config.id, Result);
             }
-            await (Result && Result.init instanceof Function && Result.init());
-            Result && modules[moduleName || '.'].push(Result);
+        } else if (Result instanceof Object) {
+            if (!create.name) throw new Error(`Module "${moduleName}" returned plain object from anonymous function:\n${create}`);
+            const id = moduleName ? `${moduleName}.${create.name}` : create.name;
+            const resultConfig = {};
+            if (Array.isArray(Result)) {
+                const [all, handlers, literals] = Result.reduce(([lib, prevHandlers, prevLiterals], fn) => {
+                    const literal = fn({...createParams, lib});
+                    Object.assign(lib, literal);
+                    Object.entries(literal).forEach(([key, value]) => {
+                        if (isHandler(key)) prevHandlers[key] = value;
+                    });
+                    return [lib, prevHandlers, [...prevLiterals, literal]];
+                }, [{}, {}, []]);
+                merge(resultConfig, all.config);
+                bus.registerLocal(handlers, id, pkg, literals); // use super in object literals
+            } else {
+                merge(resultConfig, Result.config);
+                bus.registerLocal(Result, id, pkg);
+            }
+            Result = {
+                destroy() {
+                    serviceModules.delete(id);
+                    bus.unregisterLocal(id);
+                },
+                start() {
+                },
+                config: {
+                    ...resultConfig,
+                    id,
+                    type: 'module',
+                    order: index,
+                    pkg
+                },
+                init: Result.init
+            };
+            serviceModules.set(id, Result);
+        } else if (Result) {
+            throw new Error(`Module "${moduleName}" returned unexpected value:\n${Result}`);
         }
+        await (Result && Result.init instanceof Function && Result.init());
+        Result && modules[moduleName || '.'].push(Result);
         return Result;
     };
 
