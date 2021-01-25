@@ -1,3 +1,12 @@
+# [6.37.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.36.2...v6.37.0) (2021-01-25)
+
+
+### Features
+
+* expose module config ([04c557c](https://github.com/softwaregroup-bg/ut-port/commit/04c557c715aca71c521bd85301323bb39d7a8e1c))
+
+
+
 ## [6.36.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.36.1...v6.36.2) (2021-01-22)
 
 
