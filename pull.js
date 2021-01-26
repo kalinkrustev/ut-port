@@ -9,6 +9,7 @@ const CONNECTED = Symbol('ut-port.pull.CONNECTED');
 const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without processing
 const DEADLOCK = Symbol('ut-port.pull.DEADLOCK');
 const timeoutManager = require('./timeout');
+const uuid = require('uuid').v4;
 
 const portErrorDispatch = async(port, $meta, dispatchError) => {
     port.error(dispatchError, $meta);
@@ -319,7 +320,12 @@ const portDecode = (port, context) => dataPacket => {
     const time = timing.now();
     port.msgReceived && port.msgReceived(1);
     if (port.codec) {
-        const $meta = {conId: context && context.conId};
+        const $meta = {
+            conId: context && context.conId,
+            forward: {
+                'x-b3-traceid': uuid().replace(/-/g, '')
+            }
+        };
         return Promise.resolve()
             .then(function decodeCall() {
                 return port.codec.decode(dataPacket, $meta, context, port.log);
