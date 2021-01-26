@@ -316,16 +316,21 @@ const portUnframe = (port, context, buffer) => {
     );
 };
 
+const metaFromContext = (context, rest) => ({
+    ...context && {
+        conId: context.conId
+    },
+    forward: {
+        'x-b3-traceid': uuid().replace(/-/g, '')
+    },
+    ...rest
+});
+
 const portDecode = (port, context) => dataPacket => {
     const time = timing.now();
     port.msgReceived && port.msgReceived(1);
     if (port.codec) {
-        const $meta = {
-            conId: context && context.conId,
-            forward: {
-                'x-b3-traceid': uuid().replace(/-/g, '')
-            }
-        };
+        const $meta = metaFromContext(context);
         return Promise.resolve()
             .then(function decodeCall() {
                 return port.codec.decode(dataPacket, $meta, context, port.log);
@@ -340,7 +345,7 @@ const portDecode = (port, context) => dataPacket => {
                 }
             });
     } else if (dataPacket && dataPacket.constructor && dataPacket.constructor.name === 'Buffer') {
-        return Promise.resolve([{payload: dataPacket}, {mtid: 'notification', opcode: 'payload', conId: context && context.conId}]);
+        return Promise.resolve([{payload: dataPacket}, metaFromContext(context, {mtid: 'notification', opcode: 'payload'})]);
     } else {
         const $meta = (dataPacket.length > 1) && dataPacket[dataPacket.length - 1];
         $meta && context && context.conId && ($meta.conId = context.conId);
