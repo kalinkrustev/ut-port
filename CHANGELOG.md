@@ -1,3 +1,12 @@
+## [6.37.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.37.0...v6.37.1) (2021-01-26)
+
+
+### Bug Fixes
+
+* set meta.forward in ports with codecs ([#49](https://github.com/softwaregroup-bg/ut-port/issues/49)) ([1afb3b6](https://github.com/softwaregroup-bg/ut-port/commit/1afb3b659b12cabffbbfce54ec185d12a44a095c))
+
+
+
 # [6.37.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.36.2...v6.37.0) (2021-01-25)
 
 
