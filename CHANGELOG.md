@@ -1,3 +1,12 @@
+# [6.38.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.37.1...v6.38.0) (2021-02-12)
+
+
+### Features
+
+* add log dashboard ([5350190](https://github.com/softwaregroup-bg/ut-port/commit/5350190bf25d1708cfd5e0e0ee6503b2cf2f381e))
+
+
+
 ## [6.37.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.37.0...v6.37.1) (2021-01-26)
 
 
