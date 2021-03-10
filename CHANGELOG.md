@@ -1,3 +1,12 @@
+# [6.39.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.38.0...v6.39.0) (2021-03-10)
+
+
+### Features
+
+* import: {prefix$method} ([8dbb4d4](https://github.com/softwaregroup-bg/ut-port/commit/8dbb4d4066f0e1526d067a6d308e63bceec27511))
+
+
+
 # [6.38.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.37.1...v6.38.0) (2021-02-12)
 
 
