@@ -470,6 +470,17 @@ module.exports = (defaults) => class Port extends EventEmitter {
         $meta.timer = portStreams.packetTimer(this.bus.getPath($meta.method), '*', this.config.id, $meta.timeout);
     }
 
+    importNamespaces() {
+        if (this.methods.importedMap) {
+            const importedNamespaces = Array.from(this.methods.importedMap.values()).reduce((prev, {
+                namespace
+            }) => namespace ? prev.concat(namespace) : prev, []);
+            if (importedNamespaces.length) {
+                this.config.namespace = Array.from(new Set([].concat(this.config.namespace, importedNamespaces).filter(Boolean)));
+            }
+        };
+    }
+
     get timing() { return timing; }
     get merge() { return merge; }
 };

@@ -245,12 +245,15 @@ module.exports = () => function utModule() {
 module.exports = function script({
     import: {
         userIdentityLookup
+        db$userIdentityLookup
     }
 }) {
     return {
         test() {
-            // userIdentityLookup(params) is identical
-            // to this.bus.importMethod('user.identity.lookup')(params)
+            await userIdentityLookup(params);
+            // is identical to this.bus.importMethod('user.identity.lookup')(params)
+            await db$userIdentityLookup(params);
+            // is identical to this.bus.importMethod('db/user.identity.lookup')(params)
         }
     };
 };
