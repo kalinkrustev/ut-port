@@ -415,7 +415,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     result: this.validator(validation.result, method, 'result')
                 };
             }
-            return validation && validation[type]($meta);
+            return validation && validation[type] && validation[type]($meta);
         }
     }
 
