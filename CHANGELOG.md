@@ -1,3 +1,12 @@
+## [6.40.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.40.0...v6.40.1) (2021-03-22)
+
+
+### Bug Fixes
+
+* check if validation exists ([511f06e](https://github.com/softwaregroup-bg/ut-port/commit/511f06e07245450eb557e6db0680303bc1231b7a))
+
+
+
 # [6.40.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.39.0...v6.40.0) (2021-03-22)
 
 
