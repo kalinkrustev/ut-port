@@ -73,6 +73,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     type: 'string',
                     enum: ['off', 'fatal', 'error', 'warn', 'info', 'debug', 'trace']
                 },
+                test: {
+                    readOnly: true,
+                    type: 'boolean',
+                    default: false
+                },
                 disconnectOnError: {
                     readOnly: true,
                     type: 'boolean',
@@ -364,9 +369,10 @@ module.exports = (defaults) => class Port extends EventEmitter {
     validator(schema, method, type) {
         if (!schema) return;
         if (schema.validate) {
+            if (this.config.test && schema.artifact) schema = schema.artifact(`${method}.${type}`);
             const abortEarly = !this.isDebug();
-            return value => {
-                const {error, value: result, warning} = schema.validate(value, {
+            return $meta => value => {
+                const {error, value: result, warning, artifacts} = schema.validate(value, {
                     abortEarly
                 });
                 if (error) {
@@ -378,6 +384,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
                         }
                     });
                 }
+
+                if (this.config.test) $meta.validation = Object.fromEntries(artifacts);
                 warning && this.log.warn && this.log.warn({
                     warning,
                     $meta: {
@@ -407,7 +415,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     result: this.validator(validation.result, method, 'result')
                 };
             }
-            return validation && validation[type];
+            return validation && validation[type]($meta);
         }
     }
 
