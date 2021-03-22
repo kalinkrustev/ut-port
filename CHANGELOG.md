@@ -1,3 +1,12 @@
+# [6.40.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.39.0...v6.40.0) (2021-03-22)
+
+
+### Features
+
+* return validation artifacts during tests ([cc08eb5](https://github.com/softwaregroup-bg/ut-port/commit/cc08eb5a2635a817f7f730d0e44023aebda4a220))
+
+
+
 # [6.39.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.38.0...v6.39.0) (2021-03-10)
 
 
