@@ -385,7 +385,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     });
                 }
 
-                if (this.config.test) $meta.validation = Object.fromEntries(artifacts);
+                if (this.config.test && artifacts) $meta.validation = Object.fromEntries(artifacts);
                 warning && this.log.warn && this.log.warn({
                     warning,
                     $meta: {
