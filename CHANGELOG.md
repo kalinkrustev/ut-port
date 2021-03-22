@@ -1,3 +1,12 @@
+## [6.40.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.40.1...v6.40.2) (2021-03-22)
+
+
+### Bug Fixes
+
+* avoid undefined ([2ae77a4](https://github.com/softwaregroup-bg/ut-port/commit/2ae77a4d24be8b8d337e4c0f590a3c71e00ff32d))
+
+
+
 ## [6.40.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.40.0...v6.40.1) (2021-03-22)
 
 
