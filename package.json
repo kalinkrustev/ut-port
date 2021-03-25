@@ -19,6 +19,9 @@
   "peerDependencies": {
     "ut-bus": "^7.11.3"
   },
+  "browser": {
+    "stack-utils": false
+  },
   "description": "UT port base",
   "scripts": {
     "lint": "ut-lint .",
