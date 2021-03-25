@@ -42,6 +42,12 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         }
     });
 
+    let stackUtils;
+    const callSite = () => {
+        if (!stackUtils) stackUtils = new (require('stack-utils'))();
+        return {callSite: stackUtils.at(callSite)};
+    };
+
     const factoryParams = (config, base, pkg) => ({
         utLog: logFactory,
         utBus: bus,
@@ -52,6 +58,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
         utMeta: () => ({forward: {'x-b3-traceid': uuid().replace(/-/g, '')}}),
         import: proxy(config),
+        callSite,
         config,
         vfs,
         joi,

@@ -6,6 +6,7 @@
     "browser-process-hrtime": "1.0.0",
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.9",
+    "stack-utils": "2.0.3",
     "stream-to-pull-stream": "1.7.2",
     "ut-function.merge": "^1.5.4",
     "ut-queue": "^6.2.2",
