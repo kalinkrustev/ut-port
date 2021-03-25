@@ -1,3 +1,12 @@
+## [6.41.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.41.0...v6.41.1) (2021-03-25)
+
+
+### Bug Fixes
+
+* ignore stack-utils in the browser ([8eda173](https://github.com/softwaregroup-bg/ut-port/commit/8eda173ac00e2c4c93397ebd04f252620f8e3961))
+
+
+
 # [6.41.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.40.2...v6.41.0) (2021-03-25)
 
 
