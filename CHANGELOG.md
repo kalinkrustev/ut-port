@@ -1,3 +1,12 @@
+## [6.41.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.41.1...v6.41.2) (2021-04-10)
+
+
+### Bug Fixes
+
+* recursion check for ports with same prefix ([3b509a5](https://github.com/softwaregroup-bg/ut-port/commit/3b509a50c188c69969a4ed794da4e081cbe00797))
+
+
+
 ## [6.41.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.41.0...v6.41.1) (2021-03-25)
 
 
