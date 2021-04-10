@@ -681,10 +681,10 @@ const portPull = (port, what, context) => {
     };
 
     const checkDeadlock = port => {
-        const stackId = '->' + (port.config.stackId || port.config.id);
+        const stackId = '->' + (port.config.stackId || port.config.id) + '(';
         const extendStack = port.config.debug
-            ? (stack, method) => stack + stackId + '(' + method + ')'
-            : (stack) => stack + stackId;
+            ? (stack, method) => stack + stackId + method + ')'
+            : (stack) => stack + stackId + ')';
         const {noRecursion} = port.config;
         let proceed;
         switch (noRecursion) {
