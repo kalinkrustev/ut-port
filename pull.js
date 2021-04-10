@@ -464,6 +464,7 @@ const portDispatch = port => dispatchPacket => {
             $metaResult.timer = $meta.timer;
             $metaResult.dispatch = $meta.dispatch;
             $metaResult.trace = $meta.trace;
+            if ($meta.request) $metaResult.request = $meta.request;
             if (isError) {
                 port.error(dispatchResult, $meta);
                 return [dispatchResult, $metaResult];
