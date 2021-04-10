@@ -1,3 +1,12 @@
+# [6.42.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.41.2...v6.42.0) (2021-04-10)
+
+
+### Features
+
+* keep request property ([29b66a2](https://github.com/softwaregroup-bg/ut-port/commit/29b66a2e6c8ba3b48c0d41d6a296a6891f8cdd7b))
+
+
+
 ## [6.41.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.41.1...v6.41.2) (2021-04-10)
 
 
