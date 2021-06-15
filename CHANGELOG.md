@@ -1,3 +1,17 @@
+# [6.43.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.42.0...v6.43.0) (2021-06-15)
+
+
+### Bug Fixes
+
+* notifications mtid during exec [UTCORE-121] ([6c0df7c](https://github.com/softwaregroup-bg/ut-port/commit/6c0df7c1ba51254f5383ee134e3d29693920acdb))
+
+
+### Features
+
+* pass x-b3-traceid to events [UTCORE-121] ([0f51bc9](https://github.com/softwaregroup-bg/ut-port/commit/0f51bc98a69b14660dd4382df266f4308d67f1cc))
+
+
+
 # [6.42.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.41.2...v6.42.0) (2021-04-10)
 
 
