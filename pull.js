@@ -255,6 +255,9 @@ const portExec = (port, fn) => execPacket => {
     if ($meta && $meta.mtid === 'request') {
         $meta.mtid = 'response';
     }
+    if ($meta && $meta.mtid === 'notification') {
+        $meta.mtid = 'discard';
+    }
     return Promise.resolve()
         .then(function execCall() {
             return fn.apply(port, execPacket);
