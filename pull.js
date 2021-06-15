@@ -10,6 +10,7 @@ const IGNORE = Symbol('ut-port.pull.IGNORE'); // pass this packet without proces
 const DEADLOCK = Symbol('ut-port.pull.DEADLOCK');
 const timeoutManager = require('./timeout');
 const uuid = require('uuid').v4;
+const {utMeta} = require('./meta');
 
 const portErrorDispatch = async(port, $meta, dispatchError) => {
     port.error(dispatchError, $meta);
@@ -423,12 +424,12 @@ const portQueueEventCreate = (port, context, message, event, logger) => {
             });
         }
     }
-    return [message, {
+    return [message, utMeta({
         mtid: 'event',
         method: event,
         conId: context && context.conId,
         timer: packetTimer('event.' + event, false, port.config.id)
-    }];
+    })];
 };
 
 const portEventDispatch = (port, context, message, event, logger, queue) => pull(

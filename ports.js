@@ -1,6 +1,6 @@
 const utPort = require('./port');
 const merge = require('ut-function.merge');
-const uuid = require('uuid').v4;
+const {utMeta} = require('./meta');
 const lowercase = (match, word1, word2, letter) => `${word1}.${word2.toLowerCase()}${letter ? ('.' + letter.toLowerCase()) : ''}`;
 const capitalWords = /^([^A-Z]+)([A-Z][^A-Z]+)([A-Z])?/;
 const importKeyRegexp = /^(@[a-z][a-z0-9]*\s)*([a-z][a-z0-9]*\/)?[a-z][a-zA-Z0-9$]+(\.[a-z0-9][a-zA-Z0-9]+)*(#\[[0+?^]?])?$/;
@@ -56,7 +56,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         registerErrors: bus.registerErrors,
         utMethod: Object.assign((...params) => bus.importMethod(...params), {pkg}),
         utNotify: Object.assign((...params) => bus.notification(...params), {pkg}),
-        utMeta: () => ({forward: {'x-b3-traceid': uuid().replace(/-/g, '')}}),
+        utMeta,
         import: proxy(config),
         callSite,
         config,
