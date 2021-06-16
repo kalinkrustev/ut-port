@@ -1,3 +1,12 @@
+## [6.43.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.0...v6.43.1) (2021-06-16)
+
+
+### Bug Fixes
+
+* **utMeta:** handle passed $meta [UTCORE-121] ([7801d37](https://github.com/softwaregroup-bg/ut-port/commit/7801d37e468c28239a7dd0097776e01a929644f9))
+
+
+
 # [6.43.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.42.0...v6.43.0) (2021-06-15)
 
 
