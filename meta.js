@@ -4,7 +4,8 @@ module.exports = {
         ...$meta,
         forward: {
             ...$meta.forward,
-            'x-b3-traceid': uuid().replace(/-/g, '')
+            'x-b3-traceid': uuid().replace(/-/g, ''),
+            'x-ut-stack': undefined
         }
     })
 };
