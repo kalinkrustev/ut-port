@@ -1,3 +1,12 @@
+## [6.43.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.1...v6.43.2) (2021-06-17)
+
+
+### Bug Fixes
+
+* remove stack ([5219cab](https://github.com/softwaregroup-bg/ut-port/commit/5219cab66924dc5ceb4fa3e4aa5adaffa8660322))
+
+
+
 ## [6.43.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.0...v6.43.1) (2021-06-16)
 
 
