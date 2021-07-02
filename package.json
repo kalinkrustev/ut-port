@@ -1,6 +1,6 @@
 {
   "name": "ut-port",
-  "version": "6.43.2",
+  "version": "6.43.3",
   "dependencies": {
     "ajv": "8.6.0",
     "ajv-formats": "2.1.0",
