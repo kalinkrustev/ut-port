@@ -2,7 +2,8 @@
   "name": "ut-port",
   "version": "6.43.2",
   "dependencies": {
-    "ajv": "6.10.0",
+    "ajv": "8.6.0",
+    "ajv-formats": "2.1.0",
     "browser-process-hrtime": "1.0.0",
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.9",

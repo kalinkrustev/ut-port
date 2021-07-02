@@ -8,6 +8,8 @@ const merge = require('ut-function.merge');
 const createErrors = require('./errors');
 const EventEmitter = require('events');
 const Ajv = require('ajv');
+const addFormats = require('ajv-formats');
+
 module.exports = (defaults) => class Port extends EventEmitter {
     constructor({ utLog, utBus, utError, config } = {}) {
         super();
@@ -242,6 +244,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
 
     async start() {
         const ajv = new Ajv({allErrors: true, verbose: true});
+        addFormats(ajv);
         const validate = ajv.compile(this.configSchema);
         const valid = validate(this.config);
         if (!valid) {
