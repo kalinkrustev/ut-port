@@ -251,7 +251,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             throw this.errors['port.configValidation']({
                 errors: validate.errors,
                 params: {
-                    message: [].concat(validate.errors).map(error => this.config.id + error.dataPath + ' ' + error.message).join('\r\n')
+                    message: [].concat(validate.errors).map(error => this.config.id + error.instancePath + ' ' + error.message).join('\r\n')
                 }
             });
         }
