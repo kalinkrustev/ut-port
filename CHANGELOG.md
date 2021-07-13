@@ -1,3 +1,12 @@
+## [6.43.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.3...v6.43.4) (2021-07-13)
+
+
+### Bug Fixes
+
+* ajv migration [UTCORE-121] ([635642a](https://github.com/softwaregroup-bg/ut-port/commit/635642a603b7b7066ecb59b0cdf84c635de3cc21))
+
+
+
 ## [6.43.3](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.2...v6.43.3) (2021-07-02)
 
 
