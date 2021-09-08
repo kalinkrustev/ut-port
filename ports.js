@@ -25,6 +25,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
             if (!importKeyRegexp.test(key)) throw new Error('wrong import proxy key format');
             const tags = key.split(' ');
             let method = tags.pop().replace(/\$/g, '/');
+            if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
             if (config && config.import) {
                 merge([
                     options,
@@ -32,7 +33,6 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
                     config.import[method]
                 ]);
             }
-            if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
             if (method.startsWith('error.')) {
                 const result = bus.errors.getError(method.substr(6));
                 if (!result) throw new Error(`Error ${method.substr(6)} not found`);
