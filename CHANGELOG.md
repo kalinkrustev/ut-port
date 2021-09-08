@@ -1,3 +1,12 @@
+## [6.43.5](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.4...v6.43.5) (2021-09-08)
+
+
+### Bug Fixes
+
+* use final method name in import config ([52a0bb5](https://github.com/softwaregroup-bg/ut-port/commit/52a0bb52818dfbe75cdf39498fb4847face3ae1b))
+
+
+
 ## [6.43.4](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.3...v6.43.4) (2021-07-13)
 
 
