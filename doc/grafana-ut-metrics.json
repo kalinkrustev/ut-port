@@ -26,549 +26,553 @@
             "version": "1.0.0"
         }
     ],
-    "annotations": {
-        "list": [{
-            "builtIn": 1,
-            "datasource": "-- Grafana --",
-            "enable": true,
-            "hide": true,
-            "iconColor": "rgba(0, 211, 255, 1)",
-            "name": "Annotations & Alerts",
-            "type": "dashboard"
-        }]
-    },
-    "editable": true,
-    "gnetId": null,
-    "graphTooltip": 1,
+  "annotations": {
+    "list": [{
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
     "id": null,
     "iteration": 1571041404981,
-    "links": [],
-    "panels": [{
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "fill": 1,
-            "gridPos": {
-                "h": 5,
-                "w": 24,
-                "x": 0,
-                "y": 0
-            },
-            "id": 2,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "hideEmpty": true,
-                "hideZero": true,
-                "max": true,
-                "min": false,
-                "rightSide": true,
-                "show": true,
-                "sideWidth": 550,
-                "sort": "avg",
-                "sortDesc": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "percentage": false,
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [{
-                "alias": "/\\(wait\\)/",
-                "transform": "negative-Y"
-            }],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [{
-                    "expr": "{__name__=\"time_x_max\", m!=\"*\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "instant": false,
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{name}} / {{m}} (execute)",
-                    "refId": "A"
-                },
-                {
-                    "expr": "{__name__=\"time_w_max\", m!=\"*\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{name}} / {{m}} (wait)",
-                    "refId": "B"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Exec / wait time per method (milliseconds)",
-            "tooltip": {
-                "shared": true,
-                "sort": 2,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [{
-                    "decimals": null,
-                    "format": "ms",
-                    "label": "",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+  "links": [],
+  "panels": [{
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "fill": 1,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "interval": "10s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 550,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [{
+          "alias": "/\\(wait\\)/",
+          "transform": "negative-Y"
+      }],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [{
+          "expr": "max_over_time({__name__=\"time_x_max\", m!=\"*\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{name}} / {{m}} (execute)",
+          "refId": "A"
         },
         {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "fill": 1,
-            "gridPos": {
-                "h": 5,
-                "w": 24,
-                "x": 0,
-                "y": 5
-            },
-            "id": 3,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "hideEmpty": true,
-                "hideZero": true,
-                "max": true,
-                "min": false,
-                "rightSide": true,
-                "show": true,
-                "sideWidth": 550,
-                "sort": "avg",
-                "sortDesc": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "percentage": false,
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [{
-                "alias": "/\\(send\\)/",
-                "transform": "negative-Y"
-            }],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [{
-                    "expr": "{__name__=\"count_ms\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "instant": false,
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (send)",
-                    "refId": "A"
-                },
-                {
-                    "expr": "{__name__=\"count_mr\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (receive)",
-                    "refId": "B"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Throughput (operations per second)",
-            "tooltip": {
-                "shared": true,
-                "sort": 2,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [{
-                    "decimals": null,
-                    "format": "ops",
-                    "label": "",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "description": "",
-            "fill": 1,
-            "gridPos": {
-                "h": 5,
-                "w": 24,
-                "x": 0,
-                "y": 10
-            },
-            "id": 4,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "hideEmpty": true,
-                "hideZero": true,
-                "max": true,
-                "min": false,
-                "rightSide": true,
-                "show": true,
-                "sideWidth": 550,
-                "sort": "avg",
-                "sortDesc": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "percentage": false,
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [{
-                "alias": "/\\(send\\)/",
-                "transform": "negative-Y"
-            }],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [{
-                    "expr": "{__name__=\"count_bs\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "instant": false,
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (send)",
-                    "refId": "A"
-                },
-                {
-                    "expr": "{__name__=\"count_br\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (receive)",
-                    "refId": "B"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Traffic (bytes per second)",
-            "tooltip": {
-                "shared": true,
-                "sort": 2,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [{
-                    "decimals": null,
-                    "format": "Bps",
-                    "label": "",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "description": "",
-            "fill": 1,
-            "gridPos": {
-                "h": 5,
-                "w": 24,
-                "x": 0,
-                "y": 15
-            },
-            "id": 5,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "hideEmpty": true,
-                "hideZero": true,
-                "max": true,
-                "min": false,
-                "rightSide": true,
-                "show": true,
-                "sideWidth": 550,
-                "sort": "avg",
-                "sortDesc": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "percentage": false,
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": true,
-            "steppedLine": false,
-            "targets": [{
-                    "expr": "{__name__=\"count_ax_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "instant": false,
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (execute)",
-                    "refId": "A"
-                },
-                {
-                    "expr": "{__name__=\"count_aw_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (dispatch)",
-                    "refId": "B"
-                },
-                {
-                    "expr": "{__name__=\"count_as_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (send)",
-                    "refId": "C"
-                },
-                {
-                    "expr": "{__name__=\"count_ar_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (receive)",
-                    "refId": "D"
-                },
-                {
-                    "expr": "{__name__=\"count_ae_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (encode)",
-                    "refId": "E"
-                },
-                {
-                    "expr": "{__name__=\"count_ad_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
-                    "format": "time_series",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "{{service}} / {{name}} (decode)",
-                    "refId": "F"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Concurrency (active operations)",
-            "tooltip": {
-                "shared": true,
-                "sort": 2,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [{
-                    "decimals": null,
-                    "format": "none",
-                    "label": "",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+          "expr": "max_over_time({__name__=\"time_w_max\", m!=\"*\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{name}} / {{m}} (wait)",
+          "refId": "B"
         }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Exec / wait time per method (milliseconds)",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [{
+          "decimals": null,
+          "format": "ms",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "fill": 1,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 3,
+      "interval": "10s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 550,
+        "sort": "avg",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [{
+          "alias": "/\\(send\\)/",
+          "transform": "negative-Y"
+      }],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [{
+          "expr": "avg_over_time({__name__=\"count_ms\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (send)",
+          "refId": "A"
+        },
+        {
+          "expr": "avg_over_time({__name__=\"count_mr\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (receive)",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Throughput (operations per second)",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [{
+          "decimals": null,
+          "format": "ops",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "",
+      "fill": 1,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 4,
+      "interval": "10s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 550,
+        "sort": "avg",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [{
+          "alias": "/\\(send\\)/",
+          "transform": "negative-Y"
+      }],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [{
+          "expr": "avg_over_time({__name__=\"count_bs\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (send)",
+          "refId": "A"
+        },
+        {
+          "expr": "avg_over_time({__name__=\"count_br\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (receive)",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Traffic (bytes per second)",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [{
+          "decimals": null,
+          "format": "Bps",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "",
+      "fill": 1,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 5,
+      "interval": "10s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 550,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [{
+          "expr": "max_over_time({__name__=\"count_ax_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (execute)",
+          "refId": "A"
+        },
+        {
+          "expr": "max_over_time({__name__=\"count_aw_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (dispatch)",
+          "refId": "B"
+        },
+        {
+          "expr": "max_over_time({__name__=\"count_as_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (send)",
+          "refId": "C"
+        },
+        {
+          "expr": "max_over_time({__name__=\"count_ar_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}[$__interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (receive)",
+          "refId": "D"
+        },
+        {
+          "expr": "{__name__=\"count_ae_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (encode)",
+          "refId": "E"
+        },
+        {
+          "expr": "{__name__=\"count_ad_max\", service =~ \"[[Service]]\", impl =~\"[[Implementation]]\"}",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{service}} / {{name}} (decode)",
+          "refId": "F"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Concurrency (active operations)",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [{
+          "decimals": null,
+          "format": "none",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 18,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [{
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(count_ms, service)",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "Service",
+        "options": [],
+        "query": "label_values(count_ms, service)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(count_ms, impl)",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "Implementation",
+        "options": [],
+        "query": "label_values(count_ms, impl)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
     ],
-    "refresh": false,
-    "schemaVersion": 18,
-    "style": "dark",
-    "tags": [],
-    "templating": {
-        "list": [{
-                "allValue": null,
-                "current": {},
-                "datasource": "${DS_PROMETHEUS}",
-                "definition": "label_values(count_ms, service)",
-                "hide": 0,
-                "includeAll": true,
-                "label": null,
-                "multi": true,
-                "name": "Service",
-                "options": [],
-                "query": "label_values(count_ms, service)",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "tagValuesQuery": "",
-                "tags": [],
-                "tagsQuery": "",
-                "type": "query",
-                "useTags": false
-            },
-            {
-                "allValue": null,
-                "current": {},
-                "datasource": "${DS_PROMETHEUS}",
-                "definition": "label_values(count_ms, impl)",
-                "hide": 0,
-                "includeAll": true,
-                "label": null,
-                "multi": true,
-                "name": "Implementation",
-                "options": [],
-                "query": "label_values(count_ms, impl)",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "tagValuesQuery": "",
-                "tags": [],
-                "tagsQuery": "",
-                "type": "query",
-                "useTags": false
-            }
-        ]
-    },
-    "time": {
-        "from": "now-30m",
-        "to": "now"
-    },
-    "timepicker": {
-        "refresh_intervals": [
-            "5s",
-            "10s",
-            "30s",
-            "1m",
-            "5m",
-            "15m",
-            "30m",
-            "1h",
-            "2h",
-            "1d"
-        ],
-        "time_options": [
-            "5m",
-            "15m",
-            "1h",
-            "6h",
-            "12h",
-            "24h",
-            "2d",
-            "7d",
-            "30d"
-        ]
-    },
-    "timezone": "",
-    "title": "UT performance metrics",
-    "uid": "tvRoF05Wk",
-    "version": 10
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "",
+  "title": "UT performance metrics",
+  "uid": "tvRoF05Wk",
+  "version": 10
 }
