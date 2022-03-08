@@ -18,8 +18,8 @@ module.exports = ({defineError, getError, fetchErrors}) => {
         defineError('dispatchFailure', port, 'Cannot dispatch message to bus');
         defineError('queueNotFound', port, 'Queue not found');
         defineError('invalidPullStream', port, 'Invalid pull stream');
-        defineError('paramsValidation', port, 'Method {method} parameters failed validation');
-        defineError('resultValidation', port, 'Method {method} result failed validation');
+        defineError('paramsValidation', port, 'Method {method} parameters failed validation for: {fields}');
+        defineError('resultValidation', port, 'Method {method} result failed validation for: {fields}');
         defineError('deadlock', port, 'Method {method} was recursively called, which may cause a deadlock!\nx-b3-traceid: {traceId}\nx-ut-stack: {sequence}');
         defineError('noMeta', port, '$meta not passed');
         defineError('noMetaForward', port, '$meta.forward not passed to method {method}');

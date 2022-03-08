@@ -383,7 +383,8 @@ module.exports = (defaults) => class Port extends EventEmitter {
                         cause: error,
                         params: {
                             method,
-                            type
+                            type,
+                            fields: error.details?.map(item => item.path?.join('.')).filter(Boolean).join(', ')
                         }
                     });
                 }
