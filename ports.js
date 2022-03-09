@@ -95,9 +95,22 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
             if (Array.isArray(Result)) {
                 const [all, handlers, literals] = Result.reduce(([lib, prevHandlers, prevLiterals], fn) => {
                     const literal = fn({...createParams, lib});
-                    Object.assign(lib, literal);
                     Object.entries(literal).forEach(([key, value]) => {
-                        if (isHandler(key)) prevHandlers[key] = value;
+                        if (isHandler(key)) {
+                            const polyfill = config?.[key];
+                            if (polyfill === false) return delete literal[key]; // remove if explicitly set to false
+                            if (typeof polyfill === 'object') {
+                                if (typeof value === 'function') {
+                                    literal[key] = value.constructor.name === 'AsyncFunction'
+                                        ? async(...params) => merge(await value(...params), polyfill)
+                                        : (...params) => merge(value(...params), polyfill);
+                                } else {
+                                    literal[key] = merge(value, polyfill);
+                                }
+                            }
+                            prevHandlers[key] = literal[key];
+                        }
+                        lib[key] = literal[key];
                     });
                     return [lib, prevHandlers, [...prevLiterals, literal]];
                 }, [{}, {}, []]);
