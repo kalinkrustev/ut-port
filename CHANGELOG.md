@@ -1,3 +1,7 @@
+## [6.43.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.7...v6.43.8) (2022-03-11)
+
+
+
 ## [6.43.7](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.6...v6.43.7) (2022-03-10)
 
 
