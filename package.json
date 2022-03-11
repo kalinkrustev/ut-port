@@ -7,15 +7,15 @@
     "browser-process-hrtime": "1.0.0",
     "pull-paramap": "1.2.2",
     "pull-stream": "3.6.9",
-    "stack-utils": "2.0.3",
+    "stack-utils": "2.0.5",
     "stream-to-pull-stream": "1.7.2",
-    "ut-function.merge": "^1.5.4",
+    "ut-function.merge": "^1.5.6",
     "ut-queue": "^6.2.2",
-    "uuid": "3.3.2"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
-    "tap": "^15.0.9",
-    "ut-tools": "^6.39.0"
+    "tap": "^15.2.3",
+    "ut-tools": "^6.40.4"
   },
   "peerDependencies": {
     "ut-bus": "^7.11.3"
