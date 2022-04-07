@@ -93,26 +93,28 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
             const id = moduleName ? `${moduleName}.${create.name}` : create.name;
             const resultConfig = {};
             if (Array.isArray(Result)) {
-                const [all, handlers, literals] = Result.reduce(([lib, prevHandlers, prevLiterals], fn) => {
-                    const literal = fn({...createParams, lib});
-                    Object.entries(literal).forEach(([key, value]) => {
-                        if (!isHandler(key)) return;
-                        const polyfill = config?.[key];
-                        if (polyfill === false) return delete literal[key]; // remove if explicitly set to false
-                        if (typeof polyfill === 'object') {
-                            if (typeof value === 'function') {
-                                literal[key] = value.constructor.name === 'AsyncFunction'
-                                    ? async(...params) => merge(await value(...params), polyfill)
-                                    : (...params) => merge(value(...params), polyfill);
-                            } else {
-                                literal[key] = merge(value, polyfill);
+                const [all, handlers, literals] = await Result.reduce((promise, fn) => {
+                    return promise.then(async([lib, prevHandlers, prevLiterals]) => {
+                        const literal = await fn({...createParams, lib});
+                        Object.entries(literal).forEach(([key, value]) => {
+                            if (!isHandler(key)) return;
+                            const polyfill = config?.[key];
+                            if (polyfill === false) return delete literal[key]; // remove if explicitly set to false
+                            if (typeof polyfill === 'object') {
+                                if (typeof value === 'function') {
+                                    literal[key] = value.constructor.name === 'AsyncFunction'
+                                        ? async(...params) => merge(await value(...params), polyfill)
+                                        : (...params) => merge(value(...params), polyfill);
+                                } else {
+                                    literal[key] = merge(value, polyfill);
+                                }
                             }
-                        }
-                        prevHandlers[key] = literal[key];
+                            prevHandlers[key] = literal[key];
+                        });
+                        Object.assign(lib, literal);
+                        return [lib, prevHandlers, [...prevLiterals, literal]];
                     });
-                    Object.assign(lib, literal);
-                    return [lib, prevHandlers, [...prevLiterals, literal]];
-                }, [{}, {}, []]);
+                }, Promise.resolve([{}, {}, []]));
                 merge(resultConfig, all.config);
                 bus.registerLocal(handlers, id, pkg, literals); // use super in object literals
             } else {
