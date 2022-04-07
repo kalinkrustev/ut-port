@@ -1,3 +1,12 @@
+## [6.43.9](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.8...v6.43.9) (2022-04-07)
+
+
+### Bug Fixes
+
+* make possible the functions returning literals to be asynchronous ([#52](https://github.com/softwaregroup-bg/ut-port/issues/52)) ([c7aba41](https://github.com/softwaregroup-bg/ut-port/commit/c7aba4184367d875236c974cf2b7c98d8144945c))
+
+
+
 ## [6.43.8](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.7...v6.43.8) (2022-03-11)
 
 
