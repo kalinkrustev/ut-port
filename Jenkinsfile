@@ -3,4 +3,4 @@ library identifier: 'jenkinsfile@gallium', retriever: modernSCM([
     remote: 'https://github.com/softwaregroup-bg/jenkinsfile.git'
 ])
 
-ut buildImage: 'ut-gallium'
+ut buildImage: 'node-gallium'
