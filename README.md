@@ -186,7 +186,8 @@ Each port configures a default set of metrics, named as follows:
   - `d` - Time spent in the `decode` hook
   - `s` - Time spent in the `send` hook
   - `w` - Time spent in dispatch stage
-- `time_cnt` - count of completed executions
+- `time_rate` - count of completed executions per second
+- `time_count` - count of completed executions
 - `count_a#`, `count_a#_min`, `count_a#_max` - current, minimum and maximum concurrent
   executions per stage. `#` can be one of:
   - `r` - Count of concurrently executing `receive` hooks
