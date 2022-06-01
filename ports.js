@@ -12,7 +12,7 @@ async function portMethod(port, method) {
         throw e;
     }
 }
-const isHandler = name => name.includes('.') || ['start', 'stop', 'ready', 'init', 'namespace', 'reducer'].includes(name);
+const isHandler = name => name.includes('.') || ['start', 'stop', 'ready', 'init', 'send', 'receive', 'namespace', 'reducer'].includes(name);
 
 module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
     const servicePorts = new Map();
