@@ -14,11 +14,11 @@
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "tap": "^15.2.3",
-    "ut-tools": "^6.40.4"
+    "tap": "^16.2.0",
+    "ut-tools": "^6.41.1"
   },
   "peerDependencies": {
-    "ut-bus": "^7.11.3"
+    "ut-bus": "^7.61.0"
   },
   "browser": {
     "stack-utils": false
