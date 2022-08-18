@@ -19,28 +19,35 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
     const serviceModules = new Map();
     let index = 0;
     const modules = {};
-    const proxy = config => new Proxy({}, {
-        get(target, key) {
-            const options = {};
-            if (!importKeyRegexp.test(key)) throw new Error('wrong import proxy key format');
-            const tags = key.split(' ');
-            let method = tags.pop().replace(/\$/g, '/');
-            if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
-            if (config && config.import) {
-                merge([
-                    options,
-                    ...tags.map(tag => config.import[tag.slice(1)]).filter(Boolean),
-                    config.import[method]
-                ]);
-            }
-            if (method.startsWith('error.')) {
-                const result = bus.errors.getError(method.substr(6));
-                if (!result) throw new Error(`Error ${method.substr(6)} not found`);
+    const proxy = config => {
+        const cache = {};
+        return new Proxy({}, {
+            get(target, key) {
+                let result = cache[key];
+                if (result) return result;
+                const options = {};
+                if (!importKeyRegexp.test(key)) throw new Error('wrong import proxy key format');
+                const tags = key.split(' ');
+                let method = tags.pop().replace(/\$/g, '/');
+                if (!method.includes('.')) method = method.replace(capitalWords, lowercase);
+                if (config && config.import) {
+                    merge([
+                        options,
+                        ...tags.map(tag => config.import[tag.slice(1)]).filter(Boolean),
+                        config.import[method]
+                    ]);
+                }
+                if (method.startsWith('error.')) {
+                    const error = bus.errors.getError(method.substr(6));
+                    if (!error) throw new Error(`Error ${method.substr(6)} not found`);
+                    return error;
+                }
+                result = bus.importMethod(method, options);
+                cache[key] = result;
                 return result;
             }
-            return bus.importMethod(method, options);
-        }
-    });
+        });
+    };
 
     let stackUtils;
     const callSite = () => {
