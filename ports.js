@@ -78,10 +78,12 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         let config = moduleConfig;
         if (create.name) {
             const globalConfig = envConfig[create.name];
-            // if module has no name then globalConfig and localConfig would be identical
-            if (!moduleName) return globalConfig;
             const localConfig = (moduleConfig || {})[create.name];
-            config = merge({}, {config: globalConfig}, {config: localConfig}).config;
+            if (globalConfig === localConfig) {
+                config = globalConfig;
+            } else {
+                config = merge({}, {config: globalConfig}, {config: localConfig}).config;
+            }
         }
         let Result;
         if (config === false || config === 'false') return;
