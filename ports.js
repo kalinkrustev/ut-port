@@ -74,8 +74,17 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
 
     const createItem = async({create, moduleName, pkg}, envConfig, base) => {
         const moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
+        const getConfig = name => {
+            const globalConfig = envConfig[name];
+            // globalConfig and localConfig would be identical in this case
+            if (!moduleName) return globalConfig;
+            const localConfig = (moduleConfig || {})[name];
+            // {config: undefined} ensures that nothing is override by reference
+            const {config} = merge({config: undefined}, {config: globalConfig}, {config: localConfig});
+            return config;
+        };
         modules[moduleName || '.'] = modules[moduleName || '.'] || [];
-        let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
+        let config = create.name ? getConfig(create.name) : moduleConfig;
         let Result;
         if (config === false || config === 'false') return;
         index++;
@@ -83,7 +92,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         Result = await create(createParams);
         if (Result instanceof Function) { // item returned a constructor
             if (!Result.name) throw new Error(`Module "${moduleName}${create.name ? '/' + create.name : ''}" returned anonymous constructor:\n${Result}`);
-            config = (moduleConfig || {})[Result.name];
+            config = getConfig(Result.name);
             if (config === false || config === 'false') {
                 return;
             } else {
