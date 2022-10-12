@@ -76,10 +76,10 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         const moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
         const getConfig = name => {
             const globalConfig = envConfig[name];
-            // globalConfig and localConfig would be identical in this case
+            // if module has no name then globalConfig and localConfig would be identical
             if (!moduleName) return globalConfig;
             const localConfig = (moduleConfig || {})[name];
-            // {config: undefined} ensures that nothing is override by reference
+            // {config: undefined} ensures that nothing is overrode by reference
             const {config} = merge({config: undefined}, {config: globalConfig}, {config: localConfig});
             return config;
         };
