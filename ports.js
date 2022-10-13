@@ -75,7 +75,16 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
     const createItem = async({create, moduleName, pkg}, envConfig, base) => {
         const moduleConfig = moduleName ? envConfig[moduleName] : envConfig;
         modules[moduleName || '.'] = modules[moduleName || '.'] || [];
-        let config = create.name ? (moduleConfig || {})[create.name] : moduleConfig;
+        let config = moduleConfig;
+        if (create.name) {
+            const globalConfig = envConfig[create.name];
+            const localConfig = (moduleConfig || {})[create.name];
+            if (globalConfig === localConfig) {
+                config = globalConfig;
+            } else {
+                config = merge({}, {config: globalConfig}, {config: localConfig}).config;
+            }
+        }
         let Result;
         if (config === false || config === 'false') return;
         index++;
