@@ -1,3 +1,12 @@
+# [6.44.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.12...v6.44.0) (2022-10-13)
+
+
+### Features
+
+* possibility to set global configuration for microservice handlers ([d891028](https://github.com/softwaregroup-bg/ut-port/commit/d8910287181d098ffa9ece91e76b1e2520146532))
+
+
+
 ## [6.43.12](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.11...v6.43.12) (2022-08-18)
 
 
