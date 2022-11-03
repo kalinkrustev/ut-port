@@ -22,7 +22,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 const result = obj.defaults;
                 return result instanceof Function ? result.apply(this) : result;
             }
-        }, config, merge({}, this.defaults?.mergeOptions, config.mergeOptions);
+        }, config, merge({}, this.defaults?.mergeOptions, config.mergeOptions));
         this.configSchema = this.traverse(obj => {
             if (Object.prototype.hasOwnProperty.call(obj, 'schema')) {
                 const result = obj.schema;
