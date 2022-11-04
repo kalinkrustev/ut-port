@@ -1,3 +1,12 @@
+## [6.44.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.44.0...v6.44.1) (2022-11-04)
+
+
+### Bug Fixes
+
+* provide possibility to specify port configuration merge options ([#55](https://github.com/softwaregroup-bg/ut-port/issues/55)) ([ea876aa](https://github.com/softwaregroup-bg/ut-port/commit/ea876aa34e9c6ef7dac10d0fceda70aad79a076b))
+
+
+
 # [6.44.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.43.12...v6.44.0) (2022-10-13)
 
 
