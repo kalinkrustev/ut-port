@@ -80,6 +80,11 @@ module.exports = (defaults) => class Port extends EventEmitter {
                     type: 'boolean',
                     default: false
                 },
+                watch: {
+                    readOnly: true,
+                    oneOf: [{type: 'string'}, {type: 'object'}, {type: 'boolean'}],
+                    default: false
+                },
                 disconnectOnError: {
                     readOnly: true,
                     type: 'boolean',
@@ -309,7 +314,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             default:
                 for (const eventHandler of eventHandlers) {
                     result = await eventHandler.call(this, result);
-                };
+                }
                 break;
         }
         await (this.bus && typeof this.bus.portEvent instanceof Function && this.bus.portEvent(event, this));
@@ -498,7 +503,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
             if (importedNamespaces.length) {
                 this.config.namespace = Array.from(new Set([].concat(this.config.namespace, importedNamespaces).filter(Boolean)));
             }
-        };
+        }
     }
 
     get timing() { return timing; }

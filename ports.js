@@ -23,6 +23,12 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
         const cache = {};
         return new Proxy({}, {
             get(target, key) {
+                switch (key) { // do not crash React devTools
+                    case Symbol.iterator:
+                    case Symbol.toStringTag:
+                    case '$$typeof':
+                    case 'constructor': return cache[key];
+                }
                 let result = cache[key];
                 if (result) return result;
                 const options = {};
@@ -198,7 +204,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
             for (const port of portsStarted) {
                 try {
                     await portMethod(port, 'stop');
-                } catch (ignore) { /* just continue calling stop */ };
+                } catch (ignore) { /* just continue calling stop */ }
             }
             throw error;
         }
@@ -207,6 +213,8 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
 
     const start = params =>
         Array.isArray(params || []) ? startMany(params) : startOne(params);
+
+    const connected = async ports => Promise.all(ports.map(port => port.isConnected));
 
     const port = {
         get: ({port}) => servicePorts.get(port),
@@ -218,6 +226,7 @@ module.exports = ({bus, logFactory, assert, vfs, joi, version}) => {
             await (port && portMethod(port, 'stop'));
             return port;
         },
+        connected,
         destroy: async moduleName => {
             const started = modules[moduleName || '.'];
             if (started) {
