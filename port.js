@@ -82,7 +82,7 @@ module.exports = (defaults) => class Port extends EventEmitter {
                 },
                 watch: {
                     readOnly: true,
-                    oneOf: [{type: 'string'}, {type: 'object'}, {type: 'boolean'}],
+                    oneOf: [{type: 'string'}, {type: 'object'}, {type: 'boolean'}, {type: 'null'}],
                     default: false
                 },
                 disconnectOnError: {
