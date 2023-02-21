@@ -1,3 +1,12 @@
+## [6.45.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.45.0...v6.45.1) (2023-02-21)
+
+
+### Bug Fixes
+
+* config validation ([b52a46d](https://github.com/softwaregroup-bg/ut-port/commit/b52a46db650d5c9643e33a41867307191af006a2))
+
+
+
 # [6.45.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.44.1...v6.45.0) (2023-02-21)
 
 
