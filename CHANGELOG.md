@@ -1,3 +1,12 @@
+# [6.45.0](https://github.com/softwaregroup-bg/ut-port/compare/v6.44.1...v6.45.0) (2023-02-21)
+
+
+### Features
+
+* port watch ([1c821bf](https://github.com/softwaregroup-bg/ut-port/commit/1c821bff8bcbc5bda325a441a7902ab5ab7dc542))
+
+
+
 ## [6.44.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.44.0...v6.44.1) (2022-11-04)
 
 
