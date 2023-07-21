@@ -1,3 +1,12 @@
+## [6.45.2](https://github.com/softwaregroup-bg/ut-port/compare/v6.45.1...v6.45.2) (2023-07-21)
+
+
+### Bug Fixes
+
+* csp script unsafe-eval ([#56](https://github.com/softwaregroup-bg/ut-port/issues/56)) ([43a0ced](https://github.com/softwaregroup-bg/ut-port/commit/43a0ced192edcaaabbb1fa7c9fc5b000889b3640))
+
+
+
 ## [6.45.1](https://github.com/softwaregroup-bg/ut-port/compare/v6.45.0...v6.45.1) (2023-02-21)
 
 
