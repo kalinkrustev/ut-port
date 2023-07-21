@@ -21,7 +21,9 @@
     "ut-bus": "^7.61.0"
   },
   "browser": {
-    "stack-utils": false
+    "stack-utils": false,
+    "ajv": "./ajvMock",
+    "ajv-formats": "./ajvFormatsMock"
   },
   "description": "UT port base",
   "scripts": {
